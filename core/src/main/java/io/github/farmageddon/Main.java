@@ -22,6 +22,8 @@ public class Main extends Game {
     }
     @Override
     public void dispose() {
-        batch.dispose();  // Dispose of SpriteBatch when done
+        super.dispose();
+        batch.dispose();
     }
+
 }

@@ -2,24 +2,35 @@ package io.github.farmageddon.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.farmageddon.Main;
 
 public class MainMenuScreen implements Screen {
-
+    // constants
     private static final int PLAY_BUTTON_WIDTH = 200;
     private static final int PLAY_BUTTON_HEIGHT = 100;
     private static final int EXIT_BUTTON_WIDTH = 200;
     private static final int EXIT_BUTTON_HEIGHT = 100;
     private static final int EXIT_BUTTON_Y = 150;
     private static final int PLAY_BUTTON_Y = 300;
-    private Main game;
+
+    final private Main game;
     Texture playButtonActive;
     Texture playButtonInactive;
     Texture exitButtonActive;
     Texture exitButtonInactive;
+
+    private Viewport viewport;
+    private Camera camera;
+
     public MainMenuScreen(Main game) {
+        camera = new PerspectiveCamera();
+        viewport = new FitViewport(800, 480, camera);
         this.game = game;
         playButtonActive = new Texture(Gdx.files.internal("playButtonActive.png"));
         playButtonInactive = new Texture(Gdx.files.internal("playButtonInactive.png"));
@@ -61,7 +72,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height);
     }
 
     @Override
@@ -83,4 +94,6 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
 
     }
+
+
 }
