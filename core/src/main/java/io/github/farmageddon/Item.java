@@ -2,9 +2,9 @@ package io.github.farmageddon;
 
 public class Item {
     private final String itemName ;
-    private final String itemPrice;
+    private final int itemPrice;
 
-    public Item(String itemName, String itemPrice) {
+    public Item(String itemName, int itemPrice) {
         this.itemName = itemName;
         this.itemPrice = itemPrice;
     }
@@ -14,7 +14,7 @@ public class Item {
         return itemName;
     }
 
-    public String getPrice(){
+    public int getPrice(){
 
         return itemPrice;
     }
