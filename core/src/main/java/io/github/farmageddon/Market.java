@@ -1,8 +1,6 @@
 package io.github.farmageddon;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -19,7 +17,9 @@ import io.github.farmageddon.Item;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Market implements ApplicationListener {
+public class Market implements Screen {
+    private final Main game;
+
     private Stage stage;
     private Table table;
     private List<Item> items;
@@ -31,11 +31,11 @@ public class Market implements ApplicationListener {
 
     private Image maketImage;
     private Image invenImage;
-    private SpriteBatch batch;
 
-    public Market(Skin skin) {
-        this.skin = skin;
-        stage = new Stage();
+    public Market(Main game/*Skin skin*/) {
+        this.game = game;
+        //this.skin = skin;
+        stage = new Stage(new StretchViewport(800, 600), game.batch);
         table = new Table();
         // kich thuoc cua bang duoc dieu chinh phu hop voi kich thuoc cua man hinh
         table.setFillParent(true);
@@ -44,6 +44,7 @@ public class Market implements ApplicationListener {
         populateMarket();
         Visible = false;
     }
+
 
     // dien du lieu vao cho
     private void populateMarket() {
@@ -77,6 +78,7 @@ public class Market implements ApplicationListener {
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             Visible = !Visible;
             if (Visible){
+                Gdx.app.log("MyTag", "Da chuyen sang market Screen!");
                 Gdx.input.setInputProcessor(stage);
             }
             else {
@@ -87,28 +89,23 @@ public class Market implements ApplicationListener {
 
     // ve market ra nhe' !!!
 
-
     @Override
-    public void create() {
-        batch = new SpriteBatch();
-        stage = new Stage(new StretchViewport(800, 600), batch);
+    public void show() {
+        stage = new Stage();
         Gdx.input.setInputProcessor(stage);
 
         skin = new Skin(Gdx.files.internal("uiskin.json"));
-
         // khởi tạo cửa sổ Market
-        marketWindow = new Window("Maket", skin);
-        marketWindow.setSize(800,600);
-        marketWindow.setPosition(0,0);
-        marketWindow.setVisible(Visible);
+        marketWindow = new Window("Market", skin);
+        marketWindow.setSize(800, 600);
+        marketWindow.setPosition(0, 0);
+        marketWindow.setVisible(Visible);  // Set initial visibility
 
         table = new Table();
         table.setFillParent(true);
-        populateMarket();// thêm vật phẩm vào cửa sổ
-
+        populateMarket(); // thêm vật phẩm vào cửa sổ
         marketWindow.addActor(table);
         stage.addActor(marketWindow);
-
 
 
 // phần này đang lỗi
@@ -150,17 +147,19 @@ public class Market implements ApplicationListener {
     }
 
     @Override
-    public void resize(int width, int height) {
-        stage.getViewport().update(width, height,true );// Cập nhật viewport khi thay đổi kích thước
-    }
-
-    @Override
-    public void render() {
+    public void render(float delta) {
         handleInput();
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));// cap nhat stage
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);// xoa man hinh trc khi hien len
         stage.draw();
     }
+
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height,true );// Cập nhật viewport khi thay đổi kích thước
+    }
+
+
 
     @Override
     public void pause() {
@@ -173,9 +172,14 @@ public class Market implements ApplicationListener {
     }
 
     @Override
+    public void hide() {
+
+    }
+
+    @Override
     public void dispose() {
         stage.dispose(); // Giải phóng tài nguyên của stage
         skin.dispose(); // Giải phóng tài nguyên của skin
-        batch.dispose(); // Giải phóng tài nguyên của SpriteBatch
+
     }
 }

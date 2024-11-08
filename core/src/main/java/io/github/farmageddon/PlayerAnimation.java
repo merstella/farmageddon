@@ -17,6 +17,7 @@ public class PlayerAnimation {
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
         IDLE_UP, IDLE_RIGHT, IDLE_DOWN, IDLE_LEFT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
+        IDLE_UP_RIGHT, IDLE_UP_LEFT
     }
 
     public PlayerAnimation() {
@@ -35,13 +36,13 @@ public class PlayerAnimation {
 
         // Create animations for each direction
         animations[Direction.UP.ordinal()] = createAnimation(tmpFrames[5], 0, 6); // Assuming 4 frames in the first row for UP
-        //animations[Direction.UP_RIGHT.ordinal()] = createAnimation(tmpFrames[1], 0, 6); // Adjust indices based on layout
+        animations[Direction.UP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 6); // Adjust indices based on layout
         animations[Direction.RIGHT.ordinal()] = createAnimation(tmpFrames[1], 0, 6);
         animations[Direction.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 6);
         animations[Direction.DOWN.ordinal()] = createAnimation(tmpFrames[3], 0, 6);
         animations[Direction.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 6);
         animations[Direction.LEFT.ordinal()] = createFlippedAnimation(tmpFrames[1], 0, 6);
-        //animations[Direction.UP_LEFT.ordinal()] = createAnimation(tmpFrames[7], 0, 6);
+        animations[Direction.UP_LEFT.ordinal()] = createAnimation(tmpFrames[4], 0, 6);
 
         animations[Direction.IDLE_UP.ordinal()] = createAnimation(tmpFrames[5], 0, 1);
         animations[Direction.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames[1], 0, 1);
@@ -49,6 +50,8 @@ public class PlayerAnimation {
         animations[Direction.IDLE_DOWN.ordinal()] = createFlippedAnimation(tmpFrames[3], 0, 1);
         animations[Direction.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 1);
         animations[Direction.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 1);
+        animations[Direction.IDLE_UP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 1);
+        animations[Direction.IDLE_UP_LEFT.ordinal()] = createAnimation(tmpFrames[4], 0, 1);
         stateTime = 0f;
     }
 

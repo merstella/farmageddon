@@ -14,7 +14,7 @@ import static java.lang.Math.sqrt;
 public class Player extends Entity{
     static public final int WIDTH = 32;
     static public final int HEIGHT = 32;
-    static public final float scale = 2;
+    static public final float scale = 4;
     private PlayerAnimation animation;
     private PlayerAnimation.Direction currentDirection;
 
@@ -77,6 +77,10 @@ public class Player extends Entity{
                 currentDirection = PlayerAnimation.Direction.IDLE_DOWN_LEFT;
             } else if (currentDirection == PlayerAnimation.Direction.DOWN_RIGHT) {
                 currentDirection = PlayerAnimation.Direction.IDLE_DOWN_RIGHT;
+            } else if (currentDirection == PlayerAnimation.Direction.UP_LEFT) {
+                currentDirection = PlayerAnimation.Direction.IDLE_UP_LEFT;
+            } else if (currentDirection == PlayerAnimation.Direction.UP_RIGHT) {
+                currentDirection = PlayerAnimation.Direction.IDLE_UP_RIGHT;
             }
 
         }
