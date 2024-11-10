@@ -19,35 +19,49 @@ import java.util.List;
 
 public class Market implements Screen {
     private final Main game;
-
     private Stage stage;
-    private Table table;
+    private Table marketTable;
     private List<Item> items;
     private Skin skin;
     private boolean Visible;
     private TextButton buyButton;
     private TextButton sellButton;
-    private Window marketWindow;
+    private Window marketWindow, inventoryWindow;
 
-    private Image maketImage;
-    private Image invenImage;
 
-    public Market(Main game/*Skin skin*/) {
+    public Market(Main game) {
         this.game = game;
-        //this.skin = skin;
         stage = new Stage(new StretchViewport(800, 600), game.batch);
-        table = new Table();
+        //table = new Table();
+
         // kich thuoc cua bang duoc dieu chinh phu hop voi kich thuoc cua man hinh
-        table.setFillParent(true);
+        //table.setFillParent(true);
         items = new ArrayList<>();
-        stage.addActor(table);
+        //stage.addActor(table);
         populateMarket();
-        Visible = false;
+        Visible = true;
+
+        Gdx.input.setInputProcessor(stage);
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
+
     }
 
 
     // dien du lieu vao cho
     private void populateMarket() {
+//        for (Item item : items) {
+//            Label itemLabel = new Label(item.getName() + " - $" + item.getPrice(), skin);
+//            TextButton buyButton = new TextButton("Buy", skin);
+//            buyButton.addListener(event -> {
+//                System.out.println("Bought: " + item.getName());
+//                return true;
+//            });
+//
+//            marketTable.add(itemLabel).pad(10);
+//            marketTable.add(buyButton).pad(10);
+//            marketTable.row();
+//        }
+
         for (Item item : items) {
             addItemToMarket(item);
         }
@@ -67,16 +81,17 @@ public class Market implements Screen {
             return true;
         });
 
-        table.add(itemLabel).pad(10);
-        table.add(buyButton).pad(10);
-        table.add(sellButton).pad(10);
-        table.row();
+        marketTable.add(itemLabel).pad(10);
+        marketTable.add(buyButton).pad(10);
+        marketTable.add(sellButton).pad(10);
+        marketTable.row();
     }
 
     // kiem tra input M de bat tat market
     public void handleInput(){
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             Visible = !Visible;
+            marketWindow.setVisible(Visible);
             if (Visible){
                 Gdx.app.log("MyTag", "Da chuyen sang market Screen!");
                 Gdx.input.setInputProcessor(stage);
@@ -87,7 +102,6 @@ public class Market implements Screen {
         }
     }
 
-    // ve market ra nhe' !!!
 
     @Override
     public void show() {
@@ -99,19 +113,29 @@ public class Market implements Screen {
         marketWindow = new Window("Market", skin);
         marketWindow.setSize(800, 600);
         marketWindow.setPosition(0, 0);
-        marketWindow.setVisible(Visible);  // Set initial visibility
+        marketWindow.setVisible(Visible);
 
-        table = new Table();
-        table.setFillParent(true);
-        populateMarket(); // thêm vật phẩm vào cửa sổ
-        marketWindow.addActor(table);
+
+//        // Create inventory window
+//        inventoryWindow = new Window("Inventory", skin);
+//        inventoryWindow.setSize(400, 600);
+//        inventoryWindow.setPosition(400, 0);
+//        inventoryWindow.setVisible(false);
+
+        // Create table for items in the shop
+        marketTable = new Table();
+        marketTable.top().center();
+        marketTable.setFillParent(true);
+        populateMarket();
+        marketWindow.add(marketTable).fill().expand();
         stage.addActor(marketWindow);
+        stage.addActor(inventoryWindow);
 
 
-// phần này đang lỗi
 //        // tạo hình hộp chợ
 //        Texture maket = new Texture(Gdx.files.internal("market_table.png"));
-//        maketImage = new Image(maket);
+//        Image maketImage = new Image(maket);
+//        Image invenImage = new Image(maket);
 //        maketImage.setSize(maketImage.getWidth(), maketImage.getHeight());
 //        maketImage.setPosition(0, 0);
 //        stage.addActor(maketImage);

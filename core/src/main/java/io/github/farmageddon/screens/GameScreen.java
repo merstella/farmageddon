@@ -10,9 +10,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import io.github.farmageddon.Main;
-import io.github.farmageddon.Market;
-import io.github.farmageddon.Player;
+import io.github.farmageddon.*;
+import io.github.farmageddon.screens.GameScreen;
 
 /** First screen of the application. Displayed after the application is created. */
 public class GameScreen implements Screen {
@@ -23,11 +22,15 @@ public class GameScreen implements Screen {
 
     private final Player player;
     private Market market;
+    private final InventoryScreen inventory;
     private boolean isMarketVisible = false;
+    private boolean isInventoryVisible = false;
     public GameScreen(Main game) {
         this.game = game;
         player = new Player(100, 100, 200);
         market = new Market(game);
+        inventory = new InventoryScreen(game);
+
     }
 
     @Override
@@ -37,12 +40,12 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
             // Toggle market visibility
-            isMarketVisible = !isMarketVisible;
+            isInventoryVisible = !isInventoryVisible;
 
-            if (isMarketVisible) {
-                game.setScreen(market);  // Switch to the market screen
+            if (isInventoryVisible) {
+                game.setScreen(inventory);  // Switch to the market screen
             } else {
                 game.setScreen(this);    // Switch back to the current game screen (if you have one)
             }
