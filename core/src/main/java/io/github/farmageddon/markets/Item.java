@@ -1,6 +1,6 @@
-package io.github.farmageddon;
+package io.github.farmageddon.markets;
 
-public class Item {
+class Item {
     private final String itemName ;
     private final int itemPrice;
 
