@@ -54,7 +54,7 @@ public class Shop {
             // khi bấm nút buy
             buyButton.addListener(event -> {
                 if (inventory.getMoney() >= item.getPrice()){
-                    inventory.addItem(new Item(item.getName(), item.getPrice(), item.getImage(),item.getQuantity())); // Thêm item vào Inventory
+                    inventory.addItem(new Item(item.getName(), item.getPrice(), item.getQuantity(),item.getImage())); // Thêm item vào Inventory
                     inventory.subMoney(item.getPrice());
                     return true;
                 } else{

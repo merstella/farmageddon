@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.Crops.Crop;
 import io.github.farmageddon.Crops.Items;
 import io.github.farmageddon.Main;
+import io.github.farmageddon.markets.InventoryScreen;
 import io.github.farmageddon.markets.Market;
 import io.github.farmageddon.Player;
 import io.github.farmageddon.ultilites.GameTimeClock;
@@ -37,6 +38,7 @@ public class GameScreen implements Screen {
 
     private final Player player;
     private Market market;
+    private InventoryScreen inventoryScreen;
     private boolean isMarketVisible = false;
 
     public Array<Crop> crops;
@@ -66,6 +68,7 @@ public class GameScreen implements Screen {
 
         player = new Player(100, 100, 200);
         market = new Market(game);
+        inventoryScreen = new InventoryScreen(game);
         font = new BitmapFont();
         font.setColor(WHITE);
 
@@ -119,10 +122,10 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
 
         // Toggle market visibility with the "M" key
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
             isMarketVisible = !isMarketVisible;
             if (isMarketVisible) {
-                game.setScreen(market);  // Switch to market screen
+                game.setScreen(inventoryScreen);  // Switch to market screen
             } else {
                 game.setScreen(this);    // Switch back to the game screen
             }
