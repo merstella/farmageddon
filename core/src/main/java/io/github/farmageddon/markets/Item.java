@@ -1,6 +1,5 @@
-package io.github.farmageddon;
+package io.github.farmageddon.markets;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Item {

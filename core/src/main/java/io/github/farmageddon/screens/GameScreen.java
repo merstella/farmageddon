@@ -11,6 +11,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import io.github.farmageddon.*;
+import io.github.farmageddon.markets.InventoryScreen;
 import io.github.farmageddon.screens.GameScreen;
 
 /** First screen of the application. Displayed after the application is created. */
@@ -22,7 +23,7 @@ public class GameScreen implements Screen {
 
     private final Player player;
     private Market market;
-    private final InventoryScreen inventory;
+    private InventoryScreen inventory;
     private boolean isMarketVisible = false;
     private boolean isInventoryVisible = false;
     public GameScreen(Main game) {

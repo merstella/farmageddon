@@ -1,12 +1,8 @@
-package io.github.farmageddon;
+package io.github.farmageddon.markets;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.utils.Array;
-import io.github.farmageddon.Item;
+
 import java.util.ArrayList;
 import java.util.List;
 
