@@ -11,7 +11,6 @@ public class Seeds {
     private Items.Item item;
     private int price;
 
-
     public Seeds(String string, Rectangle rectangle){
         this.texture = new Texture(Gdx.files.internal(string + ".png"));
         this.boundingRect = new Rectangle(rectangle.x, rectangle.y, texture.getWidth(), texture.getHeight());

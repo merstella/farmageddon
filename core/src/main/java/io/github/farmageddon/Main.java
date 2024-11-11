@@ -1,8 +1,10 @@
 package io.github.farmageddon;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.farmageddon.screens.MainMenuScreen;
 
@@ -11,10 +13,13 @@ public class Main extends Game {
     public static final int GAME_WIDTH = 1080;
     public static final int GAME_HEIGHT = 720;
     public SpriteBatch batch;
-    public AssetManager manager;
+    public static AssetManager manager;
+    public Texture blank;
     @Override
     public void create() {
         batch = new SpriteBatch();
+        blank = new Texture(Gdx.files.internal("farm.png"));
+
         manager = new AssetManager();
         manager.load("Sound/music.mp3", Music.class);
         manager.finishLoading();
