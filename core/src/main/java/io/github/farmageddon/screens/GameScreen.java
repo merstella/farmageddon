@@ -90,6 +90,8 @@ public class GameScreen implements Screen {
     private Animal animal;
     private Stage stage;
 
+
+
     int currentDays;
     public GameScreen(Main game) {
         this.game = game;
@@ -113,7 +115,7 @@ public class GameScreen implements Screen {
         font.setColor(WHITE);
 
         timer = new Timer_();
-        timer.setTimeRatio(60);
+        timer.setTimeRatio(9000);
         timer.StartNew(120, true, true);
         timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
@@ -142,7 +144,8 @@ public class GameScreen implements Screen {
         crops.add(new Crop(Items.Item.RICE, 100, 100));
         crops.add(new Crop(Items.Item.TOMATO, 200, 200));
 
-        animal = new Animal(640, 384, "Chicken", stage);
+        animal = new Animal(680, 230, "Chicken", stage);
+        animal.setBound(620, 690, 160, 260);
 
         intType = 0;
         mouseCrop = new Texture(Gdx.files.internal("Crops.png"));
@@ -187,6 +190,14 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        if(timer.getDaysPassed() != currentDays){
+            for (Crop crops : crops)
+                crops.addDay();
+            currentDays = timer.getDaysPassed();
+            if (currentDays % 2 == 0) animal.incState();
+            daysLeft--;
+            daysLeftNum.setText(String.format("%d", daysLeft));
+        }
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 
@@ -212,13 +223,11 @@ public class GameScreen implements Screen {
         mapRenderer.render();
 
         clock.act(delta);
-        renderAnimal();
-        animal.update(delta);
+        animal.update(delta, currentDays);
+        stage.act();
+        stage.draw();
         if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
             animal.feed();
-        }
-        if (currentDays != 0 && currentDays % 2 == 0) {
-            animal.incState();
         }
         printAnimalDebugInfo();
 
@@ -228,14 +237,7 @@ public class GameScreen implements Screen {
 
         renderPlayer();
         renderCrops();
-        if(timer.getDaysPassed() != currentDays){
-            for (Crop crops : crops)
-                crops.addDay();
-            currentDays = timer.getDaysPassed();
-            animal.incState();
-            daysLeft--;
-            daysLeftNum.setText(String.format("%d", daysLeft));
-        }
+
 
 
         shapeRenderer.setProjectionMatrix(camera.combined);
@@ -255,16 +257,9 @@ public class GameScreen implements Screen {
 
         gameView.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         renderDebugInfo();
-        stage.act();
-        stage.draw();
+
     }
 
-    private void renderAnimal() {
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-        game.batch.draw(animal.getTexture(), animal.getX(), animal.getY(), 64, 64);
-        game.batch.end();
-    }
 
     private void renderPlayer() {
         game.batch.setProjectionMatrix(camera.combined);

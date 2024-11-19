@@ -17,7 +17,7 @@ public class PlayerAnimation {
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
         IDLE_UP, IDLE_RIGHT, IDLE_DOWN, IDLE_LEFT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
-        IDLE_UP_RIGHT, IDLE_UP_LEFT
+        IDLE_UP_RIGHT, WALK, SLEEP, IDLE, IDLE_UP_LEFT
     }
 
     public PlayerAnimation() {
@@ -32,7 +32,7 @@ public class PlayerAnimation {
         TextureRegion[][] tmpFrames = TextureRegion.split(playerSheet, frameWidth, frameHeight);
 
         // Initialize the animations array
-        animations = new Animation[16];
+        animations = new Animation[19];
 
         // Create animations for each direction
         animations[Direction.UP.ordinal()] = createAnimation(tmpFrames[5], 0, 6); // Assuming 4 frames in the first row for UP
