@@ -36,18 +36,18 @@ public class PlayerAnimation {
 
         // Create animations for each direction
         animations[Direction.UP.ordinal()] = createAnimation(tmpFrames[5], 0, 6); // Assuming 4 frames in the first row for UP
-        animations[Direction.UP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 6); // Adjust indices based on layout
-        animations[Direction.RIGHT.ordinal()] = createAnimation(tmpFrames[1], 0, 6);
+        animations[Direction.UP_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 6); // Adjust indices based on layout
+        animations[Direction.RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 6);
         animations[Direction.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 6);
         animations[Direction.DOWN.ordinal()] = createAnimation(tmpFrames[3], 0, 6);
         animations[Direction.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 6);
-        animations[Direction.LEFT.ordinal()] = createFlippedAnimation(tmpFrames[1], 0, 6);
-        animations[Direction.UP_LEFT.ordinal()] = createAnimation(tmpFrames[4], 0, 6);
+        animations[Direction.LEFT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 6);
+        animations[Direction.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 6);
 
-        animations[Direction.IDLE_UP.ordinal()] = createAnimation(tmpFrames[5], 0, 1);
-        animations[Direction.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames[1], 0, 1);
-        animations[Direction.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[1], 0, 1);
-        animations[Direction.IDLE_DOWN.ordinal()] = createFlippedAnimation(tmpFrames[3], 0, 1);
+        animations[Direction.IDLE_UP.ordinal()] = createAnimation(tmpFrames[2], 0, 6);
+        animations[Direction.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames[1], 0, 6);
+        animations[Direction.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[1], 0, 6);
+        animations[Direction.IDLE_DOWN.ordinal()] = createFlippedAnimation(tmpFrames[0], 0, 6);
         animations[Direction.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 1);
         animations[Direction.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 1);
         animations[Direction.IDLE_UP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 1);
@@ -77,7 +77,7 @@ public class PlayerAnimation {
         TextureRegion currentFrame = animations[direction.ordinal()].getKeyFrame(stateTime, true);
 
         // Draw the current frame at the specified position
-        batch.draw(currentFrame, x, y, Player.WIDTH * Player.scale, Player.HEIGHT * Player.scale);
+        batch.draw(currentFrame, x, y, Player.WIDTH , Player.HEIGHT);
     }
 
     public void dispose() {

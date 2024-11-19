@@ -10,8 +10,8 @@ import io.github.farmageddon.screens.MainMenuScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends Game {
-    public static final int GAME_WIDTH = 1080;
-    public static final int GAME_HEIGHT = 720;
+    public static final int GAME_WIDTH = 1280;
+    public static final int GAME_HEIGHT = 768;
     public SpriteBatch batch;
     public static AssetManager manager;
     public Texture blank;

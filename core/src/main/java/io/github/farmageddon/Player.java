@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import static java.lang.Math.sqrt;
@@ -14,12 +15,14 @@ import static java.lang.Math.sqrt;
 public class Player extends Entity{
     static public final int WIDTH = 32;
     static public final int HEIGHT = 32;
-    static public final float scale = 4;
     private PlayerAnimation animation;
     private PlayerAnimation.Direction currentDirection;
 
+    public static Rectangle boundingBox;
+
     public Player(float x, float y, float speed) {
         super(x, y, speed);
+        boundingBox = new Rectangle();
         animation = new PlayerAnimation();  // Initialize animation instance
         currentDirection = PlayerAnimation.Direction.IDLE_DOWN;  // Default direction
     }
@@ -27,6 +30,7 @@ public class Player extends Entity{
     @Override
     public void update(float delta) {
         super.update(delta);
+        boundingBox.set(position.x, position.y, 32, 32);
         Vector2 movement = new Vector2(0, 0);
 
         // Check input and set movement direction
@@ -43,8 +47,8 @@ public class Player extends Entity{
         // Normalize movement to ensure consistent speed in all directions
         if (!movement.isZero()) {
             movement.nor().scl(speed * delta); // Scale by speed and delta time
-            x += movement.x;
-            y += movement.y;
+            position.x += movement.x;
+            position.y += movement.y;
 
             // Set direction for animation
             if (up && right) {
@@ -85,10 +89,15 @@ public class Player extends Entity{
 
         }
     }
-
+    public float getPlayerCenterX() {
+        return boundingBox.x + boundingBox.width/2;
+    }
+    public float getPlayerCenterY() {
+        return boundingBox.y + boundingBox.height/2;
+    }
     @Override
     public void render(SpriteBatch batch) {
-        animation.render(batch, x, y, currentDirection);
+        animation.render(batch, position.x, position.y, currentDirection);
     }
 
     public void dispose() {

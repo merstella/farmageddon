@@ -19,6 +19,7 @@ public class Items {
         TOMATO,
         CARROT,
         CORN,
+        BUCKET,
     }
 
     public Items(Texture texture, ItemType type, Item item){

@@ -1,0 +1,7 @@
+healthbar.png
+size:32,16
+repeat:none
+health_bar_bg
+bounds:2,5,14,6
+health_bar_fg
+bounds:2,2,10,1

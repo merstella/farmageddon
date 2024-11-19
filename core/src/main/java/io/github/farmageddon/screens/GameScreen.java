@@ -2,98 +2,175 @@ package io.github.farmageddon.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import io.github.farmageddon.*;
 import io.github.farmageddon.Crops.Crop;
 import io.github.farmageddon.Crops.Items;
-import io.github.farmageddon.Main;
+import io.github.farmageddon.Crops.Seeds;
 import io.github.farmageddon.markets.Market;
-import io.github.farmageddon.Player;
 import io.github.farmageddon.ultilites.GameTimeClock;
 import io.github.farmageddon.ultilites.Timer_;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 import static com.badlogic.gdx.graphics.Color.WHITE;
 
 public class GameScreen implements Screen {
     private final Main game;
-    private TiledMap map;
+
     private OrthographicCamera camera;
-    private OrthogonalTiledMapRenderer mapRenderer;
     private Viewport gameView;
-
-    private final Player player;
-    private Market market;
-    private boolean isMarketVisible = false;
-
-    public Array<Crop> crops;
-    public int numCrops;
-
-    private GameTimeClock clock;
-    private Timer_ timer;
-    private int currentDays;
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
 
-    // UI elements
+    private GameTimeClock clock;
+    private Timer_ timer;
+    private boolean showDebugInfo = true;
     private String time;
-    private static Label timeLabel;
-    private static Label timeStringLabel;
-    private static Label daysLeftLabel;
-    private static Label daysLeftNum;
+    private static Label timeLabel, timeStringLabel, daysLeftLabel, daysLeftNum;
+    private static Label scoreLabel;
+    private static Label scoreStringLabel;
     private static int daysLeft;
+
+    private final Player player;
+    private PlayerController controller;
+    private final Market market;
+    private boolean isMarketVisible = false;
+
     private Music music;
 
-    private float timeScale = 1.0f; // Controls how fast time passes
-    private boolean pauseTime = false;
-    private Color debugOverlayColor = new Color(0, 0, 0, 0.5f);
-    private boolean showDebugInfo = true;
+    //Tool variables
+    public Items.ItemType currentType;
+    public Items currentItem;
+    public Texture bucketTexture;
+    public Items bucket;
+    public Items riceSeed;
+    public Items tomatoSeed;
+    public Items carrotSeed;
+    public Items cornSeed;
+    public int intType;
+
+    //Crop variables
+    public Array<Crop> crops;
+    public int numCrops;
+    private TextureRegion[][] textureFrames;
+    private TextureRegion mouseFrame;
+    public Texture mouseCrop;
+    public Array<Seeds> seeds;
+    public static Integer money;
+
+    // tiled map
+    private TiledMap map;
+    private OrthogonalTiledMapRenderer mapRenderer;
+
+    private Array<Items> items;
+    private Texture box;
+    private Texture border;
+
+    private Animal animal;
+    private Stage stage;
+
+    int currentDays;
     public GameScreen(Main game) {
         this.game = game;
+        camera = new OrthographicCamera();
+        gameView = new FitViewport(1280, 768, camera);
+        camera.setToOrtho(false, gameView.getWorldWidth(), gameView.getWorldHeight());
+        map = new TmxMapLoader().load("mapok.tmx");
+        mapRenderer = new OrthogonalTiledMapRenderer(map);
+        player = new Player(640, 384, 100f);
+        camera.zoom = 0.25f;
+        camera.update();
 
-        player = new Player(100, 100, 200);
+
+        seeds = new Array<Seeds>();
+
         market = new Market(game);
+
+        controller = new PlayerController(this, player);
+
         font = new BitmapFont();
         font.setColor(WHITE);
 
-        crops = new Array<>();
-        numCrops = 0;
-
-        // Timer initialization
         timer = new Timer_();
-        timer.StartNew(60, true, true);
-        timer.setStartTime(0, 12, 0, 0);
-
-        // Initialize clock for day transitions
+        timer.setTimeRatio(60);
+        timer.StartNew(120, true, true);
+        timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
-        currentDays = 0;
         time = timer.getFormattedTimeofDay();
+        currentDays = 0;
         daysLeft = 30;
 
-        // Initialize labels for time and days left
-        timeLabel = new Label(time, new Label.LabelStyle(new BitmapFont(), WHITE));
-        timeStringLabel = new Label("Time", new Label.LabelStyle(new BitmapFont(), WHITE));
+        timeLabel = new Label(time, new Label.LabelStyle(font, WHITE));
+        timeStringLabel = new Label("Time", new Label.LabelStyle(font, WHITE));
         timeStringLabel.setFontScale(2);
         timeLabel.setFontScale(2);
-        daysLeftLabel = new Label("Days Left", new Label.LabelStyle(new BitmapFont(), WHITE));
-        daysLeftNum = new Label(String.format("%d", daysLeft), new Label.LabelStyle(new BitmapFont(), WHITE));
+        daysLeftLabel = new Label("Days Left", new Label.LabelStyle(font, WHITE));
+        daysLeftNum = new Label(String.format("%d", daysLeft), new Label.LabelStyle(font, WHITE));
         daysLeftLabel.setFontScale(2);
         daysLeftNum.setFontScale(2);
+        scoreLabel = new Label(String.format("$%d", money), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        scoreStringLabel = new Label("Money", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+
+        stage = new Stage(gameView);
+        Gdx.input.setInputProcessor(stage);
 
         shapeRenderer = new ShapeRenderer();
+        money = 100;
+        crops = new Array<>();
+        numCrops = 0;
+        crops.add(new Crop(Items.Item.RICE, 100, 100));
+        crops.add(new Crop(Items.Item.TOMATO, 200, 200));
+
+        animal = new Animal(640, 384, "Chicken", stage);
+
+        intType = 0;
+        mouseCrop = new Texture(Gdx.files.internal("Crops.png"));
+        textureFrames = TextureRegion.split(mouseCrop, 32, 32);
+        bucketTexture = new Texture("ref assets/bucket.png");
+        bucket = new Items(bucketTexture, Items.ItemType.TOOL, Items.Item.BUCKET);
+        riceSeed = new Items(textureFrames[0][1], Items.ItemType.SEED, Items.Item.RICE);
+        tomatoSeed = new Items(textureFrames[1][1], Items.ItemType.SEED, Items.Item.TOMATO);
+        carrotSeed = new Items(textureFrames[2][1], Items.ItemType.SEED, Items.Item.CARROT);
+        cornSeed = new Items(textureFrames[4][1], Items.ItemType.SEED, Items.Item.CORN);
+
+        items = new Array<Items>(5);
+        items.add(bucket);
+        items.add(riceSeed);
+        items.add(tomatoSeed);
+        items.add(carrotSeed);
+        items.add(cornSeed);
+
+        setMouseCrop(bucket);
+
+        box = new Texture(Gdx.files.internal("box.png"));
+        border = new Texture(Gdx.files.internal("border.png"));
+
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(controller);
+
+        for(int i = 0; i < 20; i++)
+            addSeeds(carrotSeed.getItem());
 
         music = Main.manager.get("Sound/music.mp3", Music.class);
         music.setLooping(true);
@@ -103,73 +180,64 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        // Load the map and initialize camera
-        //map = new TmxMapLoader().load("Test.tmx");  // Make sure this path is correct
-        mapRenderer = new OrthogonalTiledMapRenderer(map);
+        //mapRenderer = new OrthogonalTiledMapRenderer(map);
 
-        camera = new OrthographicCamera();
-        gameView = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-        camera.setToOrtho(false, gameView.getWorldWidth(), gameView.getWorldHeight());
-        camera.position.set(player.getX(), player.getY(), 0);
+
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        Gdx.gl.glClearColor(0, 0, 0, 1);
 
-        // Toggle market visibility with the "M" key
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             isMarketVisible = !isMarketVisible;
             if (isMarketVisible) {
-                game.setScreen(market);  // Switch to market screen
+                game.setScreen(market);
             } else {
-                game.setScreen(this);    // Switch back to the game screen
+                game.setScreen(this);
             }
         }
 
-        // Update player and camera
         player.update(delta);
-        camera.position.set(player.getX(), player.getY(), 0);
-        camera.update();
 
-        // Update the clock and day transitions
+        float playerX = player.getPosition().x;
+        float playerY = player.getPosition().y;
+
+        // Set the clamped camera position
+        camera.position.set(MathUtils.clamp(playerX + 16,160,1120), MathUtils.clamp(playerY + 16, 0, 768), 0);
+        camera.update();
+        game.batch.setProjectionMatrix(camera.combined);
+        mapRenderer.setView(camera);
+        mapRenderer.render();
+
         clock.act(delta);
-        if (timer.getDaysPassed() != currentDays) {
-            for (Crop crop : crops) {
-                crop.addDay();
-            }
-            currentDays = timer.getDaysPassed();
-            daysLeft--;
-            daysLeftNum.setText(String.format("%d", daysLeft));
+        renderAnimal();
+        animal.update(delta);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            animal.feed();
         }
+        if (currentDays != 0 && currentDays % 2 == 0) {
+            animal.incState();
+        }
+        printAnimalDebugInfo();
+
 
         time = timer.getFormattedTimeofDay();
         timeLabel.setText(time);
 
-        // Render map
-        mapRenderer.setView(camera);
-        //mapRenderer.render();
-
-        // Draw player and UI
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-        for (int x = 0; x < gameView.getWorldWidth(); x += 32) {
-            for (int y = 0; y < gameView.getWorldHeight(); y += 32) {
-                if ((x + y) / 32 % 2 == 0) {
-                    game.batch.setColor(0.8f, 0.8f, 0.8f, 1);
-                } else {
-                    game.batch.setColor(0.6f, 0.6f, 0.6f, 1);
-                }
-                game.batch.draw(game.blank, x, y, 32, 32);
-            }
+        renderPlayer();
+        renderCrops();
+        if(timer.getDaysPassed() != currentDays){
+            for (Crop crops : crops)
+                crops.addDay();
+            currentDays = timer.getDaysPassed();
+            animal.incState();
+            daysLeft--;
+            daysLeftNum.setText(String.format("%d", daysLeft));
         }
 
-        player.render(game.batch);
-        game.batch.setColor(WHITE);
-        game.batch.end();
 
-        // Ambient lighting effects
         shapeRenderer.setProjectionMatrix(camera.combined);
         Gdx.gl20.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -183,29 +251,149 @@ public class GameScreen implements Screen {
             Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         shapeRenderer.end();
         Gdx.gl20.glDisable(GL20.GL_BLEND);
-        renderDebugInfo();
-        // Update viewport
+
+
         gameView.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        renderDebugInfo();
+        stage.act();
+        stage.draw();
+    }
+
+    private void renderAnimal() {
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+        game.batch.draw(animal.getTexture(), animal.getX(), animal.getY(), 64, 64);
+        game.batch.end();
+    }
+
+    private void renderPlayer() {
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+        player.render(game.batch);
+        game.batch.end();
+    }
+
+    private void renderCrops() {
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+        for(int i = 0; i < numCrops; i++) {
+            if (crops.get(i).isWatered())
+                game.batch.setColor(Color.BROWN);
+
+            game.batch.setColor(Color.WHITE);
+            game.batch.draw(crops.get(i).getCurrentFrame(), crops.get(i).getFrameSprite().getX(), crops.get(i).getFrameSprite().getY());
+            if (crops.get(i).isDead()) {
+                crops.removeIndex(i);
+                numCrops--;
+            }
+        }
+        for(int i = 0; i < seeds.size; i++){
+            game.batch.draw(seeds.get(i).getTexture(), seeds.get(i).getBoundingRect().x, seeds.get(i).getBoundingRect().y);
+        }
+
+        for(int i = 0; i < 9; i++) {
+            game.batch.draw(box, (camera.position.x + 32 * i) - (camera.viewportWidth / 2 * (camera.zoom / 2)), camera.position.y - (camera.viewportHeight / 2 * camera.zoom));
+            if(i < items.size) {
+                game.batch.draw(items.get(i).getTextureRegion(), (camera.position.x + 32 * i) - (camera.viewportWidth / 2 * (camera.zoom / 2)), camera.position.y - (camera.viewportHeight / 2 * camera.zoom));
+                if(items.get(i).getType() == Items.ItemType.SEED)
+                    font.draw(game.batch, String.format("%d", items.get(i).getNum()), (camera.position.x + 32 * i) - (camera.viewportWidth / 2 * (camera.zoom / 2)-6), camera.position.y - (camera.viewportHeight / 2 * camera.zoom)+12);
+                if (items.get(i).getItem() == currentItem.getItem())
+                    game.batch.draw(border, (camera.position.x + 32 * i) - (camera.viewportWidth / 2 * (camera.zoom / 2)), camera.position.y - (camera.viewportHeight / 2 * camera.zoom));
+            }
+        }
+        game.batch.end();
+    }
+
+    private void renderSeeds() {
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+
+        game.batch.end();
     }
 
     private void renderDebugInfo() {
         if (!showDebugInfo) return;
 
         game.batch.begin();
-        font.draw(game.batch, "Controls:", 10, 590);
-        font.draw(game.batch, "SPACE: Pause/Resume time", 10, 570);
-        font.draw(game.batch, "LEFT/RIGHT: Adjust time speed", 10, 550);
-        font.draw(game.batch, "F3: Toggle debug info", 10, 530);
-
-        font.draw(game.batch, String.format("Time Scale: %.2fx", timeScale), 10, 490);
         font.draw(game.batch, String.format("Time: %s", timer.getFormattedTimeofDay()), 10, 470);
-        font.draw(game.batch, String.format("Paused: %s", pauseTime), 10, 450);
-
+        font.draw(game.batch, String.format("Day passed: %s", timer.getDaysPassed()), 10, 410);
+        font.draw(game.batch, String.format("CurrentDay : %s", currentDays), 10, 390);
         Color ambient = clock.getAmbientLighting();
-        font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f",
-            ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
+        font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
         game.batch.end();
     }
+
+
+    // Water a crop (called via an input method)
+    public void waterCrop(Crop crop) {
+        crop.setWatered(true);
+    }
+
+    // Harvest a crop once it's mature
+//    public void harvestCrop(Crop crop) {
+//        if (crop.isHarvestable()) {
+//            // Add the harvested item to the player's inventory (or resources)
+//            player.addItemToInventory(crop.getCropType());
+//            plantedCrops.removeValue(crop, true); // Remove the crop from the farm
+//        }
+//    }
+
+
+    public Timer_ getTimer() {
+        return timer;
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public int getCurrentDays() {
+        return currentDays;
+    }
+    public void setMouseCrop(Items item){
+        mouseFrame = item.getTextureRegion();
+        currentItem = item;
+        currentType = item.getType();
+
+    }
+
+    public void buySeed(Seeds seed){
+        if(seed.getPrice() <= money) {
+            money -= seed.getPrice();
+            addSeeds(seed.getItem());
+        }
+        scoreLabel.setText(String.format("$%d", money));
+    }
+    public void addMoney(int price){
+        money += price;
+        scoreLabel.setText(String.format("$%d", money));
+    }
+    public void addSeeds(Items.Item item) {
+        switch(item) {
+            case RICE:
+                riceSeed.add();
+                break;
+            case TOMATO:
+                tomatoSeed.add();
+                break;
+            case CORN:
+                cornSeed.add();
+                break;
+            case CARROT:
+                carrotSeed.add();
+        }
+    }
+
+    public Array<Seeds> getSeeds() {
+        return seeds;
+    }
+    public Array<Crop> getCrops() {
+        return crops;
+    }
+    public Array<Items> getItems() {
+        return items;
+    }
+
     @Override
     public void resize(int width, int height) {}
 
@@ -220,7 +408,41 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        mapRenderer.dispose();
         player.dispose();
+        map.dispose();
+        mapRenderer.dispose();
+    }
+
+
+    public void addCrop(Crop crop){
+        crops.add(crop);
+    }
+    public void removeSeeds(Items.Item item) {
+        switch(item) {
+            case RICE:
+                riceSeed.remove();
+                break;
+            case TOMATO:
+                tomatoSeed.remove();
+                break;
+
+            case CORN:
+                cornSeed.remove();
+                break;
+            case CARROT:
+                carrotSeed.remove();
+                break;
+        }
+    }
+    public void printAnimalDebugInfo() {
+        game.batch.begin();
+        String debugInfo = "Animal: " + animal.getType() +
+            ",\n Hunger: " + animal.getHunger() +
+            "\n, Health: " + animal.getHealth() + "\n, State: " + animal.getState()
+            + "\n, can be produce?: " + animal.canBeProduced();
+
+        font.draw(game.batch, debugInfo, player.getPlayerCenterX(), player.getPlayerCenterY());
+        font.draw(game.batch, player.getPlayerCenterX() +  " " + player.getPlayerCenterY(), player.getPlayerCenterX() + 100, player.getPlayerCenterY() + 100);
+        game.batch.end();
     }
 }

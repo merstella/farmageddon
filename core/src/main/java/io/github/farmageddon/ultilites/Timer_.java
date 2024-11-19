@@ -32,7 +32,7 @@ public class Timer_ {
 
     // called every frame (in render())
     public void tick() {
-
+        // tăng thời gian cho bộ đếm
         if (!(secondsSinceStart >= timerEndTime) || (chrono)) {
             if (!paused) {
                 secondsSinceStart += (Gdx.graphics.getDeltaTime() * realToTimerRatio);
@@ -48,14 +48,13 @@ public class Timer_ {
         }
     }
 
-    // if you need to start a timer off at a time other than 0, for instance loading a saved game you would set the chrono clock timer to the saved time
-    // use for reassign the time, like, for example, reload a saved game
+    // hàm set thời gian cụ thể
     public void setStartTime(int days, int hour, int min, int sec) {
         daysPassed = days;
         secondsSinceStart = sec + (min * 60) + (hour * 3600);
     }
 
-    // is the timer past the run time
+    // nếu thời gian chạm đích
     public boolean isDone() {
         if (secondsSinceStart >= timerEndTime) {
             return true;
@@ -91,7 +90,7 @@ public class Timer_ {
         return format(timerEndTime - secondsSinceStart);
     }
 
-    // format the timers elapsed time in a clock format
+    // đưa thời gian về dạng HH:MM AM/PM
     public String getFormattedTimeofDay() {
         int hours = (int) Math.floor(secondsSinceStart / 3600);
         String sub = " ";
@@ -112,7 +111,7 @@ public class Timer_ {
         return res.concat(sub);
     }
 
-    // format the specified seconds in HH:MM:SS format
+    // đưa thời gian về dạng HH:MM:SS
     private String format(double d) {
 
         int hours = (int) Math.floor(d / 3600);

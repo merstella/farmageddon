@@ -9,8 +9,6 @@ import com.badlogic.gdx.utils.Array;
 
 
 public class Crop extends Sprite {
-
-
     private int growthStage;
     private int growthStageDuration;
     private int daysOld;
@@ -136,5 +134,9 @@ public class Crop extends Sprite {
 
     public boolean isWatered() {
         return isWatered;
+    }
+
+    public Vector2 getPosition() {
+        return position;
     }
 }
