@@ -1,9 +1,6 @@
 package io.github.farmageddon.screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -35,7 +33,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import static com.badlogic.gdx.graphics.Color.WHITE;
 
-public class GameScreen implements Screen {
+public class GameScreen implements Screen, InputProcessor {
     private final Main game;
 
     private OrthographicCamera camera;
@@ -53,7 +51,6 @@ public class GameScreen implements Screen {
     private static int daysLeft;
 
     private final Player player;
-    private PlayerController controller;
     private final Market market;
     private boolean isMarketVisible = false;
 
@@ -90,11 +87,12 @@ public class GameScreen implements Screen {
     private Animal animal;
     private Stage stage;
 
-
+    private static Vector2 selectedCell;
 
     int currentDays;
     public GameScreen(Main game) {
         this.game = game;
+
         camera = new OrthographicCamera();
         gameView = new FitViewport(1280, 768, camera);
         camera.setToOrtho(false, gameView.getWorldWidth(), gameView.getWorldHeight());
@@ -109,7 +107,6 @@ public class GameScreen implements Screen {
 
         market = new Market(game);
 
-        controller = new PlayerController(this, player);
 
         font = new BitmapFont();
         font.setColor(WHITE);
@@ -135,7 +132,6 @@ public class GameScreen implements Screen {
         scoreStringLabel = new Label("Money", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
 
         stage = new Stage(gameView);
-        Gdx.input.setInputProcessor(stage);
 
         shapeRenderer = new ShapeRenderer();
         money = 100;
@@ -170,7 +166,10 @@ public class GameScreen implements Screen {
         border = new Texture(Gdx.files.internal("border.png"));
 
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
-        inputMultiplexer.addProcessor(controller);
+        inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(this);
+        Gdx.input.setInputProcessor(inputMultiplexer);
+        selectedCell = new Vector2();
 
         for(int i = 0; i < 20; i++)
             addSeeds(carrotSeed.getItem());
@@ -190,6 +189,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        setting();
         if(timer.getDaysPassed() != currentDays){
             for (Crop crops : crops)
                 crops.addDay();
@@ -198,9 +198,6 @@ public class GameScreen implements Screen {
             daysLeft--;
             daysLeftNum.setText(String.format("%d", daysLeft));
         }
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             isMarketVisible = !isMarketVisible;
             if (isMarketVisible) {
@@ -209,19 +206,7 @@ public class GameScreen implements Screen {
                 game.setScreen(this);
             }
         }
-
         player.update(delta);
-
-        float playerX = player.getPosition().x;
-        float playerY = player.getPosition().y;
-
-        // Set the clamped camera position
-        camera.position.set(MathUtils.clamp(playerX + 16,160,1120), MathUtils.clamp(playerY + 16, 0, 768), 0);
-        camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
-        mapRenderer.setView(camera);
-        mapRenderer.render();
-
         clock.act(delta);
         animal.update(delta, currentDays);
         stage.act();
@@ -235,11 +220,33 @@ public class GameScreen implements Screen {
         time = timer.getFormattedTimeofDay();
         timeLabel.setText(time);
 
-        renderPlayer();
+        renderSelectedCell();
+        //.out.println(player.isPerformingActivity());
         renderCrops();
+        renderPlayer();
+        renderAmbientLighting();
+        gameView.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        renderDebugInfo();
 
-
-
+    }
+    private void setting() {
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        camera.position.set(MathUtils.clamp(player.getPosition().x + 16,160,1120), MathUtils.clamp(player.getPosition().y + 16, 0, 768), 0);
+        camera.update();
+        game.batch.setProjectionMatrix(camera.combined);
+        mapRenderer.setView(camera);
+        mapRenderer.render();
+    }
+    private void renderSelectedCell() {
+        // Check if player is performing an activity
+        if (player.isPerformingActivity()) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.YELLOW);
+            shapeRenderer.rect(selectedCell.x * 16, selectedCell.y * 16, 16, 16);
+            shapeRenderer.end();
+        }
+    }
+    private void renderAmbientLighting() {
         shapeRenderer.setProjectionMatrix(camera.combined);
         Gdx.gl20.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -253,21 +260,13 @@ public class GameScreen implements Screen {
             Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         shapeRenderer.end();
         Gdx.gl20.glDisable(GL20.GL_BLEND);
-
-
-        gameView.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        renderDebugInfo();
-
     }
-
-
     private void renderPlayer() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         player.render(game.batch);
         game.batch.end();
     }
-
     private void renderCrops() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
@@ -298,14 +297,6 @@ public class GameScreen implements Screen {
         }
         game.batch.end();
     }
-
-    private void renderSeeds() {
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-
-        game.batch.end();
-    }
-
     private void renderDebugInfo() {
         if (!showDebugInfo) return;
 
@@ -317,22 +308,6 @@ public class GameScreen implements Screen {
         font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
         game.batch.end();
     }
-
-
-    // Water a crop (called via an input method)
-    public void waterCrop(Crop crop) {
-        crop.setWatered(true);
-    }
-
-    // Harvest a crop once it's mature
-//    public void harvestCrop(Crop crop) {
-//        if (crop.isHarvestable()) {
-//            // Add the harvested item to the player's inventory (or resources)
-//            player.addItemToInventory(crop.getCropType());
-//            plantedCrops.removeValue(crop, true); // Remove the crop from the farm
-//        }
-//    }
-
 
     public Timer_ getTimer() {
         return timer;
@@ -436,8 +411,70 @@ public class GameScreen implements Screen {
             "\n, Health: " + animal.getHealth() + "\n, State: " + animal.getState()
             + "\n, can be produce?: " + animal.canBeProduced();
 
-        font.draw(game.batch, debugInfo, player.getPlayerCenterX(), player.getPlayerCenterY());
-        font.draw(game.batch, player.getPlayerCenterX() +  " " + player.getPlayerCenterY(), player.getPlayerCenterX() + 100, player.getPlayerCenterY() + 100);
+        font.draw(game.batch, debugInfo, player.getPosition().x, player.getPosition().y);
+        font.draw(game.batch, player.getPosition().x +  " " + player.getPosition().y, player.getPosition().x + 100, player.getPosition().y + 100);
         game.batch.end();
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (button == Input.Buttons.LEFT) {
+            Vector3 worldCoords = camera.unproject(new Vector3(screenX, screenY, 0));
+            float worldX = worldCoords.x;
+            float worldY = worldCoords.y;
+
+            selectedCell.set(
+                (int)(worldX / 16),
+                (int)(worldY / 16)
+            );
+            player.startActivity(new Vector2(worldX, worldY));
+            return true;
+        }
+        return false;
+    }
+
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (button == Input.Buttons.LEFT) {
+            player.stopActivity(); // Use the new method to stop activity
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        return false;
     }
 }
