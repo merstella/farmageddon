@@ -7,18 +7,20 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
-import io.github.farmageddon.*;
 import io.github.farmageddon.Crops.Crop;
-//import io.github.farmageddon.markets.InventoryScreen;
-//import io.github.farmageddon.markets.Market;
+import io.github.farmageddon.Crops.Items;
+import io.github.farmageddon.Main;
+import io.github.farmageddon.markets.InventoryScreen;
+import io.github.farmageddon.markets.Market;
+import io.github.farmageddon.Player;
 import io.github.farmageddon.ultilites.GameTimeClock;
 import io.github.farmageddon.ultilites.Timer_;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -35,13 +37,9 @@ public class GameScreen implements Screen {
     private Viewport gameView;
 
     private final Player player;
-    private Texture equipmentTexture;
-    private InventoryUI inventoryUI;
-    //private Market market;
+    private Market market;
     private InventoryScreen inventoryScreen;
-    private MarketScreen marketScreen;
     private boolean isMarketVisible = false;
-    private boolean isInventoryVisible = false;
 
     public Array<Crop> crops;
     public int numCrops;
@@ -50,7 +48,7 @@ public class GameScreen implements Screen {
     private Timer_ timer;
     private int currentDays;
     private BitmapFont font;
-    private ShapeRenderer shapeRenderer = new ShapeRenderer();
+    private ShapeRenderer shapeRenderer;
 
     // UI elements
     private String time;
@@ -65,52 +63,12 @@ public class GameScreen implements Screen {
     private boolean pauseTime = false;
     private Color debugOverlayColor = new Color(0, 0, 0, 0.5f);
     private boolean showDebugInfo = true;
-
-    //market
-    public Market market;
-
-    // Items Texture
-    public Texture CoinTexture;
-    public Texture item1Texture;
-    public Texture item2Texture;
-    public Texture item3Texture;
-    public Texture item4Texture;
-    public Items items;
-
-
     public GameScreen(Main game) {
         this.game = game;
 
         player = new Player(100, 100, 200);
-
-        market = new Market(100, 100, 200);
-
-
-        // Test items inventory System
-        CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
-        items = new Items("Coin", CoinTexture, 10);
-        player.setEquipItem(items);// them vao equip
-
-        item1Texture = new Texture(Gdx.files.internal("SellButton.png"));
-        items = new Items("Sell", item1Texture, 10);
-        player.setEquipItem(items);
-
-        item2Texture = new Texture(Gdx.files.internal("BuyButton.png"));
-        items = new Items("Buy", item2Texture, 10);
-        player.setEquipItem(items);// them vao inventory
-
-        item3Texture = new Texture(Gdx.files.internal("moneyBar.png"));
-        items = new Items("Money", item3Texture, 10);
-        player.setEquipItem(items);
-
-        item4Texture = new Texture(Gdx.files.internal("Well.png"));
-        items = new Items("Well", item4Texture, 10);
-        player.setItem(items);
-
-
-        //money
-        player.addMoney(200);
-
+        market = new Market(game);
+        inventoryScreen = new InventoryScreen(game);
         font = new BitmapFont();
         font.setColor(WHITE);
 
@@ -146,7 +104,6 @@ public class GameScreen implements Screen {
         music.play();
     }
 
-
     @Override
     public void show() {
         // Load the map and initialize camera
@@ -157,14 +114,6 @@ public class GameScreen implements Screen {
         gameView = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
         camera.setToOrtho(false, gameView.getWorldWidth(), gameView.getWorldHeight());
         camera.position.set(player.getX(), player.getY(), 0);
-
-
-        // inventory & market
-        int titleSize = 32;
-        inventoryUI = new InventoryUI(titleSize);
-        marketScreen = new MarketScreen(titleSize,market, player);
-        inventoryScreen = new InventoryScreen(titleSize, player);
-
     }
 
     @Override
@@ -172,25 +121,15 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl.glClearColor(0, 0, 0, 1);
 
-
         // Toggle market visibility with the "M" key
-        //if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
-            System.out.println("marketScreen");
-            game.setScreen(marketScreen);
-        }
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
-            System.out.println("inventoryScreen");
-            game.setScreen(inventoryScreen);  // Switch to market screen
+            isMarketVisible = !isMarketVisible;
+            if (isMarketVisible) {
+                game.setScreen(inventoryScreen);  // Switch to market screen
+            } else {
+                game.setScreen(this);    // Switch back to the game screen
+            }
         }
-
-//        if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
-//            System.out.println("gameScreen");
-//            game.setScreen(this);
-//        }
-
 
         // Update player and camera
         player.update(delta);
@@ -232,24 +171,6 @@ public class GameScreen implements Screen {
         player.render(game.batch);
         game.batch.setColor(WHITE);
         game.batch.end();
-
-        //inventory Eqip UI
-        inventoryUI.drawInventory(player);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            inventoryUI.slotCol = 0;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            inventoryUI.slotCol = 1;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            inventoryUI.slotCol = 2;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
-            inventoryUI.slotCol = 3;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            inventoryUI.slotCol = 4;
-        }
 
         // Ambient lighting effects
         shapeRenderer.setProjectionMatrix(camera.combined);

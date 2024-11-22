@@ -17,7 +17,7 @@ public class GameTimeClock extends Actor {
     private final static float DUSKTODARKTIME = 1; // hours of transition from dusk to dark
 
     // init the time
-    private Timer_ worldTime = null;
+    public Timer_ worldTime = null;
     private double rotation = 0;
     private Sprite sprite;
     private Color ambient = new Color();

@@ -9,8 +9,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.ArrayList;
-
 import static java.lang.Math.sqrt;
 
 public class Player extends Entity{
@@ -20,48 +18,11 @@ public class Player extends Entity{
     private PlayerAnimation animation;
     private PlayerAnimation.Direction currentDirection;
 
-    // danh sach vat pham su dung trong kho do
-    public ArrayList<Items> inventory;
-    public ArrayList<Items> eqipInventory;
-    private final int maxInventorySize = 25;
-    private final int maxEqipInventorySize = 5;
-    public int money = 0;
-
-
     public Player(float x, float y, float speed) {
         super(x, y, speed);
         animation = new PlayerAnimation();  // Initialize animation instance
         currentDirection = PlayerAnimation.Direction.IDLE_DOWN;  // Default direction
-        this.inventory = new ArrayList<>();
-        this.eqipInventory = new ArrayList<>();
     }
-
-
-    // inventory contact
-    public void setEquipItem(Items item) {
-        eqipInventory.add(item);
-    }
-
-    public void removeEquipItem(Items item) {
-        eqipInventory.remove(item);
-    }
-
-    public void setItem(Items item) {
-        inventory.add(item);
-    }
-
-    public void removeItem(Items item) {
-        inventory.remove(item);
-    }
-
-    public void addMoney(int amount) {
-        money += amount;
-    }
-
-    public void subMoney(int amount) {
-        money -= amount;
-    }
-
 
     @Override
     public void update(float delta) {

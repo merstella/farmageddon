@@ -5,12 +5,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 
 
 public class Crop extends Sprite {
-
-
     private int growthStage;
     private int growthStageDuration;
     private int daysOld;
@@ -136,5 +135,9 @@ public class Crop extends Sprite {
 
     public boolean isWatered() {
         return isWatered;
+    }
+
+    public Vector2 getPosition() {
+        return position;
     }
 }

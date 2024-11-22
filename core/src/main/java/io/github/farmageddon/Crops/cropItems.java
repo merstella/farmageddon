@@ -19,6 +19,7 @@ public class cropItems {
         TOMATO,
         CARROT,
         CORN,
+        BUCKET,
     }
 
     public cropItems(Texture texture, ItemType type, Item item){
