@@ -48,6 +48,7 @@ public class Items {
     public void add(){
         num++;
     }
+
     public void remove(){
         num--;
     }
@@ -55,4 +56,6 @@ public class Items {
     public int getNum() {
         return num;
     }
+
+
 }
