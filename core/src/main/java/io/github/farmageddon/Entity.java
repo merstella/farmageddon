@@ -13,22 +13,22 @@ public class Entity {
         this.speed = speed;
     }
 
+
     public void render(SpriteBatch batch) {
 
     }
 
     public void update(float delta) {
-
     }
 
     public float getX() {
         return x;
     }
+
     public float getY() {
         return y;
     }
 
     public void dispose() {
-
     }
 }

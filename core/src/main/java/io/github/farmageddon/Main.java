@@ -15,6 +15,8 @@ public class Main extends Game {
     public SpriteBatch batch;
     public static AssetManager manager;
     public Texture blank;
+
+
     @Override
     public void create() {
         batch = new SpriteBatch();
@@ -24,6 +26,7 @@ public class Main extends Game {
         manager.load("Sound/music.mp3", Music.class);
         manager.finishLoading();
         this.setScreen(new MainMenuScreen(this));
+
     }
 
     @Override

@@ -33,7 +33,7 @@ public class Crop extends Sprite {
 
     final int CROP_HEIGHT = 32;
     final int CROP_WIDTH = 16;
-    public Crop(Items.Item item, float x, float y) {
+    public Crop(cropItems.Item item, float x, float y) {
         this.position = new Vector2(x, y);
         this.growthStage = 0;
         this.daysOld = 0;
@@ -51,7 +51,7 @@ public class Crop extends Sprite {
         loadinfo(item);
     }
 
-    private void loadinfo(Items.Item type) {
+    private void loadinfo(cropItems.Item type) {
         switch (type) {
             case RICE:
                 cropFrames = new Array<>(4);

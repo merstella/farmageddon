@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 public class Seeds {
     private Texture texture;
     private Rectangle boundingRect;
-    private Items.Item item;
+    private cropItems.Item item;
     private int price;
 
     public Seeds(String string, Rectangle rectangle){
@@ -21,19 +21,19 @@ public class Seeds {
     public void setSeedPrice(String string){
         if(string.equals("riceseed")) {
             this.price = 4;
-            this.item = Items.Item.RICE;
+            this.item = cropItems.Item.RICE;
         }
         else if(string.equals("tomatoseed")) {
             this.price = 5;
-            this.item = Items.Item.TOMATO;
+            this.item = cropItems.Item.TOMATO;
         }
         else if(string.equals("carrotseed")) {
             this.price = 2;
-            this.item = Items.Item.CARROT;
+            this.item = cropItems.Item.CARROT;
         }
         else if(string.equals("cornseed")) {
             this.price = 8;
-            this.item = Items.Item.CORN;
+            this.item = cropItems.Item.CORN;
         }
     }
 
@@ -49,7 +49,7 @@ public class Seeds {
         return boundingRect;
     }
 
-    public Items.Item getItem() {
+    public cropItems.Item getItem() {
         return item;
     }
 }

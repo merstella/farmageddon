@@ -3,7 +3,7 @@ package io.github.farmageddon.Crops;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-public class Items {
+public class cropItems {
 
     private TextureRegion textureRegion;
     private ItemType type;
@@ -21,13 +21,13 @@ public class Items {
         CORN,
     }
 
-    public Items(Texture texture, ItemType type, Item item){
+    public cropItems(Texture texture, ItemType type, Item item){
         this.type = type;
         this.item = item;
         this.textureRegion = new TextureRegion(texture);
         this.num = 0;
     }
-    public Items(TextureRegion textureRegion, ItemType type, Item item){
+    public cropItems(TextureRegion textureRegion, ItemType type, Item item){
         this.type = type;
         this.item = item;
         this.textureRegion = new TextureRegion(textureRegion);
