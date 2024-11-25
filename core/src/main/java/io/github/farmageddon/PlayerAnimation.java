@@ -1,6 +1,8 @@
 package io.github.farmageddon;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -84,19 +86,16 @@ public class PlayerAnimation {
         return new Animation<>(0.1f, directionFrames);
     }
     // Remove or modify this method
-    public boolean isActivityFinished(Activity activity) {
-        // Always return false while performing an activity
-        return activity == Activity.NONE;
-    }
     public void render(SpriteBatch batch, float x, float y, Direction direction) {
         // Update state time
         stateTime += Gdx.graphics.getDeltaTime();
 
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = animations[direction.ordinal()].getKeyFrame(stateTime, true);
-
         // Draw the current frame at the specified position
         batch.draw(currentFrame, x, y, Player.WIDTH , Player.HEIGHT);
+
+
     }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity) {
         if (activity == Activity.NONE) return;

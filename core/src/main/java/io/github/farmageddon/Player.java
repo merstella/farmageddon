@@ -3,39 +3,78 @@ package io.github.farmageddon;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import io.github.farmageddon.markets.Items;
+
+import java.util.ArrayList;
 
 public class Player extends Entity {
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
 
     private PlayerAnimation animation;
-    private PlayerAnimation.Direction currentDirection;
-    private PlayerAnimation.Activity currentActivity;
-    private boolean performingActivity; // Flag to track if player is performing an activity
+    public PlayerAnimation.Direction currentDirection;
+    public PlayerAnimation.Activity currentActivity;
+    public ShapeRenderer shapeRenderer;
+    // danh sach vat pham su dung trong kho do
+    public ArrayList<Items> inventory;
+    public ArrayList<Items> eqipInventory;
+    private final int maxInventorySize = 25;
+    private final int maxEqipInventorySize = 5;
+    public int money = 0;
 
     public Player(float x, float y, float speed) {
         super(x, y, speed);
         animation = new PlayerAnimation(); // Initialize animation instance
         currentDirection = PlayerAnimation.Direction.IDLE_DOWN; // Default direction
         currentActivity = PlayerAnimation.Activity.NONE; // Default activity
-        performingActivity = false; // Initially not performing any activity
+        shapeRenderer = new ShapeRenderer();
+        this.inventory = new ArrayList<>();
+        this.eqipInventory = new ArrayList<>();
+    }
+    // inventory contact
+    public void setEquipItem(Items item) {
+        eqipInventory.add(item);
+    }
+
+    public void removeEquipItem(Items item) {
+        eqipInventory.remove(item);
+    }
+
+    public void setItem(Items item) {
+        inventory.add(item);
+    }
+
+    public void removeItem(Items item) {
+        inventory.remove(item);
+    }
+
+    public void addMoney(int amount) {
+        money += amount;
+    }
+
+    public void subMoney(int amount) {
+        money -= amount;
     }
 
     @Override
     public void update(float delta) {
         super.update(delta);
+        updateDirectionAnimation(delta);
+    }
 
-        if (performingActivity) {
-            // If performing an activity, reduce its duration or handle its end
-            handleActivity(delta);
-            return; // Skip movement updates while performing an activity
-        }
+    public void updateActivityAnimation(Vector2 lookPoint) {
+        currentActivity = getFacingDirection(lookPoint);
+    }
+    public void stopActivity() {
+        currentActivity = PlayerAnimation.Activity.NONE;
+    }
 
+    private void updateDirectionAnimation(float delta) {
         Vector2 movement = new Vector2(0, 0);
 
-        // Check input and set movement direction
         boolean up = Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.DOWN);
         boolean left = Gdx.input.isKeyPressed(Input.Keys.LEFT);
@@ -76,14 +115,6 @@ public class Player extends Entity {
         }
     }
 
-    private void handleActivity(float delta) {
-        // Reduce activity timer (if applicable) or end the activity
-        if (animation.isActivityFinished(currentActivity)) {
-            performingActivity = false;
-            currentActivity = PlayerAnimation.Activity.NONE; // Reset to no activity
-        }
-    }
-
     private PlayerAnimation.Direction getIdleDirection(PlayerAnimation.Direction direction) {
         switch (direction) {
             case UP:
@@ -107,48 +138,38 @@ public class Player extends Entity {
         }
     }
 
-    public void startActivity(Vector2 cropPosition) {
-        // Determine the activity direction based on the crop's position
-        System.out.println("CAC "+position.x+"  " +position.y+"  "+ cropPosition.x+" "+ cropPosition.y);
-
-        currentActivity = getFacingDirection(cropPosition);
-        System.out.print(currentActivity);
-        performingActivity = true;
-    }
-    public void stopActivity() {
-        performingActivity = false;
-        currentActivity = PlayerAnimation.Activity.NONE;
-    }
-
     public PlayerAnimation.Activity getFacingDirection(Vector2 lookPoint) {
         // Calculate the difference vector
         Vector2 diff = new Vector2(lookPoint).sub(position);
 
-        // Compare absolute values to determine which quarter
-        if (Math.abs(diff.y) > Math.abs(diff.x)) {
-            return diff.y < 0 ? PlayerAnimation.Activity.HOE_DOWN : PlayerAnimation.Activity.HOE_UP;
+        // Normalize the vector to handle directional calculations
+        float angle = diff.angleDeg();
+
+        // Determine direction based on angle (adjusted to a 360-degree circle)
+        if (angle >= 45 && angle < 135) {
+            return PlayerAnimation.Activity.HOE_UP; // Facing upward
+        } else if (angle >= 135 && angle < 225) {
+            return PlayerAnimation.Activity.HOE_LEFT; // Facing left
+        } else if (angle >= 225 && angle < 315) {
+            return PlayerAnimation.Activity.HOE_DOWN; // Facing downward
         } else {
-            return diff.x > 0 ? PlayerAnimation.Activity.HOE_RIGHT : PlayerAnimation.Activity.HOE_LEFT;
+            return PlayerAnimation.Activity.HOE_RIGHT; // Facing right
         }
     }
 
+
     @Override
     public void render(SpriteBatch batch) {
-        if (performingActivity) {
-            animation.renderActivity(batch, position.x, position.y, currentActivity); // Render activity animation
+        if (currentActivity == PlayerAnimation.Activity.NONE) {
+            animation.render(batch, position.x, position.y, currentDirection);
         } else {
-            animation.render(batch, position.x, position.y, currentDirection); // Render movement or idle animation
+            animation.renderActivity(batch, position.x, position.y, currentActivity);
         }
     }
+
 
     public void dispose() {
         animation.dispose(); // Dispose of resources when done
     }
 
-    public void setIsDoingActivity(boolean performingActivity) {
-        this.performingActivity = performingActivity;
-    }
-    public boolean isPerformingActivity() {
-        return performingActivity;
-    }
 }
