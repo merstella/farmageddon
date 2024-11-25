@@ -9,10 +9,7 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
@@ -33,7 +30,11 @@ public class GameScreen implements Screen, InputProcessor {
     private final Main game;
 
     private OrthographicCamera camera;
-    private Viewport gameView;
+    private Viewport viewport;
+    private Player player; // Your player class
+    private TiledMap map; // Your game map
+    private OrthogonalTiledMapRenderer mapRenderer;
+    private Vector3 touchPosition = new Vector3();
     private BitmapFont font;
     private ShapeRenderer shapeRenderer;
 
@@ -46,7 +47,6 @@ public class GameScreen implements Screen, InputProcessor {
     private static Label scoreStringLabel;
     private static int daysLeft;
 
-    private final Player player;
     private Texture equipmentTexture;
     private InventoryUI inventoryUI;
     public Market market;
@@ -65,27 +65,24 @@ public class GameScreen implements Screen, InputProcessor {
 
     private Music music;
 
-    // tiled map
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer mapRenderer;
-
     private Animal animal;
     private Stage stage;
 
-    private static Vector2 selectedCell;
+    private Vector2 selectedCell;
 
     int currentDays;
     public GameScreen(Main game) {
         this.game = game;
 
         camera = new OrthographicCamera();
-        gameView = new FitViewport(1280, 768, camera);
-        camera.setToOrtho(false, gameView.getWorldWidth(), gameView.getWorldHeight());
-        camera.zoom = 1f;
+        viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
+        camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
+        camera.zoom = 0.25f;
         camera.update();
         map = new TmxMapLoader().load("mapok.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
-        stage = new Stage(gameView);
+
+        stage = new Stage(viewport);
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
         font.setColor(WHITE);
@@ -165,9 +162,18 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void render(float delta) {
-        gameView.apply();
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         player.update(delta);
-        setting();
+        camera.position.set(
+            player.getPosition().x + 16,
+            player.getPosition().y + 16,
+            0
+        );
+        camera.update();
+
+        mapRenderer.setView(camera);
+        mapRenderer.render();
         if(timer.getDaysPassed() != currentDays){
             currentDays = timer.getDaysPassed();
             if (currentDays % 2 == 0) animal.incState();
@@ -190,9 +196,8 @@ public class GameScreen implements Screen, InputProcessor {
         renderPlayer();
         renderSelectedCell();
         renderAmbientLighting();
-
-        gameView.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         renderDebugInfo();
+
     }
 
     private void handleKeyDown(float delta) {
@@ -249,20 +254,27 @@ public class GameScreen implements Screen, InputProcessor {
             inventoryUI.slotCol = 4;
         }
     }
-
-    private void setting() {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        camera.position.set(player.getPosition().x + 16,player.getPosition().y + 16, 0);
-        game.batch.setProjectionMatrix(camera.combined);
-        mapRenderer.setView(camera);
-        mapRenderer.render();
-    }
     private void renderSelectedCell() {
         if (player.currentActivity != PlayerAnimation.Activity.NONE) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            shapeRenderer.setColor(Color.YELLOW);
-            shapeRenderer.rect(selectedCell.x * 16, selectedCell.y * 16, 16, 16);
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+            shapeRenderer.setProjectionMatrix(camera.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(1, 1, 0, 0.3f); // Semi-transparent yellow
+
+            shapeRenderer.rect(
+                selectedCell.x * 16,
+                selectedCell.y * 16,
+                16,
+                16
+            );
+
             shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
+        if (selectedCell != null) {
+
         }
     }
     private void renderAmbientLighting() {
@@ -274,8 +286,8 @@ public class GameScreen implements Screen, InputProcessor {
         Matrix4 mat = camera.combined.cpy();
         shapeRenderer.setProjectionMatrix(mat);
         mat.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        shapeRenderer.rect(camera.position.x - gameView.getWorldWidth() / 2,
-            camera.position.y - gameView.getWorldHeight() / 2,
+        shapeRenderer.rect(camera.position.x - viewport.getWorldWidth() / 2,
+            camera.position.y - viewport.getWorldHeight() / 2,
             Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         shapeRenderer.end();
         Gdx.gl20.glDisable(GL20.GL_BLEND);
@@ -283,14 +295,7 @@ public class GameScreen implements Screen, InputProcessor {
     private void renderPlayer() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.BLUE);
-        pixmap.fillCircle(0, 0, 1);
-        Texture blueDotTexture = new Texture(pixmap);
-        pixmap.dispose();
-
         player.render(game.batch);
-        game.batch.draw(blueDotTexture, player.getPosition().x, player.getPosition().y, 2, 2); // x, y, width, height
         game.batch.end();
     }
 
@@ -317,7 +322,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void resize(int width, int height) {
-        gameView.update(width, height, true);
+        viewport.update(width, height, true);
     }
 
     @Override
@@ -366,16 +371,24 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (button == Input.Buttons.LEFT) {
-            // Convert screen to world coordinates
-            Vector3 screenCoords = new Vector3(screenX, screenY, 0);
-            Vector3 worldCoords = camera.unproject(screenCoords);
+            // Convert screen coordinates to world coordinates
+            touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPosition);
 
-            // Log the coordinates
-            System.out.println("Player: " + player.getPosition());
-            System.out.printf("Screen Coordinates: (%d, %d)\n", screenX, screenY);
-            System.out.printf("World Coordinates: (%.2f, %.2f)\n", worldCoords.x, worldCoords.y);
+            // Convert world coordinates to cell coordinates
+            int cellX = (int) (touchPosition.x / 16);
+            int cellY = (int) (touchPosition.y / 16);
 
-            // Use world coordinates for any game logic if necessary
+            // Update selected cell
+            if (selectedCell == null) {
+                selectedCell = new Vector2(cellX, cellY);
+            } else {
+                selectedCell.set(cellX, cellY);
+            }
+            Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
+            System.out.println(player.getPosition());
+            System.out.println(touchPosition);
+            if (player.getPosition().dst(touchPosition2D) <= 50) player.updateActivityAnimation(touchPosition2D);
             return true;
         }
         return false;

@@ -141,7 +141,7 @@ public class Player extends Entity {
 
     public PlayerAnimation.Activity getFacingDirection(Vector2 lookPoint) {
         // Calculate the difference vector
-        Vector2 diff = new Vector2(lookPoint).sub(position);
+        Vector2 diff = new Vector2(lookPoint).sub(new Vector2(position.x + 16, position.y + 16));
 
         // Normalize the vector to handle directional calculations
         float angle = diff.angleDeg();
