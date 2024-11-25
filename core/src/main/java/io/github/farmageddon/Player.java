@@ -24,9 +24,10 @@ public class Player extends Entity {
     private final int maxInventorySize = 25;
     private final int maxEqipInventorySize = 5;
     public int money = 0;
-
+    public Vector2 position;
     public Player(float x, float y, float speed) {
         super(x, y, speed);
+        position = new Vector2(x, y);
         animation = new PlayerAnimation(); // Initialize animation instance
         currentDirection = PlayerAnimation.Direction.IDLE_DOWN; // Default direction
         currentActivity = PlayerAnimation.Activity.NONE; // Default activity
@@ -172,4 +173,7 @@ public class Player extends Entity {
         animation.dispose(); // Dispose of resources when done
     }
 
+    public Vector2 getPosition() {
+        return position;
+    }
 }
