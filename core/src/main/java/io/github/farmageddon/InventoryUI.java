@@ -22,7 +22,7 @@ public class InventoryUI {
 
     public InventoryUI(int titleSize) {
         this.titleSize = titleSize;
-        this.inventoryTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
+        this.inventoryTexture = new Texture(Gdx.files.internal("inventoryBar.png"));
         this.cursorTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
     }
 

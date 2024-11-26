@@ -132,7 +132,7 @@ public class GameScreen implements Screen, InputProcessor {
         items = new Items("Money", item3Texture, 10);
         player.setEquipItem(items);
 
-        item4Texture = new Texture(Gdx.files.internal("chickencutted/tile000.png"));
+        item4Texture = new Texture(Gdx.files.internal("Well.png"));
         items = new Items("Well", item4Texture, 10);
         player.setItem(items);
 
@@ -184,7 +184,6 @@ public class GameScreen implements Screen, InputProcessor {
         animal.update(delta, currentDays);
         stage.act();
         stage.draw();
-        handleKeyDown(delta);
         if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
             animal.feed();
         }
@@ -197,6 +196,8 @@ public class GameScreen implements Screen, InputProcessor {
         renderAmbientLighting();
         renderDebugInfo();
         CollisionHandling.renderCollision();
+
+        handleKeyDown(delta);
     }
 
     private void handleKeyDown(float delta) {
