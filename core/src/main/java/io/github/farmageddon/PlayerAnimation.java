@@ -7,6 +7,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+import java.awt.*;
 
 public class PlayerAnimation {
 
@@ -14,7 +17,7 @@ public class PlayerAnimation {
     private final Texture playerActionSheet;
     private final Animation<TextureRegion>[] animations, actionAnimations;
     private float stateTime;
-
+    private ShapeRenderer shapeRenderer;
 
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
@@ -29,6 +32,7 @@ public class PlayerAnimation {
     }
 
     public PlayerAnimation() {
+        shapeRenderer = new ShapeRenderer();
         // Load textures and initialize animations as before
         playerSheet = new Texture(Gdx.files.internal("player.png"));
         playerActionSheet = new Texture(Gdx.files.internal("Player/Player_Actions.png"));
@@ -106,7 +110,8 @@ public class PlayerAnimation {
         if (activityAnimation != null) {
             // Change to true to loop the animation
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
-            batch.draw(currentFrame, x, y, 48, 48);
+            batch.draw(currentFrame, x - 8, y - 8, 48, 48);
+
         }
     }
     public void dispose() {

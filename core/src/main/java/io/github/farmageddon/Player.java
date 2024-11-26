@@ -11,6 +11,7 @@ import io.github.farmageddon.markets.Items;
 import java.util.ArrayList;
 
 public class Player extends Entity {
+
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
 
@@ -25,6 +26,8 @@ public class Player extends Entity {
     private final int maxEqipInventorySize = 5;
     public int money = 0;
     public Vector2 position;
+    private CollisionHandling collisionHandling;
+    Rectangle playerBounds;
     public Player(float x, float y, float speed) {
         super(x, y, speed);
         position = new Vector2(x, y);
@@ -34,6 +37,7 @@ public class Player extends Entity {
         shapeRenderer = new ShapeRenderer();
         this.inventory = new ArrayList<>();
         this.eqipInventory = new ArrayList<>();
+        playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
     // inventory contact
     public void setEquipItem(Items item) {
@@ -74,6 +78,7 @@ public class Player extends Entity {
     }
 
     private void updateDirectionAnimation(float delta) {
+        float tmpSpeed = speed;
         Vector2 movement = new Vector2(0, 0);
 
         boolean up = Gdx.input.isKeyPressed(Input.Keys.UP);
@@ -89,8 +94,16 @@ public class Player extends Entity {
         // Normalize movement to ensure consistent speed in all directions
         if (!movement.isZero()) {
             movement.nor().scl(speed * delta); // Scale by speed and delta time
-            position.x += movement.x;
-            position.y += movement.y;
+
+            // Create test bounds to simulate the next position
+            Rectangle testBounds = new Rectangle(playerBounds);
+            testBounds.setPosition(playerBounds.x + movement.x, playerBounds.y + movement.y);
+
+            // Check for collision only at the new position
+            if (!CollisionHandling.isColliding(testBounds)) {
+                position.add(movement); // Update position if no collision
+                playerBounds.setPosition(position.x + 7, position.y + 9);// Update bounds position
+            }
 
             // Set direction for animation
             if (up && right) {
@@ -115,6 +128,9 @@ public class Player extends Entity {
             currentDirection = getIdleDirection(currentDirection);
         }
     }
+
+
+
 
     private PlayerAnimation.Direction getIdleDirection(PlayerAnimation.Direction direction) {
         switch (direction) {
@@ -161,16 +177,24 @@ public class Player extends Entity {
 
     @Override
     public void render(SpriteBatch batch) {
+        batch.begin();
         if (currentActivity == PlayerAnimation.Activity.NONE) {
             animation.render(batch, position.x, position.y, currentDirection);
         } else {
             animation.renderActivity(batch, position.x, position.y, currentActivity);
         }
+        batch.end();
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+        // Draw playerBounds in red
+        shapeRenderer.setColor(1, 0, 0, 1); // Red color
+        shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);
+        shapeRenderer.end();
     }
 
 
     public void dispose() {
-        animation.dispose(); // Dispose of resources when done
+        animation.dispose(); shapeRenderer.dispose();// Dispose of resources when done
     }
 
     public Vector2 getPosition() {

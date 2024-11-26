@@ -32,11 +32,11 @@ public class GameScreen implements Screen, InputProcessor {
     private OrthographicCamera camera;
     private Viewport viewport;
     private Player player; // Your player class
-    private TiledMap map; // Your game map
+    public static TiledMap map; // Your game map
     private OrthogonalTiledMapRenderer mapRenderer;
     private Vector3 touchPosition = new Vector3();
     private BitmapFont font;
-    private ShapeRenderer shapeRenderer;
+    public static ShapeRenderer shapeRenderer;
 
     private GameTimeClock clock;
     private Timer_ timer;
@@ -69,7 +69,6 @@ public class GameScreen implements Screen, InputProcessor {
     private Stage stage;
 
     private Vector2 selectedCell;
-
     int currentDays;
     public GameScreen(Main game) {
         this.game = game;
@@ -102,7 +101,7 @@ public class GameScreen implements Screen, InputProcessor {
         currentDays = 0;
         daysLeft = 30;
 
-        player = new Player(640, 384, 100f);
+        player = new Player(640, 300, 100f);
         market = new Market(100, 100, 200);
         initMarket();
         animal = new Animal(680, 230, "Chicken", stage);
@@ -197,7 +196,7 @@ public class GameScreen implements Screen, InputProcessor {
         renderSelectedCell();
         renderAmbientLighting();
         renderDebugInfo();
-
+        CollisionHandling.renderCollision();
     }
 
     private void handleKeyDown(float delta) {
@@ -294,9 +293,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
     private void renderPlayer() {
         game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
         player.render(game.batch);
-        game.batch.end();
     }
 
     private void renderDebugInfo() {
