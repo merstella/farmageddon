@@ -47,15 +47,15 @@ public class MarketScreen implements Screen {
         this.main = main;
         this.gameScreen = gameScreen;
         this.titleSize = titleSize;
-        this.marketTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
+        this.marketTexture = new Texture(Gdx.files.internal("inventoryBox.png"));
         this.market = market;
         this.batch = new SpriteBatch();
         this.cursorTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
         this.skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
-        this.moneyBar = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
+        this.moneyBar = new Texture(Gdx.files.internal("moneyBar.png"));
 
-        this.buyTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
-        this.sellTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
+        this.buyTexture = new Texture(Gdx.files.internal("BuyButton.png"));
+        this.sellTexture = new Texture(Gdx.files.internal("SellButton.png"));
 
         stage = new Stage(new ScreenViewport());
 

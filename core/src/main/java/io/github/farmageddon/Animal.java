@@ -57,7 +57,7 @@ public class Animal extends Actor {
     }
 
     private void initAnimation() {
-        animalSheet = new Texture(Gdx.files.internal("D:\\gamedev\\farminggame\\assets\\Animals\\Chicken\\Chicken_01.png"));
+        animalSheet = new Texture(Gdx.files.internal("Animals\\Chicken\\Chicken_01.png"));
         TextureRegion[][] tmpFrames = TextureRegion.split(animalSheet, frameWidth, frameHeight);
         animations = new Animation[4];
 
