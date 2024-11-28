@@ -54,6 +54,7 @@ public class GameScreen implements Screen, InputProcessor {
     private MarketScreen marketScreen;
     private boolean isMarketVisible = false;
     private boolean isInventoryVisible = false;
+    public static boolean isFishingVisible = false;
 
     // Items Texture
     public Texture CoinTexture;
@@ -61,7 +62,12 @@ public class GameScreen implements Screen, InputProcessor {
     public Texture item2Texture;
     public Texture item3Texture;
     public Texture item4Texture;
+    public Texture FishTexture;
     public Items items;
+    public static Items Fish;
+
+    //fishing minigame
+    public FishingMinigame minigame;
 
     private Music music;
 
@@ -116,6 +122,9 @@ public class GameScreen implements Screen, InputProcessor {
     public void initMarket() {
 
         // Test items inventory System
+        FishTexture = new Texture(Gdx.files.internal("Animals\\Bee\\Bee_Hive.png"));
+        Fish = new Items("Fish", FishTexture, 10);
+
         CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
         items = new Items("Coin", CoinTexture, 10);
         player.setEquipItem(items);// them vao equip
@@ -135,7 +144,6 @@ public class GameScreen implements Screen, InputProcessor {
         item4Texture = new Texture(Gdx.files.internal("Well.png"));
         items = new Items("Well", item4Texture, 10);
         player.setItem(items);
-
 
         //money
         player.addMoney(200);
@@ -157,6 +165,11 @@ public class GameScreen implements Screen, InputProcessor {
         inventoryUI = new InventoryUI(titleSize);
         marketScreen = new MarketScreen(titleSize,market, player);
         inventoryScreen = new InventoryScreen(titleSize, player);
+
+        // fishing minigame
+        // fishing minigame
+        minigame = new FishingMinigame();
+        minigame.create();
     }
 
     @Override
@@ -201,7 +214,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void handleKeyDown(float delta) {
-        // bấm m để hiện lên cửa sổ market
+        // bấm M để hiện lên cửa sổ market
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             isMarketVisible = !isMarketVisible;
             System.out.println("marketScreen");
@@ -213,11 +226,9 @@ public class GameScreen implements Screen, InputProcessor {
             }
             //game.setScreen(marketScreen);
         }
-
         if (isMarketVisible) {
             marketScreen.render(delta);
         }
-
 
         // bấm B để hiện lên cửa sổ inventory
         if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
@@ -231,7 +242,6 @@ public class GameScreen implements Screen, InputProcessor {
             }
             //game.setScreen(marketScreen);
         }
-
         if (isInventoryVisible) {
             inventoryScreen.render(delta);
         }
@@ -240,18 +250,31 @@ public class GameScreen implements Screen, InputProcessor {
         inventoryUI.drawInventory(player);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             inventoryUI.slotCol = 0;
+            player.slotCursor = 0;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             inventoryUI.slotCol = 1;
+            player.slotCursor = 1;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
             inventoryUI.slotCol = 2;
+            player.slotCursor = 2;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
             inventoryUI.slotCol = 3;
+            player.slotCursor = 3;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
             inventoryUI.slotCol = 4;
+            player.slotCursor = 4;
+        }
+
+        // bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí SlotCursor của equipInventory == "Coin"
+        // thì bắt đầu câu cá
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            if (player.eqipInventory.get(player.slotCursor).getItemName() == "Coin"){
+                player.updateFishingAnimation();
+            }
         }
     }
     private void renderSelectedCell() {
@@ -357,9 +380,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     @Override
-    public boolean keyUp(int keycode) {
-        return false;
-    }
+    public boolean keyUp(int keycode) { return false;}
 
     @Override
     public boolean keyTyped(char character) {

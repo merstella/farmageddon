@@ -15,6 +15,7 @@ public class PlayerAnimation {
 
     private final Texture playerSheet;
     private final Texture playerActionSheet;
+    private final Texture playerFishingSheet;
     private final Animation<TextureRegion>[] animations, actionAnimations;
     private float stateTime;
     private ShapeRenderer shapeRenderer;
@@ -28,7 +29,8 @@ public class PlayerAnimation {
     public enum Activity {
         NONE, // Default state when no activity
         HOE_UP, HOE_DOWN, HOE_LEFT, HOE_RIGHT,
-        WATER_UP, WATER_DOWN, WATER_LEFT, WATER_RIGHT,
+        WATER_UP, WATER_DOWN, WATER_LEFT, WATER_RIGHT, START_FISHING_RIGHT, START_FISHING_LEFT,
+        WAIT_FISHING_RIGHT, WAIT_FISHING_LEFT , DONE_FISHING_RIGHT, DONE_FISHING_LEFT
     }
 
     public PlayerAnimation() {
@@ -36,11 +38,14 @@ public class PlayerAnimation {
         // Load textures and initialize animations as before
         playerSheet = new Texture(Gdx.files.internal("player.png"));
         playerActionSheet = new Texture(Gdx.files.internal("Player/Player_Actions.png"));
+        playerFishingSheet = new Texture(Gdx.files.internal("Player\\Player_Fishing.png"));
         // Define the frame dimensions and split frames (same as original)
         int frameWidth = 32, frameHeight = 32;
+        int frameFishingWidth = playerFishingSheet.getWidth() / 9; int frameFishingHeight = playerFishingSheet.getHeight() / 8;
         int frameActionWidth = 48, frameActionHeight = 48;
         TextureRegion[][] tmpFrames = TextureRegion.split(playerSheet, frameWidth, frameHeight);
         TextureRegion[][] tmpFrames2 = TextureRegion.split(playerActionSheet, frameActionWidth, frameActionHeight);
+        TextureRegion[][] tmpFrames3 = TextureRegion.split(playerFishingSheet, frameFishingWidth, frameFishingHeight);
 
         animations = new Animation[19];
         actionAnimations = new Animation[Activity.values().length];
@@ -73,6 +78,13 @@ public class PlayerAnimation {
         actionAnimations[Activity.WATER_LEFT.ordinal()] = createFlippedAnimation(tmpFrames2[11], 0, 6);
         actionAnimations[Activity.WATER_RIGHT.ordinal()] = createAnimation(tmpFrames2[11], 0, 6);
 
+        actionAnimations[Activity.START_FISHING_RIGHT.ordinal()] = createAnimation(tmpFrames3[0], 0, 9);
+        actionAnimations[Activity.START_FISHING_LEFT.ordinal()] = createFlippedAnimation(tmpFrames3[0], 0, 9);
+        actionAnimations[Activity.WAIT_FISHING_RIGHT.ordinal()] = createAnimation(tmpFrames3[1], 0, 4);
+        actionAnimations[Activity.WAIT_FISHING_LEFT.ordinal()] = createFlippedAnimation(tmpFrames3[1], 0, 4);
+        actionAnimations[Activity.DONE_FISHING_RIGHT.ordinal()] = createAnimation(tmpFrames3[2], 0, 8);
+        actionAnimations[Activity.DONE_FISHING_LEFT.ordinal()] = createFlippedAnimation(tmpFrames3[2], 0, 8);
+
         stateTime = 0f;
     }
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount) {
@@ -89,6 +101,7 @@ public class PlayerAnimation {
         }
         return new Animation<>(0.1f, directionFrames);
     }
+
     // Remove or modify this method
     public void render(SpriteBatch batch, float x, float y, Direction direction) {
         // Update state time
@@ -107,15 +120,19 @@ public class PlayerAnimation {
         stateTime += Gdx.graphics.getDeltaTime();
         Animation<TextureRegion> activityAnimation = actionAnimations[activity.ordinal()];
 
-        if (activityAnimation != null) {
+        if (activity == Activity.WAIT_FISHING_RIGHT) {
             // Change to true to loop the animation
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
             batch.draw(currentFrame, x - 8, y - 8, 48, 48);
-
+        }
+         else {
+            TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
+            batch.draw(currentFrame, x - 8, y - 8, 48, 48);
         }
     }
     public void dispose() {
         playerSheet.dispose();
         playerActionSheet.dispose();
+        playerFishingSheet.dispose();
     }
 }
