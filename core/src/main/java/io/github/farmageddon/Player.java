@@ -20,14 +20,16 @@ public class Player extends Entity {
     public PlayerAnimation.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
-    public ArrayList<Items> inventory;
-    public ArrayList<Items> eqipInventory;
+    public static ArrayList<Items> inventory;
+    public static ArrayList<Items> eqipInventory;
     private final int maxInventorySize = 25;
     private final int maxEqipInventorySize = 5;
+    public static int slotCursor;
     public int money = 0;
     public Vector2 position;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;
+    private boolean hasStartedFishing;
     public Player(float x, float y, float speed) {
         super(x, y, speed);
         position = new Vector2(x, y);
@@ -68,6 +70,10 @@ public class Player extends Entity {
     public void update(float delta) {
         super.update(delta);
         updateDirectionAnimation(delta);
+    }
+
+    public void updateFishingAnimation() {
+        currentActivity = getFishingDirection();
     }
 
     public void updateActivityAnimation(Vector2 lookPoint) {
@@ -130,8 +136,6 @@ public class Player extends Entity {
     }
 
 
-
-
     private PlayerAnimation.Direction getIdleDirection(PlayerAnimation.Direction direction) {
         switch (direction) {
             case UP:
@@ -174,6 +178,18 @@ public class Player extends Entity {
         }
     }
 
+    public PlayerAnimation.Activity getFishingDirection() {
+//        if ((getPosition().x < 896f && getPosition().x > 891f && getPosition().y < 485f && getPosition().y > 480f)  ) {
+//            return PlayerAnimation.Activity.START_FISHING_RIGHT;
+//        }
+//        else return null;
+        if (!hasStartedFishing) {
+            hasStartedFishing = true; // Đánh dấu rằng hành động đã bắt đầu
+            return PlayerAnimation.Activity.WAIT_FISHING_RIGHT;
+        }
+        return PlayerAnimation.Activity.NONE;
+    }
+
 
     @Override
     public void render(SpriteBatch batch) {
@@ -191,7 +207,6 @@ public class Player extends Entity {
         shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);
         shapeRenderer.end();
     }
-
 
     public void dispose() {
         animation.dispose(); shapeRenderer.dispose();// Dispose of resources when done

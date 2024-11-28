@@ -19,6 +19,7 @@ public class InventoryScreen implements Screen {
     private GameScreen game;
     public Texture cursorTexture;
 
+    // Player Inventory
     public InventoryScreen(int titleSize, Player player) {
         this.titleSize = titleSize;
         this.inventoryTexture = new Texture(Gdx.files.internal("inventoryBox.png"));
