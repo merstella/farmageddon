@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -18,13 +20,21 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.farmageddon.*;
 
+//import io.github.farmageddon.Crops.Crop;
+import io.github.farmageddon.Crops.Land;
+import io.github.farmageddon.Crops.LandManager;
 import io.github.farmageddon.markets.Items;
 import io.github.farmageddon.markets.Market;
 import io.github.farmageddon.ultilites.GameTimeClock;
 import io.github.farmageddon.ultilites.Timer_;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import org.w3c.dom.Text;
+
+import java.util.Objects;
 
 import static com.badlogic.gdx.graphics.Color.WHITE;
+import static com.sun.tools.javac.jvm.ByteCodes.land;
+import static java.lang.Math.round;
 
 public class GameScreen implements Screen, InputProcessor {
     private final Main game;
@@ -76,17 +86,27 @@ public class GameScreen implements Screen, InputProcessor {
 
     private Vector2 selectedCell;
     int currentDays;
+
+    //demo crops
+//    Crop riceCrop;
+//    Crop tomatoCrop;
+
+    // demo house
+    Array<Entity> houses;
+
+    // demo land
+    private LandManager landManager;
+//    private Land singleLand;
     public GameScreen(Main game) {
         this.game = game;
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
-        camera.zoom = 0.25f;
+        camera.zoom = .25f;
         camera.update();
         map = new TmxMapLoader().load("mapok.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
-
         stage = new Stage(viewport);
         shapeRenderer = new ShapeRenderer();
         font = new BitmapFont();
@@ -106,8 +126,10 @@ public class GameScreen implements Screen, InputProcessor {
         time = timer.getFormattedTimeofDay();
         currentDays = 0;
         daysLeft = 30;
-
+        initHouses();
+        landManager = new LandManager(Main.GAME_HEIGHT/16,Main.GAME_WIDTH/16);
         player = new Player(640, 300, 100f);
+
         market = new Market(100, 100, 200);
         initMarket();
         animal = new Animal(680, 230, "Chicken", stage);
@@ -119,6 +141,21 @@ public class GameScreen implements Screen, InputProcessor {
         music.setVolume(0.2f);
         music.play();
     }
+
+    private void initHouses() {
+        houses = new Array<>();
+        MapObjects objects = map.getLayers().get("Nhà").getObjects();
+        for (MapObject object : objects) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                float x = rect.x;
+                float y = rect.y;
+                Entity house = new Entity(x, y, 0, true, 100);
+                houses.add(house);
+            }
+        }
+    }
+
     public void initMarket() {
 
         // Test items inventory System
@@ -148,6 +185,10 @@ public class GameScreen implements Screen, InputProcessor {
         //money
         player.addMoney(200);
     }
+//    public void initCrop() {
+//        riceCrop = new Crop(Items.Item.RICE, 32, 64);
+//        tomatoCrop = new Crop(Items.Item.TOMATO, 48, 80);
+//    }
     public void initDebug() {
         timeLabel = new Label(time, new Label.LabelStyle(font, WHITE));
         timeStringLabel = new Label("Time", new Label.LabelStyle(font, WHITE));
@@ -183,16 +224,10 @@ public class GameScreen implements Screen, InputProcessor {
             0
         );
         camera.update();
-
+        game.batch.setProjectionMatrix(camera.combined);
         mapRenderer.setView(camera);
         mapRenderer.render();
-        if(timer.getDaysPassed() != currentDays){
-            currentDays = timer.getDaysPassed();
-            if (currentDays % 2 == 0) animal.incState();
-            daysLeft--;
-            daysLeftNum.setText(String.format("%d", daysLeft));
-        }
-
+        handleDayPassed();
         clock.act(delta);
         animal.update(delta, currentDays);
         stage.act();
@@ -204,8 +239,12 @@ public class GameScreen implements Screen, InputProcessor {
         time = timer.getFormattedTimeofDay();
         timeLabel.setText(time);
         shapeRenderer.setProjectionMatrix(camera.combined);
+        renderHouse();
         renderPlayer();
+        renderLand(delta);
         renderSelectedCell();
+        handleCrop();
+        renderCrop();
         renderAmbientLighting();
         renderDebugInfo();
         CollisionHandling.renderCollision();
@@ -213,8 +252,52 @@ public class GameScreen implements Screen, InputProcessor {
         handleKeyDown(delta);
     }
 
+    private void renderLand(float delta) {
+        landManager.update(delta);
+        game.batch.begin();
+        for (int i = 0; i < Main.GAME_HEIGHT/16; i++) {
+            for (int j = 0; j < Main.GAME_WIDTH/16; j++) {
+                Land land = landManager.getLand(i, j);
+                Land.LandState currentState = land.getCurrentState();
+                if (currentState != Land.LandState.PLAIN) {
+                    Texture texture = Land.getTextureForState(currentState);
+                    game.batch.draw(texture,j*16 , i * 16, 16, 16);
+                }
+            }
+        }
+        game.batch.end();
+//        singleLand.update(delta); // Update logic for the Land
+//        game.batch.begin();
+//        if (singleLand.getCurrentState() != Land.LandState.PLAIN) {
+//            Texture landTexture = Land.getTextureForState(singleLand.getCurrentState());
+//            game.batch.draw(landTexture, singleLand.getX(), singleLand.getY(), 16, 16);
+//        }
+//        game.batch.end();
+    }
+
+    private void renderHouse() {
+        for (Entity house : houses) {
+            house.render(game.batch);
+        }
+    }
+
+    private void handleDayPassed() {
+        if(timer.getDaysPassed() != currentDays) {
+            currentDays = timer.getDaysPassed();
+            if (currentDays % 2 == 0) animal.incState();
+//            riceCrop.addDay();
+//            tomatoCrop.addDay();
+        }
+    }
+    private void handleCrop() {
+
+    }
+    private void renderCrop() {
+
+    }
+
     private void handleKeyDown(float delta) {
-        // bấm M để hiện lên cửa sổ market
+        // bấm m để hiện lên cửa sổ market
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             isMarketVisible = !isMarketVisible;
             System.out.println("marketScreen");
@@ -226,9 +309,11 @@ public class GameScreen implements Screen, InputProcessor {
             }
             //game.setScreen(marketScreen);
         }
+
         if (isMarketVisible) {
             marketScreen.render(delta);
         }
+
 
         // bấm B để hiện lên cửa sổ inventory
         if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
@@ -242,6 +327,7 @@ public class GameScreen implements Screen, InputProcessor {
             }
             //game.setScreen(marketScreen);
         }
+
         if (isInventoryVisible) {
             inventoryScreen.render(delta);
         }
@@ -296,9 +382,7 @@ public class GameScreen implements Screen, InputProcessor {
             shapeRenderer.end();
             Gdx.gl.glDisable(GL20.GL_BLEND);
         }
-        if (selectedCell != null) {
 
-        }
     }
     private void renderAmbientLighting() {
 
@@ -316,7 +400,6 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl20.glDisable(GL20.GL_BLEND);
     }
     private void renderPlayer() {
-        game.batch.setProjectionMatrix(camera.combined);
         player.render(game.batch);
     }
 
@@ -340,7 +423,9 @@ public class GameScreen implements Screen, InputProcessor {
     public int getCurrentDays() {
         return currentDays;
     }
-
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
@@ -373,14 +458,21 @@ public class GameScreen implements Screen, InputProcessor {
         font.draw(game.batch, player.getPosition().x +  " " + player.getPosition().y, player.getPosition().x + 100, player.getPosition().y + 100);
         game.batch.end();
     }
-
+    private String currentActivity = "";
     @Override
     public boolean keyDown(int keycode) {
-        return false;
+        if (keycode == Input.Keys.H) {
+            currentActivity = "hoe";
+        } else if (keycode == Input.Keys.J) {
+            currentActivity = "water";
+        }
+        return true;
     }
 
     @Override
-    public boolean keyUp(int keycode) { return false;}
+    public boolean keyUp(int keycode) {
+        return false;
+    }
 
     @Override
     public boolean keyTyped(char character) {
@@ -389,25 +481,31 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+
         if (button == Input.Buttons.LEFT) {
             // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
 
-            // Convert world coordinates to cell coordinates
-            int cellX = (int) (touchPosition.x / 16);
-            int cellY = (int) (touchPosition.y / 16);
+            int cellX = (int) touchPosition.x / 16;
+            int cellY = (int) touchPosition.y / 16;
+            selectedCell.set(cellX, cellY);
 
-            // Update selected cell
-            if (selectedCell == null) {
-                selectedCell = new Vector2(cellX, cellY);
-            } else {
-                selectedCell.set(cellX, cellY);
-            }
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
-            System.out.println(player.getPosition());
-            System.out.println(touchPosition);
-            if (player.getPosition().dst(touchPosition2D) <= 50) player.updateActivityAnimation(touchPosition2D);
+            if (player.getPosition().dst(touchPosition2D) <= 50) {
+                System.out.println(touchPosition2D);
+                System.out.print(player.getPosition());
+                player.updateActivityAnimation(currentActivity, touchPosition2D);
+                Land land = landManager.getLand(cellY,cellX);
+                if (Objects.equals(currentActivity, "hoe")) {
+                    land.hoe();
+                    System.out.println(land.getCurrentState());
+                }
+                else {
+                    land.water();
+                    System.out.println(land.getCurrentState());
+                }
+            }
             return true;
         }
         return false;

@@ -1,13 +1,15 @@
 package io.github.farmageddon;
 
 
+import io.github.farmageddon.markets.Items;
+
 import java.util.ArrayList;
 
 public class Market extends Entity {
     public ArrayList<Items> marketItems;
 
     public Market(float x, float y, float speed) {
-        super(x, y, speed);
+        super(x, y, speed,false, 100);
         this.marketItems = new ArrayList<>();
     }
 

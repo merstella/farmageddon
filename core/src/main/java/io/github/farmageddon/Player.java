@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.markets.Items;
-
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Player extends Entity {
 
@@ -26,13 +26,12 @@ public class Player extends Entity {
     private final int maxEqipInventorySize = 5;
     public static int slotCursor;
     public int money = 0;
-    public Vector2 position;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;
     private boolean hasStartedFishing;
+
     public Player(float x, float y, float speed) {
-        super(x, y, speed);
-        position = new Vector2(x, y);
+        super(x, y, speed, false, 100);
         animation = new PlayerAnimation(); // Initialize animation instance
         currentDirection = PlayerAnimation.Direction.IDLE_DOWN; // Default direction
         currentActivity = PlayerAnimation.Activity.NONE; // Default activity
@@ -76,8 +75,8 @@ public class Player extends Entity {
         currentActivity = getFishingDirection();
     }
 
-    public void updateActivityAnimation(Vector2 lookPoint) {
-        currentActivity = getFacingDirection(lookPoint);
+    public void updateActivityAnimation(String type, Vector2 lookPoint) {
+        currentActivity = getFacingDirection(type, lookPoint);
     }
     public void stopActivity() {
         currentActivity = PlayerAnimation.Activity.NONE;
@@ -87,10 +86,10 @@ public class Player extends Entity {
         float tmpSpeed = speed;
         Vector2 movement = new Vector2(0, 0);
 
-        boolean up = Gdx.input.isKeyPressed(Input.Keys.UP);
-        boolean down = Gdx.input.isKeyPressed(Input.Keys.DOWN);
-        boolean left = Gdx.input.isKeyPressed(Input.Keys.LEFT);
-        boolean right = Gdx.input.isKeyPressed(Input.Keys.RIGHT);
+        boolean up = Gdx.input.isKeyPressed(Input.Keys.W);
+        boolean down = Gdx.input.isKeyPressed(Input.Keys.S);
+        boolean left = Gdx.input.isKeyPressed(Input.Keys.A);
+        boolean right = Gdx.input.isKeyPressed(Input.Keys.D);
 
         if (up) movement.y += 1;
         if (down) movement.y -= 1;
@@ -159,7 +158,7 @@ public class Player extends Entity {
         }
     }
 
-    public PlayerAnimation.Activity getFacingDirection(Vector2 lookPoint) {
+    public PlayerAnimation.Activity getFacingDirection(String type, Vector2 lookPoint) {
         // Calculate the difference vector
         Vector2 diff = new Vector2(lookPoint).sub(new Vector2(position.x + 16, position.y + 16));
 
@@ -168,13 +167,29 @@ public class Player extends Entity {
 
         // Determine direction based on angle (adjusted to a 360-degree circle)
         if (angle >= 45 && angle < 135) {
-            return PlayerAnimation.Activity.HOE_UP; // Facing upward
+            if (Objects.equals(type, "hoe")) {
+                return PlayerAnimation.Activity.HOE_UP;
+            } else {
+                return PlayerAnimation.Activity.WATER_UP;
+            }
         } else if (angle >= 135 && angle < 225) {
-            return PlayerAnimation.Activity.HOE_LEFT; // Facing left
+            if (Objects.equals(type, "hoe")) {
+                return PlayerAnimation.Activity.HOE_LEFT;
+            } else {
+                return PlayerAnimation.Activity.WATER_LEFT;
+            } // Facing left
         } else if (angle >= 225 && angle < 315) {
-            return PlayerAnimation.Activity.HOE_DOWN; // Facing downward
+            if (Objects.equals(type, "hoe")) {
+                return PlayerAnimation.Activity.HOE_DOWN;
+            } else {
+                return PlayerAnimation.Activity.WATER_DOWN;
+            } // Facing downward
         } else {
-            return PlayerAnimation.Activity.HOE_RIGHT; // Facing right
+            if (Objects.equals(type, "hoe")) {
+                return PlayerAnimation.Activity.HOE_RIGHT;
+            } else {
+                return PlayerAnimation.Activity.WATER_RIGHT;
+            } // Facing right
         }
     }
 

@@ -9,7 +9,7 @@ public class Market extends Entity {
     public ArrayList<Items> marketItems;
 
     public Market(float x, float y, float speed) {
-        super(x, y, speed);
+        super(x, y, speed, false,100);
         this.marketItems = new ArrayList<>();
     }
 

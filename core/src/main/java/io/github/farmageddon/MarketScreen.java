@@ -214,12 +214,7 @@ public class MarketScreen implements Screen {
         float costYInventory = screenHeight/4 + 136;
         int itemIndexInventory = getItemIndexOnInventory();
         if (itemIndexInventory < player.inventory.size()){
-            if (player.inventory.get(itemIndexInventory).getItemName() != null) {
-                font.draw(batch, String.valueOf(player.inventory.get(itemIndexInventory).getCost()), costXInventory, costYInventory);
-            }
-            else {
-                font.draw(batch, "0", costXInventory, costYInventory);
-            }
+            font.draw(batch, String.valueOf(player.inventory.get(itemIndexInventory).getCost()), costXInventory, costYInventory);
         }
 
 
