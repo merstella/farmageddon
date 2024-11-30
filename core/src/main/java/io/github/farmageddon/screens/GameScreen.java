@@ -21,11 +21,12 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.farmageddon.*;
 
 //import io.github.farmageddon.Crops.Crop;
+import io.github.farmageddon.Crops.Crop;
 import io.github.farmageddon.Crops.Land;
 import io.github.farmageddon.Crops.LandManager;
-import io.github.farmageddon.markets.Items;
-import io.github.farmageddon.markets.Market;
+//import io.github.farmageddon.markets.Market;
 import io.github.farmageddon.ultilites.GameTimeClock;
+import io.github.farmageddon.ultilites.Items;
 import io.github.farmageddon.ultilites.Timer_;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import org.w3c.dom.Text;
@@ -33,8 +34,6 @@ import org.w3c.dom.Text;
 import java.util.Objects;
 
 import static com.badlogic.gdx.graphics.Color.WHITE;
-import static com.sun.tools.javac.jvm.ByteCodes.land;
-import static java.lang.Math.round;
 
 public class GameScreen implements Screen, InputProcessor {
     private final Main game;
@@ -58,26 +57,26 @@ public class GameScreen implements Screen, InputProcessor {
     private static int daysLeft;
 
     private Texture equipmentTexture;
-    private InventoryUI inventoryUI;
-    public Market market;
-    private InventoryScreen inventoryScreen;
-    private MarketScreen marketScreen;
+//    private InventoryUI inventoryUI;
+//    public Market market;
+//    private InventoryScreen inventoryScreen;
+//    private MarketScreen marketScreen;
     private boolean isMarketVisible = false;
     private boolean isInventoryVisible = false;
     public static boolean isFishingVisible = false;
-
-    // Items Texture
-    public Texture CoinTexture;
-    public Texture item1Texture;
-    public Texture item2Texture;
-    public Texture item3Texture;
-    public Texture item4Texture;
-    public Texture FishTexture;
-    public Items items;
-    public static Items Fish;
+//
+//    // Items Texture
+//    public Texture CoinTexture;
+//    public Texture item1Texture;
+//    public Texture item2Texture;
+//    public Texture item3Texture;
+//    public Texture item4Texture;
+//    public Texture FishTexture;
+//    public Items items;
+//    public static Items Fish;
 
     //fishing minigame
-    public FishingMinigame minigame;
+//    public FishingMinigame minigame;
 
     private Music music;
 
@@ -97,6 +96,8 @@ public class GameScreen implements Screen, InputProcessor {
     // demo land
     private LandManager landManager;
 //    private Land singleLand;
+
+    private int totalEarned;
     public GameScreen(Main game) {
         this.game = game;
 
@@ -130,8 +131,8 @@ public class GameScreen implements Screen, InputProcessor {
         landManager = new LandManager(Main.GAME_HEIGHT/16,Main.GAME_WIDTH/16);
         player = new Player(640, 300, 100f);
 
-        market = new Market(100, 100, 200);
-        initMarket();
+//        market = new Market(100, 100, 200);
+//        initPlayerInv();
         animal = new Animal(680, 230, "Chicken", stage);
         animal.setBound(620, 690, 160, 260);
 
@@ -156,38 +157,32 @@ public class GameScreen implements Screen, InputProcessor {
         }
     }
 
-    public void initMarket() {
-
-        // Test items inventory System
-        FishTexture = new Texture(Gdx.files.internal("Animals\\Bee\\Bee_Hive.png"));
-        Fish = new Items("Fish", FishTexture, 10);
-
-        CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
-        items = new Items("Coin", CoinTexture, 10);
-        player.setEquipItem(items);// them vao equip
-
-        item1Texture = new Texture(Gdx.files.internal("SellButton.png"));
-        items = new Items("Sell", item1Texture, 10);
-        player.setEquipItem(items);
-
-        item2Texture = new Texture(Gdx.files.internal("BuyButton.png"));
-        items = new Items("Buy", item2Texture, 10);
-        player.setEquipItem(items);// them vao inventory
-
-        item3Texture = new Texture(Gdx.files.internal("moneyBar.png"));
-        items = new Items("Money", item3Texture, 10);
-        player.setEquipItem(items);
-
-        item4Texture = new Texture(Gdx.files.internal("Well.png"));
-        items = new Items("Well", item4Texture, 10);
-        player.setItem(items);
-
-        //money
-        player.addMoney(200);
-    }
-//    public void initCrop() {
-//        riceCrop = new Crop(Items.Item.RICE, 32, 64);
-//        tomatoCrop = new Crop(Items.Item.TOMATO, 48, 80);
+//    public void initPlayerInv() {
+//        FishTexture = new Texture(Gdx.files.internal("Animals\\Bee\\Bee_Hive.png"));
+//        Fish = new Items("Fish", FishTexture, 10);
+//
+//        CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
+//        items = new Items("Coin", CoinTexture, 10);
+//        player.setEquipItem(items);
+//
+//        item1Texture = new Texture(Gdx.files.internal("SellButton.png"));
+//        items = new Items("Sell", item1Texture, 10);
+//        player.setEquipItem(items);
+//
+//        item2Texture = new Texture(Gdx.files.internal("BuyButton.png"));
+//        items = new Items("Buy", item2Texture, 10);
+//        player.setEquipItem(items);// them vao inventory
+//
+//        item3Texture = new Texture(Gdx.files.internal("moneyBar.png"));
+//        items = new Items("Money", item3Texture, 10);
+//        player.setEquipItem(items);
+//
+//        item4Texture = new Texture(Gdx.files.internal("Well.png"));
+//        items = new Items("Well", item4Texture, 10);
+//        player.setItem(items);
+//
+//        //money
+//        player.addMoney(200);
 //    }
     public void initDebug() {
         timeLabel = new Label(time, new Label.LabelStyle(font, WHITE));
@@ -203,16 +198,17 @@ public class GameScreen implements Screen, InputProcessor {
     public void show() {
         // inventory & market
         int titleSize = 32;
-        inventoryUI = new InventoryUI(titleSize);
-        marketScreen = new MarketScreen(titleSize,market, player);
-        inventoryScreen = new InventoryScreen(titleSize, player);
+//        inventoryUI = new InventoryUI(titleSize);
+//        marketScreen = new MarketScreen(titleSize,market, player);
+//        inventoryScreen = new InventoryScreen(titleSize, player);
 
         // fishing minigame
         // fishing minigame
-        minigame = new FishingMinigame();
-        minigame.create();
+//        minigame = new FishingMinigame();
+//        minigame.create();
     }
 
+    boolean isNewDay;
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -227,6 +223,7 @@ public class GameScreen implements Screen, InputProcessor {
         game.batch.setProjectionMatrix(camera.combined);
         mapRenderer.setView(camera);
         mapRenderer.render();
+        isNewDay = false;
         handleDayPassed();
         clock.act(delta);
         animal.update(delta, currentDays);
@@ -240,16 +237,16 @@ public class GameScreen implements Screen, InputProcessor {
         timeLabel.setText(time);
         shapeRenderer.setProjectionMatrix(camera.combined);
         renderHouse();
-        renderPlayer();
         renderLand(delta);
+        renderPlayer();
         renderSelectedCell();
         handleCrop();
         renderCrop();
         renderAmbientLighting();
         renderDebugInfo();
         CollisionHandling.renderCollision();
-
-        handleKeyDown(delta);
+        isNewDay = false;
+//        handleKeyDown(delta);
     }
 
     private void renderLand(float delta) {
@@ -259,9 +256,19 @@ public class GameScreen implements Screen, InputProcessor {
             for (int j = 0; j < Main.GAME_WIDTH/16; j++) {
                 Land land = landManager.getLand(i, j);
                 Land.LandState currentState = land.getCurrentState();
+                Crop crop = land.getCrop();
+
+
+                if (crop != null && isNewDay) {
+                    crop.addDay();
+                }
+
                 if (currentState != Land.LandState.PLAIN) {
                     Texture texture = Land.getTextureForState(currentState);
                     game.batch.draw(texture,j*16 , i * 16, 16, 16);
+                }
+                if (crop != null) {
+                    game.batch.draw(crop.getCurrentFrame(), j * 16, i * 16); // Render crop at grid position
                 }
             }
         }
@@ -284,9 +291,8 @@ public class GameScreen implements Screen, InputProcessor {
     private void handleDayPassed() {
         if(timer.getDaysPassed() != currentDays) {
             currentDays = timer.getDaysPassed();
+            isNewDay = true;
             if (currentDays % 2 == 0) animal.incState();
-//            riceCrop.addDay();
-//            tomatoCrop.addDay();
         }
     }
     private void handleCrop() {
@@ -296,73 +302,73 @@ public class GameScreen implements Screen, InputProcessor {
 
     }
 
-    private void handleKeyDown(float delta) {
-        // bấm m để hiện lên cửa sổ market
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
-            isMarketVisible = !isMarketVisible;
-            System.out.println("marketScreen");
-
-            if (isMarketVisible == true) {
-                marketScreen.show();
-            } else {
-                marketScreen.hide();
-            }
-            //game.setScreen(marketScreen);
-        }
-
-        if (isMarketVisible) {
-            marketScreen.render(delta);
-        }
-
-
-        // bấm B để hiện lên cửa sổ inventory
-        if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
-            isInventoryVisible = !isInventoryVisible;
-            System.out.println("inventoryScreen");
-
-            if (isInventoryVisible == true) {
-                inventoryScreen.show();
-            } else {
-                inventoryScreen.hide();
-            }
-            //game.setScreen(marketScreen);
-        }
-
-        if (isInventoryVisible) {
-            inventoryScreen.render(delta);
-        }
-
-        //inventory Eqip UI
-        inventoryUI.drawInventory(player);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            inventoryUI.slotCol = 0;
-            player.slotCursor = 0;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            inventoryUI.slotCol = 1;
-            player.slotCursor = 1;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            inventoryUI.slotCol = 2;
-            player.slotCursor = 2;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
-            inventoryUI.slotCol = 3;
-            player.slotCursor = 3;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            inventoryUI.slotCol = 4;
-            player.slotCursor = 4;
-        }
-
-        // bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí SlotCursor của equipInventory == "Coin"
-        // thì bắt đầu câu cá
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-            if (player.eqipInventory.get(player.slotCursor).getItemName() == "Coin"){
-                player.updateFishingAnimation();
-            }
-        }
-    }
+//    private void handleKeyDown(float delta) {
+//        // bấm m để hiện lên cửa sổ market
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
+//            isMarketVisible = !isMarketVisible;
+//            System.out.println("marketScreen");
+//
+//            if (isMarketVisible == true) {
+//                marketScreen.show();
+//            } else {
+//                marketScreen.hide();
+//            }
+//            //game.setScreen(marketScreen);
+//        }
+//
+//        if (isMarketVisible) {
+//            marketScreen.render(delta);
+//        }
+//
+//
+//        // bấm B để hiện lên cửa sổ inventory
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
+//            isInventoryVisible = !isInventoryVisible;
+//            System.out.println("inventoryScreen");
+//
+//            if (isInventoryVisible == true) {
+//                inventoryScreen.show();
+//            } else {
+//                inventoryScreen.hide();
+//            }
+//            //game.setScreen(marketScreen);
+//        }
+//
+//        if (isInventoryVisible) {
+//            inventoryScreen.render(delta);
+//        }
+//
+//        //inventory Eqip UI
+//        inventoryUI.drawInventory(player);
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+//            inventoryUI.slotCol = 0;
+//            player.slotCursor = 0;
+//        }
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+//            inventoryUI.slotCol = 1;
+//            player.slotCursor = 1;
+//        }
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
+//            inventoryUI.slotCol = 2;
+//            player.slotCursor = 2;
+//        }
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
+//            inventoryUI.slotCol = 3;
+//            player.slotCursor = 3;
+//        }
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
+//            inventoryUI.slotCol = 4;
+//            player.slotCursor = 4;
+//        }
+//
+//        // bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí SlotCursor của equipInventory == "Coin"
+//        // thì bắt đầu câu cá
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+//            if (player.eqipInventory.get(player.slotCursor).getItemName() == "Coin"){
+//                player.updateFishingAnimation();
+//            }
+//        }
+//    }
     private void renderSelectedCell() {
         if (player.currentActivity != PlayerAnimation.Activity.NONE) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -465,6 +471,8 @@ public class GameScreen implements Screen, InputProcessor {
             currentActivity = "hoe";
         } else if (keycode == Input.Keys.J) {
             currentActivity = "water";
+        } else if (keycode == Input.Keys.K) {
+            currentActivity = "harvest";
         }
         return true;
     }
@@ -494,16 +502,36 @@ public class GameScreen implements Screen, InputProcessor {
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             if (player.getPosition().dst(touchPosition2D) <= 50) {
                 System.out.println(touchPosition2D);
-                System.out.print(player.getPosition());
+                System.out.println(player.getPosition());
                 player.updateActivityAnimation(currentActivity, touchPosition2D);
                 Land land = landManager.getLand(cellY,cellX);
+
                 if (Objects.equals(currentActivity, "hoe")) {
                     land.hoe();
                     System.out.println(land.getCurrentState());
+                    if (land.isEmpty()) {
+                        Crop crop = new Crop(Items.Item.RICE, cellX * 16, cellY * 16); // Example crop
+                        land.plantCrop(crop);
+                    }
+                    System.out.println(land.isEmpty());
                 }
-                else {
+                else if (Objects.equals(currentActivity, "water")){
                     land.water();
+                    if (!land.isEmpty()) {
+                        land.getCrop().setWatered(true);
+                    }
                     System.out.println(land.getCurrentState());
+                } else if (Objects.equals(currentActivity, "harvest")){
+                    if (!land.isEmpty()) {
+                        int reward = land.harvestCrop();
+                        totalEarned += reward;
+                        if (reward > 0) {
+                            System.out.println("Crop harvested! Earned: " + reward);
+                        } else {
+                            System.out.println("Crop is not ready for harvest.");
+                        }
+                        System.out.println("Total Earned: " + totalEarned);
+                    }
                 }
             }
             return true;

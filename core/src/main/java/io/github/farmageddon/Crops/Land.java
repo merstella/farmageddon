@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Land {
+    private Crop crop;
     public enum LandState {
         PLAIN,
         HOED,
@@ -27,7 +28,26 @@ public class Land {
         currentState = LandState.PLAIN;
         timeSinceHoed = 0;
     }
-
+    public boolean isEmpty() {
+        return crop == null;
+    }
+    public void plantCrop(Crop newCrop) {
+        this.crop = newCrop;
+    }
+    public Crop getCrop() {
+        return crop;
+    }
+    public void removeCrop() {
+        this.crop = null;
+    }
+    public int harvestCrop() {
+        if (crop != null && crop.getGrowthStage() == 3) {
+            int price = crop.getPrice(); // Get the crop's price as a reward
+            removeCrop(); // Remove the harvested crop
+            return price;
+        }
+        return 0; // No harvestable crop
+    }
     public void update(float delta) {
         if (currentState == LandState.HOED) {
             timeSinceHoed += delta;
