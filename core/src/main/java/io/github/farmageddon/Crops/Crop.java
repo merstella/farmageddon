@@ -25,7 +25,7 @@ public class Crop extends Sprite {
     private TextureRegion currentFrame;
     private TextureRegion[][] textureFrames;
     private Array<TextureRegion> cropFrames;
-
+    Items.Item item;
     public Crop(Items.Item item, float x, float y) {
         this.position = new Vector2(x, y);
         this.growthStage = 0;
@@ -44,6 +44,7 @@ public class Crop extends Sprite {
     }
 
     private void loadinfo(Items.Item type) {
+        this.item = type;
         switch (type) {
             case RICE:
                 cropFrames = new Array<TextureRegion>(4);
@@ -128,5 +129,9 @@ public class Crop extends Sprite {
 
     public boolean isWatered() {
         return isWatered;
+    }
+
+    public Items.Item getItemType() {
+        return item;
     }
 }

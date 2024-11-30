@@ -9,6 +9,7 @@ public class Items {
     private ItemType type;
     private Item item;
     private int num;
+    private int cost;
     public enum ItemType{
         SEED,
         TOOL
@@ -21,18 +22,23 @@ public class Items {
         CORN,
         BUCKET,
         HOE,
+        ;
+
+
     }
 
-    public Items(Texture texture, ItemType type, Item item){
+    public Items(Texture texture, ItemType type, Item item, int cost){
         this.type = type;
         this.item = item;
         this.textureRegion = new TextureRegion(texture);
         this.num = 0;
+        this.cost = cost;
     }
-    public Items(TextureRegion textureRegion, ItemType type, Item item){
+    public Items(TextureRegion textureRegion, ItemType type, Item item, int cost){
         this.type = type;
         this.item = item;
         this.textureRegion = new TextureRegion(textureRegion);
+        this.cost = cost;
     }
 
     public ItemType getType() {
@@ -46,7 +52,9 @@ public class Items {
     public Item getItem() {
         return item;
     }
-
+    public int getCost() {
+        return cost;
+    }
     public void add(){
         num++;
     }

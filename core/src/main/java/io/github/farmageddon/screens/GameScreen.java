@@ -4,6 +4,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
@@ -25,6 +26,7 @@ import io.github.farmageddon.Crops.Crop;
 import io.github.farmageddon.Crops.Land;
 import io.github.farmageddon.Crops.LandManager;
 //import io.github.farmageddon.markets.Market;
+import io.github.farmageddon.ultilites.DroppedItem;
 import io.github.farmageddon.ultilites.GameTimeClock;
 import io.github.farmageddon.ultilites.Items;
 import io.github.farmageddon.ultilites.Timer_;
@@ -65,18 +67,18 @@ public class GameScreen implements Screen, InputProcessor {
     private boolean isInventoryVisible = false;
     public static boolean isFishingVisible = false;
 //
-//    // Items Texture
-//    public Texture CoinTexture;
-//    public Texture item1Texture;
-//    public Texture item2Texture;
-//    public Texture item3Texture;
-//    public Texture item4Texture;
-//    public Texture FishTexture;
-//    public Items items;
-//    public static Items Fish;
+    // Items Texture
+    public Texture CoinTexture;
+    public Texture item1Texture;
+    public Texture item2Texture;
+    public Texture item3Texture;
+    public Texture item4Texture;
+    public Texture FishTexture;
+    public Items items;
+    public static Items Fish;
 
-    //fishing minigame
-//    public FishingMinigame minigame;
+//    fishing minigame
+    public FishingMinigame minigame;
 
     private Music music;
 
@@ -97,7 +99,7 @@ public class GameScreen implements Screen, InputProcessor {
     private LandManager landManager;
 //    private Land singleLand;
 
-    private int totalEarned;
+    private Array<DroppedItem> droppedItems;
     public GameScreen(Main game) {
         this.game = game;
 
@@ -135,7 +137,7 @@ public class GameScreen implements Screen, InputProcessor {
 //        initPlayerInv();
         animal = new Animal(680, 230, "Chicken", stage);
         animal.setBound(620, 690, 160, 260);
-
+        droppedItems = new Array<>();
         initDebug();
         music = Main.manager.get("Sound/music.mp3", Music.class);
         music.setLooping(true);
@@ -242,6 +244,7 @@ public class GameScreen implements Screen, InputProcessor {
         renderSelectedCell();
         handleCrop();
         renderCrop();
+        checkItemPickup(player);
         renderAmbientLighting();
         renderDebugInfo();
         CollisionHandling.renderCollision();
@@ -271,6 +274,9 @@ public class GameScreen implements Screen, InputProcessor {
                     game.batch.draw(crop.getCurrentFrame(), j * 16, i * 16); // Render crop at grid position
                 }
             }
+        }
+        for (DroppedItem item : droppedItems) {
+            item.render(game.batch);
         }
         game.batch.end();
 //        singleLand.update(delta); // Update logic for the Land
@@ -364,7 +370,7 @@ public class GameScreen implements Screen, InputProcessor {
 //        // bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí SlotCursor của equipInventory == "Coin"
 //        // thì bắt đầu câu cá
 //        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-//            if (player.eqipInventory.get(player.slotCursor).getItemName() == "Coin"){
+//            if (player.eqipInventory.get(player.slotCursor).equals(Items.Item.RICE)){
 //                player.updateFishingAnimation();
 //            }
 //        }
@@ -413,8 +419,8 @@ public class GameScreen implements Screen, InputProcessor {
         if (!showDebugInfo) return;
 
         game.batch.begin();
-        font.draw(game.batch, String.format("Time: %s", timer.getFormattedTimeofDay()), 10, 470);
-        font.draw(game.batch, String.format("Day passed: %s", timer.getDaysPassed()), 10, 410);
+        font.draw(game.batch, String.format("Time: %s", timer.getFormattedTimeofDay()), player.getPosition().x, player.getPosition().y);
+        font.draw(game.batch, String.format("Day passed: %s", timer.getDaysPassed()), player.getBounds().x, player.getPosition().y - 30);
         font.draw(game.batch, String.format("CurrentDay : %s", currentDays), 10, 390);
         Color ambient = clock.getAmbientLighting();
         font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
@@ -425,12 +431,24 @@ public class GameScreen implements Screen, InputProcessor {
         return timer;
     }
 
-
     public int getCurrentDays() {
         return currentDays;
     }
     public OrthographicCamera getCamera() {
         return camera;
+    }
+
+    private void checkItemPickup(Player player) {
+        for (int i = 0; i < droppedItems.size; i++) {
+            DroppedItem item = droppedItems.get(i);
+            if (player.getBounds().overlaps(item.getBounds())) { // Check collision
+                System.out.println("Picked up: " + item.getItemType());
+//                player.setItem(item.getItemType()); // Add to player's inventory
+                droppedItems.removeIndex(i); // Remove the item from the list
+                item.dispose(); // Dispose the item's texture
+                break;
+            }
+        }
     }
     @Override
     public void resize(int width, int height) {
@@ -523,14 +541,11 @@ public class GameScreen implements Screen, InputProcessor {
                     System.out.println(land.getCurrentState());
                 } else if (Objects.equals(currentActivity, "harvest")){
                     if (!land.isEmpty()) {
-                        int reward = land.harvestCrop();
-                        totalEarned += reward;
-                        if (reward > 0) {
-                            System.out.println("Crop harvested! Earned: " + reward);
-                        } else {
-                            System.out.println("Crop is not ready for harvest.");
+                        DroppedItem droppedItem = land.harvestCrop();
+                        if (droppedItem != null) {
+                            droppedItems.add(droppedItem);
+                            System.out.println("Item dropped: " + droppedItem.getItemType());
                         }
-                        System.out.println("Total Earned: " + totalEarned);
                     }
                 }
             }

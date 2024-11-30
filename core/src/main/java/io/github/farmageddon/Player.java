@@ -20,8 +20,8 @@ public class Player extends Entity {
     public PlayerAnimation.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
-    public static ArrayList<Items> inventory;
-    public static ArrayList<Items> eqipInventory;
+    public static ArrayList<Items.Item> inventory;
+    public static ArrayList<Items.Item> eqipInventory;
     private final int maxInventorySize = 25;
     private final int maxEqipInventorySize = 5;
     public static int slotCursor;
@@ -41,19 +41,19 @@ public class Player extends Entity {
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
     // inventory contact
-    public void setEquipItem(Items item) {
+    public void setEquipItem(Items.Item item) {
         eqipInventory.add(item);
     }
 
-    public void removeEquipItem(Items item) {
+    public void removeEquipItem(Items.Item item) {
         eqipInventory.remove(item);
     }
 
-    public void setItem(Items item) {
+    public void setItem(Items.Item item) {
         inventory.add(item);
     }
 
-    public void removeItem(Items item) {
+    public void removeItem(Items.Item item) {
         inventory.remove(item);
     }
 
@@ -229,5 +229,9 @@ public class Player extends Entity {
 
     public Vector2 getPosition() {
         return position;
+    }
+
+    public Rectangle getBounds() {
+        return playerBounds;
     }
 }

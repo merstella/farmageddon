@@ -1,6 +1,7 @@
 package io.github.farmageddon.Crops;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.farmageddon.ultilites.DroppedItem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,18 +41,19 @@ public class Land {
     public void removeCrop() {
         this.crop = null;
     }
-    public int harvestCrop() {
+    public DroppedItem harvestCrop() {
         if (crop != null && crop.getGrowthStage() == 3) {
-            int price = crop.getPrice(); // Get the crop's price as a reward
-            removeCrop(); // Remove the harvested crop
-            return price;
+            DroppedItem droppedItem = new DroppedItem(crop.getFrameSprite().getX(), crop.getFrameSprite().getY(), crop.getItemType());
+            removeCrop();
+            return droppedItem;
         }
-        return 0; // No harvestable crop
+        return null;
     }
     public void update(float delta) {
         if (currentState == LandState.HOED) {
             timeSinceHoed += delta;
             if (timeSinceHoed >= DRYING_TIME) {
+                transitionTo(LandState.PLAIN);
                 transitionTo(LandState.PLAIN);
             }
         }

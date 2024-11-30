@@ -91,7 +91,7 @@
 //        float slotY = slotYstart;
 //
 //        for (int i = 0; i < player.eqipInventory.size(); i++) {
-//            Texture itemTexture = player.eqipInventory.get(i).getTexture();
+//            Texture itemTexture = player.eqipInventory.get(i).getTextureRegion().getTexture();
 //            spriteBatch.draw(itemTexture,slotX + 28,slotY + 16,slotSize * 1,slotSize * 1);
 //
 //            slotX += (slotSize + 20);

@@ -56,7 +56,7 @@
 //
 //        System.out.println(player.inventory.size());
 //        for (int i = 0; i < player.inventory.size(); i++) {
-//            Texture itemTexture = player.inventory.get(i).getTexture();
+//            Texture itemTexture = player.inventory.get(i).getTextureRegion().getTexture();
 //            batch.draw(itemTexture, slotX, slotY, itemTexture.getWidth(), itemTexture.getHeight());
 //            slotX += slotSize;
 //            if (i == 4 || i == 9 || i== 14){
