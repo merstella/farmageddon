@@ -1,4 +1,4 @@
-package com.mygdx.game.crops;
+package io.github.farmageddon.Crops;
 
 
 import com.badlogic.gdx.graphics.Texture;
