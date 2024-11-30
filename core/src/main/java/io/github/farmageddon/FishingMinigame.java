@@ -24,8 +24,9 @@ public class FishingMinigame extends ApplicationAdapter {
     private float GreenX;          // Tọa độ x của vùng xanh
     private int level = 1;
 
-    private int success = 0;  // Trạng thái nhấn phím chính xác
-    private boolean gameOver = false;
+    public static int success = 0;  // Trạng thái nhấn phím chính xác
+    public static boolean gameOver = false;
+    public static boolean cursorGameOver = false;
 
     @Override
     public void create() {
@@ -41,14 +42,14 @@ public class FishingMinigame extends ApplicationAdapter {
     @Override
     public void render() {
         if (gameOver) {
-            System.out.println(level);
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
                 inventory.add(GameScreen.Fish);
                 System.out.println("Fish Added!");
+                cursorGameOver = true;
             }
-            gameOver = false;
+            gameOver = true;
             level = 1;
             success = 0;
             return;
@@ -70,6 +71,7 @@ public class FishingMinigame extends ApplicationAdapter {
             } else {
                 System.out.println("Skill issues!");
                 gameOver = true;
+                cursorGameOver = true;
             }
         }
 

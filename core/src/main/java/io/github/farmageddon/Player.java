@@ -1,5 +1,6 @@
 package io.github.farmageddon;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -7,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.markets.Items;
+import io.github.farmageddon.screens.GameScreen;
 
 import java.util.ArrayList;
 
@@ -15,9 +17,9 @@ public class Player extends Entity {
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
 
-    private PlayerAnimation animation;
+    public static PlayerAnimation animation;
     public PlayerAnimation.Direction currentDirection;
-    public PlayerAnimation.Activity currentActivity;
+    public static PlayerAnimation.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
     public static ArrayList<Items> inventory;
@@ -29,7 +31,14 @@ public class Player extends Entity {
     public Vector2 position;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;
-    private boolean hasStartedFishing;
+
+    // Fishing
+    public static boolean hasStartedFishing;
+    private boolean isFishing;
+    private boolean fishingComplete;
+    public FishingMinigame minigame;
+    private float elapsedTime = 0f;
+
     public Player(float x, float y, float speed) {
         super(x, y, speed);
         position = new Vector2(x, y);
@@ -70,10 +79,13 @@ public class Player extends Entity {
     public void update(float delta) {
         super.update(delta);
         updateDirectionAnimation(delta);
+        minigame = new FishingMinigame();
+        minigame.create();
     }
 
     public void updateFishingAnimation() {
         currentActivity = getFishingDirection();
+        //handleFishingLogic();
     }
 
     public void updateActivityAnimation(Vector2 lookPoint) {
@@ -86,6 +98,15 @@ public class Player extends Entity {
     private void updateDirectionAnimation(float delta) {
         float tmpSpeed = speed;
         Vector2 movement = new Vector2(0, 0);
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.F) && !isFishing) {
+//            startFishing();
+//        }
+//
+//        if (isFishing) {
+//            handleFishingLogic(delta);
+//        } else {
+//            updateDirectionAnimation(delta);
+//        }
 
         boolean up = Gdx.input.isKeyPressed(Input.Keys.UP);
         boolean down = Gdx.input.isKeyPressed(Input.Keys.DOWN);
@@ -135,6 +156,67 @@ public class Player extends Entity {
         }
     }
 
+////    private void startFishing() {
+////        isFishing = true;
+////        currentActivity = PlayerAnimation.Activity.START_FISHING_RIGHT;
+////    }
+////
+////    private void finishFishing() {
+////        isFishing = false;
+////        fishingComplete = false;
+////        currentActivity = PlayerAnimation.Activity.NONE;
+////
+////        // Add a Fish item to the inventory
+////        //Items fish = new Items("Fish");
+////        if (inventory.size() < maxInventorySize) {
+//////            inventory.add(fish);
+////            System.out.println("You caught a fish! Added to inventory.");
+////        } else {
+////            System.out.println("Inventory full. Cannot add fish.");
+////        }
+////    }
+//
+//    private void handleFishingLogic() {
+//        switch (currentActivity) {
+//            case START_FISHING_RIGHT:
+//                System.out.println("bắt đầu fishing");
+//                if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
+////                elapsedTime += Gdx.graphics.getDeltaTime();
+////                elapsedTime += delta;
+////                if (elapsedTime >= 2.0f){
+////                   minigame.render();
+////                    if (minigame.gameOver == true)
+//                        currentActivity = PlayerAnimation.Activity.WAIT_FISHING_RIGHT;
+//                        if (minigame.gameOver == false){
+//                            System.out.println("Câu cá thôi!");
+//                            minigame.render();
+//                        }
+//                        else {
+////                        System.out.println("Câu cá thôi!");
+//                            animation.stateTime = 0; // Reset animation time
+//                            elapsedTime = 0f;
+//                            fishingComplete = true;
+//                        }
+//                }
+//                break;
+//
+//            case WAIT_FISHING_RIGHT:
+//                if (fishingComplete) {
+//                    currentActivity = PlayerAnimation.Activity.DONE_FISHING_RIGHT;
+//                    animation.stateTime = 0; // Reset animation time
+//                }
+//                break;
+//
+//            case DONE_FISHING_RIGHT:
+//                if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
+//                    stopActivity();
+//                }
+//                break;
+//
+//            default:
+//                break;
+//        }
+//    }
 
     private PlayerAnimation.Direction getIdleDirection(PlayerAnimation.Direction direction) {
         switch (direction) {
@@ -168,28 +250,29 @@ public class Player extends Entity {
 
         // Determine direction based on angle (adjusted to a 360-degree circle)
         if (angle >= 45 && angle < 135) {
-            return PlayerAnimation.Activity.HOE_UP; // Facing upward
+                return PlayerAnimation.Activity.HOE_UP; // Facing upward
         } else if (angle >= 135 && angle < 225) {
-            return PlayerAnimation.Activity.HOE_LEFT; // Facing left
+                return PlayerAnimation.Activity.HOE_LEFT; // Facing left
         } else if (angle >= 225 && angle < 315) {
-            return PlayerAnimation.Activity.HOE_DOWN; // Facing downward
+                return PlayerAnimation.Activity.HOE_DOWN; // Facing downward
         } else {
-            return PlayerAnimation.Activity.HOE_RIGHT; // Facing right
+                return PlayerAnimation.Activity.HOE_RIGHT; // Facing right
         }
     }
 
+
     public PlayerAnimation.Activity getFishingDirection() {
-//        if ((getPosition().x < 896f && getPosition().x > 891f && getPosition().y < 485f && getPosition().y > 480f)  ) {
-//            return PlayerAnimation.Activity.START_FISHING_RIGHT;
-//        }
-//        else return null;
         if (!hasStartedFishing) {
             hasStartedFishing = true; // Đánh dấu rằng hành động đã bắt đầu
-            return PlayerAnimation.Activity.WAIT_FISHING_RIGHT;
+            if (GameScreen.cursorRight == true) {
+                return PlayerAnimation.Activity.START_FISHING_RIGHT;
+            }
+            else if (GameScreen.cursorLeft == true) {
+                return PlayerAnimation.Activity.START_FISHING_LEFT;
+            }
         }
         return PlayerAnimation.Activity.NONE;
     }
-
 
     @Override
     public void render(SpriteBatch batch) {
