@@ -8,7 +8,6 @@ import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.ultilites.Items;
 
 public class Crop extends Sprite {
-
     // max 4 stages
     private int growthStage;
     private int growthStageDuration;
@@ -80,7 +79,6 @@ public class Crop extends Sprite {
                 break;
             default:
                 break;
-
         }
     }
 

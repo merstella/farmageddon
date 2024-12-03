@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import io.github.farmageddon.screens.GameScreen;
+import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.Items;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -15,20 +17,21 @@ public class Player extends Entity {
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
 
+
     private PlayerAnimation animation;
     public PlayerAnimation.Direction currentDirection;
     public PlayerAnimation.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
-    public static ArrayList<Items.Item> inventory;
-    public static ArrayList<Items.Item> eqipInventory;
+    public static ArrayList<Items> inventory;
+    public static ArrayList<Items> eqipInventory;
     private final int maxInventorySize = 25;
     private final int maxEqipInventorySize = 5;
     public static int slotCursor;
     public int money = 0;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;
-    private boolean hasStartedFishing;
+    public static boolean hasStartedFishing;
 
     public Player(float x, float y, float speed) {
         super(x, y, speed, false, 100);
@@ -41,19 +44,19 @@ public class Player extends Entity {
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
     // inventory contact
-    public void setEquipItem(Items.Item item) {
+    public void setEquipItem(Items item) {
         eqipInventory.add(item);
     }
 
-    public void removeEquipItem(Items.Item item) {
+    public void removeEquipItem(Items item) {
         eqipInventory.remove(item);
     }
 
-    public void setItem(Items.Item item) {
+    public void setItem(Items item) {
         inventory.add(item);
     }
 
-    public void removeItem(Items.Item item) {
+    public void removeItem(Items item) {
         inventory.remove(item);
     }
 
@@ -200,7 +203,12 @@ public class Player extends Entity {
 //        else return null;
         if (!hasStartedFishing) {
             hasStartedFishing = true; // Đánh dấu rằng hành động đã bắt đầu
-            return PlayerAnimation.Activity.WAIT_FISHING_RIGHT;
+            if (GameScreen.cursorRight) {
+                return PlayerAnimation.Activity.START_FISHING_RIGHT;
+            }
+            else if (GameScreen.cursorLeft) {
+                return PlayerAnimation.Activity.START_FISHING_LEFT;
+            }
         }
         return PlayerAnimation.Activity.NONE;
     }

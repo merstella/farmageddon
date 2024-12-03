@@ -1,4 +1,4 @@
-package io.github.farmageddon;
+package io.github.farmageddon.ultilites;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -7,8 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.farmageddon.screens.GameScreen;
-import io.github.farmageddon.ultilites.Items;
-
+import io.github.farmageddon.Player;
 import static io.github.farmageddon.Player.inventory;
 
 public class FishingMinigame extends ApplicationAdapter {
@@ -25,9 +24,10 @@ public class FishingMinigame extends ApplicationAdapter {
     private float GreenX;          // Tọa độ x của vùng xanh
     private int level = 1;
 
-    private int success = 0;  // Trạng thái nhấn phím chính xác
-    private boolean gameOver = false;
-    private Items.Item item = Items.Item.RICE;
+    public static int success = 0;  // Trạng thái nhấn phím chính xác
+    public static boolean gameOver = false;
+    public static boolean cursorGameOver = false;
+
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
@@ -42,15 +42,14 @@ public class FishingMinigame extends ApplicationAdapter {
     @Override
     public void render() {
         if (gameOver) {
-            System.out.println(level);
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-
-                inventory.add(item);
+                inventory.add(GameScreen.Fish);
                 System.out.println("Fish Added!");
+                cursorGameOver = true;
             }
-            gameOver = false;
+            gameOver = true;
             level = 1;
             success = 0;
             return;
@@ -72,6 +71,7 @@ public class FishingMinigame extends ApplicationAdapter {
             } else {
                 System.out.println("Skill issues!");
                 gameOver = true;
+                cursorGameOver = true;
             }
         }
 

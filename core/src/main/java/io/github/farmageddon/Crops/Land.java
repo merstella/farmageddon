@@ -2,6 +2,7 @@ package io.github.farmageddon.Crops;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import io.github.farmageddon.ultilites.DroppedItem;
+import io.github.farmageddon.ultilites.Items;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class Land {
     }
     public DroppedItem harvestCrop() {
         if (crop != null && crop.getGrowthStage() == 3) {
-            DroppedItem droppedItem = new DroppedItem(crop.getFrameSprite().getX(), crop.getFrameSprite().getY(), crop.getItemType());
+            DroppedItem droppedItem = new DroppedItem(crop.getFrameSprite().getX(), crop.getFrameSprite().getY(), crop.getItemType(), Items.ItemType.SEED);
             removeCrop();
             return droppedItem;
         }

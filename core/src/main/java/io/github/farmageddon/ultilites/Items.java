@@ -12,7 +12,9 @@ public class Items {
     private int cost;
     public enum ItemType{
         SEED,
-        TOOL
+        TOOL,
+        FOOD,
+        OTHER
     }
 
     public enum Item{
@@ -22,8 +24,8 @@ public class Items {
         CORN,
         BUCKET,
         HOE,
-        ;
-
+        EGG,
+        FISH, COIN,
 
     }
 
@@ -38,20 +40,21 @@ public class Items {
         this.type = type;
         this.item = item;
         this.textureRegion = new TextureRegion(textureRegion);
+        this.num = 0;
         this.cost = cost;
     }
 
     public ItemType getType() {
         return type;
     }
-
+    public Item getItem() {
+        return item;
+    }
     public TextureRegion getTextureRegion() {
         return textureRegion;
     }
 
-    public Item getItem() {
-        return item;
-    }
+
     public int getCost() {
         return cost;
     }
