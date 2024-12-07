@@ -15,6 +15,7 @@ public class Main extends Game {
     public SpriteBatch batch;
     public static AssetManager manager;
     public Texture blank;
+//    public TorchLightHandler torchLightHandler;
 
 
     @Override

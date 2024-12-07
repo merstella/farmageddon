@@ -16,7 +16,8 @@ public class PlayerAnimation {
     private final Texture playerSheet;
     private final Texture playerActionSheet;
     private final Texture playerFishingSheet;
-    public static Animation<TextureRegion>[] animations, actionAnimations;
+    public static Animation<TextureRegion>[] animations;
+    public final Animation<TextureRegion>[] actionAnimations;
     public static float stateTime;
     private ShapeRenderer shapeRenderer;
 

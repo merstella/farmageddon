@@ -20,16 +20,16 @@ public class GameTimeClock extends Actor {
     public Timer_ worldTime = null;
     private double rotation = 0;
     private Sprite sprite;
-    private Color ambient = new Color();
+    public static Color ambient = new Color();
     private Label text = null;
 
     // set color for each time of the day
-    private final static Color DAWNCOLOR = new Color(0, 0, .75f, .2f);
+    public final static Color DAWNCOLOR = new Color(0, 0, .75f, .2f);
 
-    private final static Color DARKCOLOR = new Color(0, 0, 0, .6f);
-    private final static Color LIGHTCOLOR = new Color(1, 1, 1, 0);
+    public final static Color DARKCOLOR = new Color(0, 0, 0, 0.6f);
+    public final static Color LIGHTCOLOR = new Color(1, 1, 1, 0);
 
-    private final static Color DUSKCOLOR = new Color(1, .3f, .67f, .1f);
+    public final static Color DUSKCOLOR = new Color(1, .3f, .67f, .1f);
 
     // construct by passing the Timer_ class
     public GameTimeClock(Timer_ timer) {
@@ -39,6 +39,7 @@ public class GameTimeClock extends Actor {
     @Override
     public void act(float delta) {
         super.act(delta);
+
         // update clock
         worldTime.tick();
 

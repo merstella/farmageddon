@@ -6,7 +6,14 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.farmageddon.Main;
 
@@ -22,6 +29,13 @@ public class MainMenuScreen implements Screen {
     Texture playButtonInactive;
     Texture exitButtonActive;
     Texture exitButtonInactive;
+    Texture UI_sheet;
+    TextureRegion instructionsButtonActive;
+    TextureRegion instructionsButtonInactive;
+    TextureRegionDrawable buttonDrawableDown;
+    TextureRegionDrawable buttonDrawableUp;
+
+    Stage stage;
 
     private Viewport viewport;
     private Camera camera;
@@ -34,6 +48,35 @@ public class MainMenuScreen implements Screen {
         playButtonInactive = new Texture(Gdx.files.internal("playButtonInactive.png"));
         exitButtonActive = new Texture(Gdx.files.internal("exitButtonActive.png"));
         exitButtonInactive = new Texture(Gdx.files.internal("exitButtonInactive.png"));
+
+        // test phần nút bâm
+        UI_sheet = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
+        instructionsButtonActive = new TextureRegion(UI_sheet,0,(UI_sheet.getHeight() / 19),32 ,14);
+        instructionsButtonInactive = new TextureRegion(UI_sheet,33, (UI_sheet.getHeight() / 19),32 ,14);
+        buttonDrawableDown = new TextureRegionDrawable(instructionsButtonActive);
+        buttonDrawableUp = new TextureRegionDrawable(instructionsButtonInactive);
+
+        Button.ButtonStyle buttonStyle = new Button.ButtonStyle();
+        buttonStyle.up = buttonDrawableUp;
+        buttonStyle.down = buttonDrawableDown;
+
+        Button instructionsButton = new Button(buttonStyle);
+        Stage stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage); // Xử lý đầu vào cho Stage
+
+// Đặt vị trí và kích thước nút
+//        instructionsButton.setPosition(100, 100); // Tọa độ (x, y)
+//        instructionsButton.setSize(200, 80); // Kích thước (width, height)
+
+        // xử lí nút bấm
+        instructionsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                System.out.println("clicked");
+            }
+        });
+//         Thêm nút vào Stage
+        stage.addActor(instructionsButton);
     }
 
     @Override
@@ -59,6 +102,16 @@ public class MainMenuScreen implements Screen {
 
         // Begin rendering the buttons
         game.batch.begin();
+
+         float scale = 7.0f;
+        game.batch.draw(instructionsButtonInactive, playButtonX, playButtonY - 280,
+            instructionsButtonInactive.getRegionWidth() * scale, instructionsButtonActive.getRegionHeight() * scale);
+        game.batch.draw(instructionsButtonActive, playButtonX + 300, playButtonY - 280,
+            instructionsButtonActive.getRegionWidth() * scale, instructionsButtonActive.getRegionHeight() * scale);
+
+
+//        stage.act();  // Cập nhật stage
+//        stage.draw(); // Vẽ các actor trong stage
 
         // Draw the play button (check if it is hovered and clicked)
         if (Gdx.input.getX() < playButtonX + PLAY_BUTTON_WIDTH && Gdx.input.getX() > playButtonX
@@ -91,6 +144,7 @@ public class MainMenuScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height); // Update the viewport on resizing
+//        stage.getViewport().update(width, height, true);
     }
 
     @Override
@@ -108,5 +162,7 @@ public class MainMenuScreen implements Screen {
         playButtonInactive.dispose();
         exitButtonActive.dispose();
         exitButtonInactive.dispose();
+        UI_sheet.dispose();
+//        stage.dispose();
     }
 }
