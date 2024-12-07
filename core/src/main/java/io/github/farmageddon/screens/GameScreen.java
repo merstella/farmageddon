@@ -99,7 +99,7 @@ public class GameScreen implements Screen, InputProcessor {
     public static boolean cursorLeft, cursorRight;
 //    private Queue<Pair<Animal, Animal>> breedingQueue = new LinkedList<>();
 
-//    private Monster monster;
+    private Monster monster;
 //    private Plants specialPlant;
 //
 
@@ -141,14 +141,14 @@ public class GameScreen implements Screen, InputProcessor {
 //        initPlayerInv();
 
         initAnimal();
-//        monster = new Monster();
+        monster = new Monster(500, 300, 50, player.getPosition().x, player.getPosition().y, 100);
 //        specialPlant = new Plants();
         droppedItems = new Array<>();
         initDebug();
-        music = Main.manager.get("Sound/music.mp3", Music.class);
-        music.setLooping(true);
-        music.setVolume(0.2f);
-        music.play();
+//        music = Main.manager.get("Sound/music.mp3", Music.class);
+//        music.setLooping(true);
+//        music.setVolume(0.2f);
+//        music.play();
     }
 
 
@@ -225,6 +225,8 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         player.update(delta);
+        monster.setTargetPosition(player.getPosition());
+        monster.update(delta);
         camera.position.set(
             player.getPosition().x + 16,
             player.getPosition().y + 16,
@@ -251,6 +253,7 @@ public class GameScreen implements Screen, InputProcessor {
 //        renderAnimal();
         // renderplant, render monster
         renderPlayer();
+        monster.render(game.batch);
         renderSelectedCell();
         handleCrop();
         renderCrop();

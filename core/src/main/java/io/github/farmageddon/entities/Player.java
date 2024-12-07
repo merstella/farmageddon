@@ -86,7 +86,6 @@ public class Player extends Entity {
     }
 
     private void updateDirectionAnimation(float delta) {
-        float tmpSpeed = speed;
         Vector2 movement = new Vector2(0, 0);
 
         boolean up = Gdx.input.isKeyPressed(Input.Keys.W);

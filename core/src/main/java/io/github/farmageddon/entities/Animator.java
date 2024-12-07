@@ -153,6 +153,7 @@ public class Animator {
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = animations[direction.ordinal()].getKeyFrame(stateTime, true);
         // Draw the current frame at the specified position
+        System.out.println(2);
         batch.draw(currentFrame, x, y, Player.WIDTH , Player.HEIGHT);
 
 
@@ -161,7 +162,7 @@ public class Animator {
         stateTime += Gdx.graphics.getDeltaTime();
 
         // Get the current frame of the animation for the specified direction
-        TextureRegion currentFrame = animations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
+        TextureRegion currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
         // Draw the current frame at the specified position
         if (monsterActivity == MonsterActivity.ATTACK_DOWN ||
         monsterActivity == MonsterActivity.ATTACK_DOWN_LEFT || monsterActivity == MonsterActivity.ATTACK_LEFT
@@ -171,7 +172,9 @@ public class Animator {
 
             batch.draw(currentFrame, x - 16, y - 16, 64, 64);
         }
-        else batch.draw(currentFrame, x, y, 32, 32);
+        else {
+            batch.draw(currentFrame, x, y, 32, 32);
+        }
     }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity) {
         if (activity == Activity.NONE) return;
