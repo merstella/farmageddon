@@ -1,8 +1,0 @@
-{
-  "com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle": {
-    "default": {
-      "background": "health_bar_bg",
-      "knobBefore": "health_bar_fg"
-    }
-  }
-}
