@@ -13,6 +13,7 @@ public class InventoryScreen implements Screen {
     public int slotCol = 0;
     private Texture inventoryTexture;
     private Texture equipmentTexture;
+    private Texture testTexture;
     public SpriteBatch batch;
 //    private InventoryUI inventoryUI;
     public Player player;
@@ -26,6 +27,7 @@ public class InventoryScreen implements Screen {
         this.batch = new SpriteBatch();
         this.player = player;
         this.cursorTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
+        this.testTexture = new Texture(Gdx.files.internal("box.png"));
     }
     @Override
     public void show() {
@@ -91,8 +93,6 @@ public class InventoryScreen implements Screen {
                 slotCol--;
             }
         }
-
-
 
         batch.end();
 

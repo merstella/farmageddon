@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
+import io.github.farmageddon.ultilites.FishingMinigame;
 import io.github.farmageddon.ultilites.Items;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -18,20 +19,25 @@ public class Player extends Entity {
     public static final int HEIGHT = 32;
 
 
-    private PlayerAnimation animation;
+    public PlayerAnimation animation;
     public PlayerAnimation.Direction currentDirection;
     public PlayerAnimation.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
-    public static ArrayList<Items> inventory;
-    public static ArrayList<Items> eqipInventory;
+    public ArrayList<Items> inventory;
+    public ArrayList<Items> eqipInventory;
     private final int maxInventorySize = 25;
-    private final int maxEqipInventorySize = 5;
-    public static int slotCursor;
+    public static int maxEqipInventorySize = 5;
+    public int slotCursor = 0;
     public int money = 0;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;
+
+    //Fishing
     public static boolean hasStartedFishing;
+    private boolean isFishing;
+    private boolean fishingComplete;
+    public FishingMinigame minigame;
 
     public Player(float x, float y, float speed) {
         super(x, y, speed, false, 100);
@@ -41,11 +47,36 @@ public class Player extends Entity {
         shapeRenderer = new ShapeRenderer();
         this.inventory = new ArrayList<>();
         this.eqipInventory = new ArrayList<>();
+
+
+    //        while (eqipInventory.size() <= slotCursor) {
+    //            eqipInventory.add(null);
+    //        }
+
+
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
+
     // inventory contact
-    public void setEquipItem(Items item) {
-        eqipInventory.add(item);
+//    public void setEquipItem(Items item, int index) {
+//        // Kiểm tra chỉ số hợp lệ
+//        if (index >= 0 && index <= maxEqipInventorySize) {
+//            // Đảm bảo danh sách đủ phần tử
+//            while (eqipInventory.size() <= index) {
+//                eqipInventory.add(null); // Thêm các phần tử null để mở rộng danh sách
+//            }
+//
+//            // Thêm hoặc ghi đè item tại vị trí chỉ định
+//            eqipInventory.set(index, item);
+//            System.out.println("Đã thêm item vào vị trí: " + index);
+//        } else {
+//            System.out.println("Chỉ số không hợp lệ!");
+//        }
+//    }
+
+
+    public void setEquipItem(Items item, int index) {
+        eqipInventory.set(index, item);
     }
 
     public void removeEquipItem(Items item) {
@@ -72,6 +103,8 @@ public class Player extends Entity {
     public void update(float delta) {
         super.update(delta);
         updateDirectionAnimation(delta);
+//        minigame = new FishingMinigame();
+//        minigame.create();
     }
 
     public void updateFishingAnimation() {
@@ -197,13 +230,9 @@ public class Player extends Entity {
     }
 
     public PlayerAnimation.Activity getFishingDirection() {
-//        if ((getPosition().x < 896f && getPosition().x > 891f && getPosition().y < 485f && getPosition().y > 480f)  ) {
-//            return PlayerAnimation.Activity.START_FISHING_RIGHT;
-//        }
-//        else return null;
         if (!hasStartedFishing) {
             hasStartedFishing = true; // Đánh dấu rằng hành động đã bắt đầu
-            if (GameScreen.cursorRight) {
+            if (GameScreen.cursorRight == true) {
                 return PlayerAnimation.Activity.START_FISHING_RIGHT;
             }
             else if (GameScreen.cursorLeft) {
@@ -213,7 +242,6 @@ public class Player extends Entity {
         return PlayerAnimation.Activity.NONE;
     }
 
-
     @Override
     public void render(SpriteBatch batch) {
         batch.begin();
@@ -221,10 +249,10 @@ public class Player extends Entity {
             animation.render(batch, position.x, position.y, currentDirection);
         } else {
             animation.renderActivity(batch, position.x, position.y, currentActivity);
+            System.out.println(currentActivity);
         }
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
         // Draw playerBounds in red
         shapeRenderer.setColor(1, 0, 0, 1); // Red color
         shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);

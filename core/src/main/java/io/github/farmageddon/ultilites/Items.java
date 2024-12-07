@@ -11,6 +11,7 @@ public class Items {
     private int num;
     private int cost;
     public enum ItemType{
+        NULL,
         SEED,
         TOOL,
         FOOD,
@@ -18,6 +19,7 @@ public class Items {
     }
 
     public enum Item{
+        NULL,// default Item
         RICE,
         TOMATO,
         CARROT,
@@ -29,12 +31,13 @@ public class Items {
 
     }
 
-    public Items(Texture texture, ItemType type, Item item, int cost){
+    public Items(Texture texture, ItemType type, Item item, int cost, int num){
         this.type = type;
         this.item = item;
         this.textureRegion = new TextureRegion(texture);
         this.num = 0;
         this.cost = cost;
+        this.num = num;
     }
     public Items(TextureRegion textureRegion, ItemType type, Item item, int cost){
         this.type = type;
@@ -48,20 +51,19 @@ public class Items {
         return type;
     }
     public Item getItem() {
-        return item;
+            return item;
     }
     public TextureRegion getTextureRegion() {
         return textureRegion;
     }
 
-
     public int getCost() {
         return cost;
     }
-    public void add(){
+    public void add(Items item){
         num++;
     }
-    public void remove(){
+    public void remove(Items item){
         num--;
     }
 

@@ -17,8 +17,8 @@ public class PlayerAnimation {
     private final Texture playerActionSheet;
     private final Texture playerFishingSheet;
     private final Animation<TextureRegion>[] animations;
-    public final Animation<TextureRegion>[] actionAnimations;
-    public float stateTime;
+    public static Animation<TextureRegion>[] actionAnimations;
+    public static float stateTime;
     private ShapeRenderer shapeRenderer;
 
     public enum Direction {
@@ -117,10 +117,8 @@ public class PlayerAnimation {
     }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity) {
         if (activity == Activity.NONE) return;
-
         stateTime += Gdx.graphics.getDeltaTime();
         Animation<TextureRegion> activityAnimation = actionAnimations[activity.ordinal()];
-
         if (activity == Activity.WAIT_FISHING_RIGHT) {
             // Change to true to loop the animation
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);

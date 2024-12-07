@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.Player;
-import static io.github.farmageddon.Player.inventory;
+//import static io.github.farmageddon.Player.inventory;
 
 public class FishingMinigame extends ApplicationAdapter {
     private ShapeRenderer shapeRenderer;
@@ -45,7 +45,7 @@ public class FishingMinigame extends ApplicationAdapter {
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-                inventory.add(GameScreen.Fish);
+                player.inventory.add(GameScreen.Fish);
                 System.out.println("Fish Added!");
                 cursorGameOver = true;
             }
