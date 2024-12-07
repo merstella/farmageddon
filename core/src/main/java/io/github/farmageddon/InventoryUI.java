@@ -1,11 +1,10 @@
 package io.github.farmageddon;
 // 1280 x 768
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import io.github.farmageddon.entities.Player;
 
 
 public class InventoryUI {

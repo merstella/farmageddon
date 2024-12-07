@@ -1,5 +1,6 @@
 package io.github.farmageddon;
 
+import io.github.farmageddon.entities.Entity;
 import io.github.farmageddon.ultilites.Items;
 
 import java.util.ArrayList;

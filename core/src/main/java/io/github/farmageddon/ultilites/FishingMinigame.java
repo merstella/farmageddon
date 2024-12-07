@@ -3,12 +3,11 @@ package io.github.farmageddon.ultilites;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.farmageddon.screens.GameScreen;
-import io.github.farmageddon.Player;
-import static io.github.farmageddon.Player.inventory;
+import io.github.farmageddon.entities.Player;
+import static io.github.farmageddon.entities.Player.inventory;
 
 public class FishingMinigame extends ApplicationAdapter {
     private ShapeRenderer shapeRenderer;

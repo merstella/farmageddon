@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.farmageddon.entities.Player;
 import io.github.farmageddon.screens.GameScreen;
 
 public class InventoryScreen implements Screen {

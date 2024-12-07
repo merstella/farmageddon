@@ -31,12 +31,12 @@ public class HealthBar {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(backgroundColor);
-        shapeRenderer.rect(x + width, y + 20, width, height);
+        shapeRenderer.rect(x + width, y + 25, width, height);
 
         // Draw foreground (filled health bar)
         shapeRenderer.setColor(foregroundColor);
         float healthWidth = (currentHealth / maxHealth) * width;
-        shapeRenderer.rect(x + width, y + 20, healthWidth, height);
+        shapeRenderer.rect(x + width, y + 25, healthWidth, height);
         shapeRenderer.end();
 
         batch.begin(); // Resume SpriteBatch

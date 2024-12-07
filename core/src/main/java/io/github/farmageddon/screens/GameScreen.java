@@ -24,11 +24,11 @@ import io.github.farmageddon.Crops.Crop;
 import io.github.farmageddon.Crops.Land;
 import io.github.farmageddon.Crops.LandManager;
 //import io.github.farmageddon.markets.Market;
+import io.github.farmageddon.entities.*;
 import io.github.farmageddon.ultilites.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import static com.badlogic.gdx.graphics.Color.WHITE;
@@ -47,7 +47,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     private GameTimeClock clock;
     private Timer_ timer;
-    private boolean showDebugInfo = true;
+    private boolean showDebugInfo = false;
     private String time;
     private static Label timeLabel, timeStringLabel, daysLeftLabel, daysLeftNum;
     private static Label scoreLabel;
@@ -62,8 +62,8 @@ public class GameScreen implements Screen, InputProcessor {
     private boolean isMarketVisible = false;
     private boolean isInventoryVisible = false;
     public static boolean isFishingVisible = false;
-    public PlayerAnimation.Activity currentActivity;
-    private PlayerAnimation animation;
+    public Animator.Activity currentActivity;
+    private Animator animation;
 
     // Items Texture
     public Texture CoinTexture;
@@ -99,8 +99,10 @@ public class GameScreen implements Screen, InputProcessor {
     public static boolean cursorLeft, cursorRight;
 //    private Queue<Pair<Animal, Animal>> breedingQueue = new LinkedList<>();
 
-    private Monster monster;
-    private Plants specialPlant;
+//    private Monster monster;
+//    private Plants specialPlant;
+//
+
     public GameScreen(Main game) {
         this.game = game;
 
@@ -113,12 +115,13 @@ public class GameScreen implements Screen, InputProcessor {
         mapRenderer = new OrthogonalTiledMapRenderer(map);
         stage = new Stage(viewport);
         shapeRenderer = new ShapeRenderer();
+
         font = new BitmapFont();
         font.setColor(WHITE);
 
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
-        inputMultiplexer.addProcessor(this);
         inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(this);
         Gdx.input.setInputProcessor(inputMultiplexer);
         selectedCell = new Vector2();
 
@@ -147,6 +150,7 @@ public class GameScreen implements Screen, InputProcessor {
         music.setVolume(0.2f);
         music.play();
     }
+
 
     private void initAnimal() {
 //        animal = new Animal(680, 230, "Chicken", stage);
@@ -233,13 +237,9 @@ public class GameScreen implements Screen, InputProcessor {
         isNewDay = false;
         handleDayPassed();
         clock.act(delta);
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-            for (Animal animal : animals) {
-                animal.feed();
-            }
-        }
 
-        checkBreeding(delta);
+
+        checkBreeding();
         stage.act(delta);
         stage.draw();
 
@@ -254,16 +254,19 @@ public class GameScreen implements Screen, InputProcessor {
         renderSelectedCell();
         handleCrop();
         renderCrop();
+        //update all the thing before render minimap
+
         checkItemPickup(player);
         renderAmbientLighting();
         renderDebugInfo();
-        printAnimalDebugInfo();
+//        printAnimalDebugInfo();
         CollisionHandling.renderCollision();
         isNewDay = false;
-        handleKeyDown(delta);
+
+//        handleKeyDown(delta);
     }
 
-    private void checkBreeding(float delta) {
+    private void checkBreeding() {
         // Create a copy of the current stage actors to avoid concurrent modification
         List<Animal> stageAnimals = new ArrayList<>();
         for (Actor actor : stage.getActors()) {
@@ -283,15 +286,12 @@ public class GameScreen implements Screen, InputProcessor {
                 if (animalA.isEligibleForBreeding(animalB) && distance < 50) {
                     Animal offspring = animalA.breed(animalB, stage);
                     if (offspring != null) {
-                        System.out.println("Breeding "+ "Offspring Created: " + offspring.getType());
-                        System.out.println("Breeding "+ "Offspring Position: x=" + offspring.getX() + ", y=" + offspring.getY());
+//                        System.out.println("Breeding "+ "Offspring Created: " + offspring.getType());
+//                        System.out.println("Breeding "+ "Offspring Position: x=" + offspring.getX() + ", y=" + offspring.getY());
 
                         // Add offspring to both the stage and your list
                         animals.add(offspring);
 
-                        // Update and render the stage immediately
-                        stage.act(Gdx.graphics.getDeltaTime());
-                        stage.draw();
                     }
                 }
             }
@@ -436,7 +436,7 @@ public class GameScreen implements Screen, InputProcessor {
             isFishingVisible = !isFishingVisible;
             if (player.eqipInventory.get(player.slotCursor).getItem() == Items.Item.COIN) {
                 // Bật hoạt ảnh START_FISHING
-                currentActivity = PlayerAnimation.Activity.START_FISHING_RIGHT;
+                currentActivity = Animator.Activity.START_FISHING_RIGHT;
                 player.updateFishingAnimation();
             }
             cursorRight = false;
@@ -445,7 +445,7 @@ public class GameScreen implements Screen, InputProcessor {
             isFishingVisible = !isFishingVisible;
             if (player.eqipInventory.get(player.slotCursor).getItem()== Items.Item.COIN) {
                 // Bật hoạt ảnh START_FISHING
-                currentActivity = PlayerAnimation.Activity.START_FISHING_LEFT;
+                currentActivity = Animator.Activity.START_FISHING_LEFT;
                 player.updateFishingAnimation();
             }
             cursorLeft = false;
@@ -455,14 +455,14 @@ public class GameScreen implements Screen, InputProcessor {
                 case START_FISHING_RIGHT:
                     // Kiểm tra nếu hoạt ảnh đã chạy xong
                     if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                        currentActivity = PlayerAnimation.Activity.WAIT_FISHING_RIGHT;
+                        currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
                         System.out.println("Start fishing animation right completed. Waiting for minigame...");
                     }
                     break;
                 case START_FISHING_LEFT:
                     // Kiểm tra nếu hoạt ảnh đã chạy xong
                     if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                        currentActivity = PlayerAnimation.Activity.WAIT_FISHING_LEFT;
+                        currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
                         System.out.println("Start fishing animation left completed. Waiting for minigame...");
                     }
                     break;
@@ -472,7 +472,7 @@ public class GameScreen implements Screen, InputProcessor {
 
                     // Kiểm tra nếu minigame đã kết thúc
                     if (minigame.cursorGameOver == true) {
-                        currentActivity = PlayerAnimation.Activity.DONE_FISHING_LEFT;
+                        currentActivity = Animator.Activity.DONE_FISHING_LEFT;
                         System.out.println("Minigame finished. Moving to Done Fishing animation...");
                     }
                     break;
@@ -482,7 +482,7 @@ public class GameScreen implements Screen, InputProcessor {
 
                     // Kiểm tra nếu minigame đã kết thúc
                     if (minigame.cursorGameOver == true) {
-                        currentActivity = PlayerAnimation.Activity.DONE_FISHING_RIGHT;
+                        currentActivity = Animator.Activity.DONE_FISHING_RIGHT;
                         System.out.println("Minigame finished. Moving to Done Fishing animation...");
                     }
                     break;
@@ -491,7 +491,7 @@ public class GameScreen implements Screen, InputProcessor {
                     // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
                     if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
                         System.out.println("Fishing process completed!");
-                        currentActivity = PlayerAnimation.Activity.NONE;
+                        currentActivity = Animator.Activity.NONE;
                         isFishingVisible = false;
                         Player.hasStartedFishing = false;
                         FishingMinigame.gameOver = false;
@@ -505,7 +505,7 @@ public class GameScreen implements Screen, InputProcessor {
         }
     }
     private void renderSelectedCell() {
-        if (player.currentActivity != PlayerAnimation.Activity.NONE) {
+        if (player.currentActivity != Animator.Activity.NONE) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -637,42 +637,41 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
         if (button == Input.Buttons.LEFT) {
-            // Convert screen coordinates to world coordinates
+//            // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
-
             int cellX = (int) touchPosition.x / 16;
             int cellY = (int) touchPosition.y / 16;
             selectedCell.set(cellX, cellY);
 
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             if (player.getPosition().dst(touchPosition2D) <= 50) {
-                System.out.println(touchPosition2D);
-                System.out.println(player.getPosition());
+//                System.out.println(touchPosition2D);
+//                System.out.println(player.getPosition());
                 player.updateActivityAnimation(currentAct, touchPosition2D);
                 Land land = landManager.getLand(cellY,cellX);
 
                 if (Objects.equals(currentAct, "hoe")) {
                     land.hoe();
-                    System.out.println(land.getCurrentState());
+//                    System.out.println(land.getCurrentState());
                     if (land.isEmpty()) {
                         Crop crop = new Crop(Items.Item.RICE, cellX * 16, cellY * 16); // Example crop
                         land.plantCrop(crop);
                     }
-                    System.out.println(land.isEmpty());
+//                    System.out.println(land.isEmpty());
                 }
                 else if (Objects.equals(currentAct, "water")){
                     land.water();
                     if (!land.isEmpty()) {
                         land.getCrop().setWatered(true);
                     }
-                    System.out.println(land.getCurrentState());
+//                    System.out.println(land.getCurrentState());
                 } else if (Objects.equals(currentAct, "harvest")){
                     if (!land.isEmpty()) {
                         DroppedItem droppedItem = land.harvestCrop();
                         if (droppedItem != null) {
                             droppedItems.add(droppedItem);
-                            System.out.println("Item dropped: " + droppedItem.getItemType());
+//                            System.out.println("Item dropped: " + droppedItem.getItemType());
                         }
                     }
                 }
