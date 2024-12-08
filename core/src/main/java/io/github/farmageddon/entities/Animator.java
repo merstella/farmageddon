@@ -111,7 +111,7 @@ public class Animator {
         monsterAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames4[4], 0, 6);
         monsterAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames4[4], 0, 6);
         monsterAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[4], 0, 6);
-        monsterAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames4[6], 0, 4);
+        monsterAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames4[6], 0, 5, 0.5f);
         monsterAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames5[0], 0, 4);
         monsterAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames5[1], 0, 4);
         monsterAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames5[1], 0, 4);
@@ -135,7 +135,11 @@ public class Animator {
         System.arraycopy(frames, startFrame, directionFrames, 0, frameCount);
         return new Animation<>(0.1f, directionFrames);
     }
-
+    private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
+        TextureRegion[] directionFrames = new TextureRegion[frameCount];
+        System.arraycopy(frames, startFrame, directionFrames, 0, frameCount);
+        return new Animation<>(frameDuration, directionFrames);
+    }
     private Animation<TextureRegion> createFlippedAnimation(TextureRegion[] frames, int startFrame, int frameCount) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
         for (int i = 0; i < frameCount; i++) {
@@ -144,7 +148,14 @@ public class Animator {
         }
         return new Animation<>(0.1f, directionFrames);
     }
-
+    private Animation<TextureRegion> createFlippedAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
+        TextureRegion[] directionFrames = new TextureRegion[frameCount];
+        for (int i = 0; i < frameCount; i++) {
+            directionFrames[i] = new TextureRegion(frames[startFrame + i]);
+            directionFrames[i].flip(true, false); // Flip horizontally
+        }
+        return new Animation<>(frameDuration, directionFrames);
+    }
     // Remove or modify this method
     public void render(SpriteBatch batch, float x, float y, Direction direction) {
         // Update state time
@@ -153,7 +164,8 @@ public class Animator {
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = animations[direction.ordinal()].getKeyFrame(stateTime, true);
         // Draw the current frame at the specified position
-        batch.draw(currentFrame, x, y, 32 , 32);
+//        System.out.println(2);
+        batch.draw(currentFrame, x, y, Player.WIDTH , Player.HEIGHT);
 
 
     }
@@ -161,7 +173,10 @@ public class Animator {
         stateTime += Gdx.graphics.getDeltaTime();
 
         // Get the current frame of the animation for the specified direction
-        TextureRegion currentFrame = animations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
+        TextureRegion currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
+        if (monsterActivity == MonsterActivity.DEAD) {
+            currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, false);
+        }
         // Draw the current frame at the specified position
         if (monsterActivity == MonsterActivity.ATTACK_DOWN ||
         monsterActivity == MonsterActivity.ATTACK_DOWN_LEFT || monsterActivity == MonsterActivity.ATTACK_LEFT
@@ -171,7 +186,9 @@ public class Animator {
 
             batch.draw(currentFrame, x - 16, y - 16, 64, 64);
         }
-        else batch.draw(currentFrame, x, y, 32, 32);
+        else {
+            batch.draw(currentFrame, x, y, 32, 32);
+        }
     }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity) {
         if (activity == Activity.NONE) return;
