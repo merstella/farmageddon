@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.farmageddon.entities.Player;
 import io.github.farmageddon.screens.GameScreen;
 
 public class InventoryScreen implements Screen {
@@ -14,7 +15,7 @@ public class InventoryScreen implements Screen {
     private Texture inventoryTexture;
     private Texture equipmentTexture;
     public SpriteBatch batch;
-    private InventoryUI inventoryUI;
+//    private InventoryUI inventoryUI;
     public Player player;
     private GameScreen game;
     public Texture cursorTexture;
@@ -56,7 +57,7 @@ public class InventoryScreen implements Screen {
 
         System.out.println(player.inventory.size());
         for (int i = 0; i < player.inventory.size(); i++) {
-            Texture itemTexture = player.inventory.get(i).getTexture();
+            Texture itemTexture = player.inventory.get(i).getTextureRegion().getTexture();
             batch.draw(itemTexture, slotX, slotY, itemTexture.getWidth(), itemTexture.getHeight());
             slotX += slotSize;
             if (i == 4 || i == 9 || i== 14){

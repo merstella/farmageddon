@@ -14,9 +14,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import io.github.farmageddon.markets.Items;
-import io.github.farmageddon.markets.Market;
+
+import io.github.farmageddon.entities.Player;
 import io.github.farmageddon.screens.GameScreen;
+import io.github.farmageddon.ultilites.Items;
 
 public class MarketScreen implements Screen {
     private final int titleSize;
@@ -100,7 +101,7 @@ public class MarketScreen implements Screen {
                         player.subMoney(selectedItem.getCost()); // Giảm tiền
                         market.marketItems.remove(itemIndexInventory); // Loại bỏ mục
                         player.inventory.add(selectedItem);// thêm item vào inventory
-                        System.out.println("Item purchased: " + selectedItem.getItemName());
+                        System.out.println("Item purchaed: " + selectedItem.getItem());
                         System.out.println("Remaining money: " + player.money);
                     } else {
                         System.out.println("Not enough money!");
@@ -155,7 +156,7 @@ public class MarketScreen implements Screen {
         float slotYInventory = slotYstartInventory;
 
         for (int i = 0; i < player.inventory.size(); i++) {
-            Texture itemTexture = player.inventory.get(i).getTexture();
+            Texture itemTexture = player.inventory.get(i).getTextureRegion().getTexture();
             batch.draw(itemTexture, slotXInventory, slotYInventory, itemTexture.getWidth(), itemTexture.getHeight());
             slotXInventory += slotSize;
             if (i == 4 || i == 9 || i== 14){
@@ -172,7 +173,7 @@ public class MarketScreen implements Screen {
 
         //System.out.println(market.marketItems.size());
         for (int i = 0; i < market.marketItems.size(); i++) {
-            Texture itemTexture = market.marketItems.get(i).getTexture();
+            Texture itemTexture = market.marketItems.get(i).getTextureRegion().getTexture();
             batch.draw(itemTexture, slotXMarket, slotYMarket, itemTexture.getWidth(), itemTexture.getHeight());
             slotXMarket += slotSize;
             if (i == 4 || i == 9 || i== 14){
@@ -214,12 +215,7 @@ public class MarketScreen implements Screen {
         float costYInventory = screenHeight/4 + 136;
         int itemIndexInventory = getItemIndexOnInventory();
         if (itemIndexInventory < player.inventory.size()){
-            if (player.inventory.get(itemIndexInventory).getItemName() != null) {
-                font.draw(batch, String.valueOf(player.inventory.get(itemIndexInventory).getCost()), costXInventory, costYInventory);
-            }
-            else {
-                font.draw(batch, "0", costXInventory, costYInventory);
-            }
+            font.draw(batch, String.valueOf(player.inventory.get(itemIndexInventory).getCost()), costXInventory, costYInventory);
         }
 
 

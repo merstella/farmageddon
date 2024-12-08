@@ -15,7 +15,6 @@ public class Main extends Game {
     public SpriteBatch batch;
     public static AssetManager manager;
     public Texture blank;
-//    public TorchLightHandler torchLightHandler;
 
 
     @Override
@@ -24,7 +23,7 @@ public class Main extends Game {
         blank = new Texture(Gdx.files.internal("farm.png"));
 
         manager = new AssetManager();
-        manager.load("Sound/music.mp3", Music.class);
+//        manager.load("Sound/music.mp3", Music.class);
         manager.finishLoading();
         this.setScreen(new MainMenuScreen(this));
 
