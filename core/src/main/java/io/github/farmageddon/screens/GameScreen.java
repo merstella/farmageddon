@@ -5,6 +5,7 @@ import box2dLight.RayHandler;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
@@ -28,6 +29,7 @@ import io.github.farmageddon.Crops.Land;
 import io.github.farmageddon.Crops.LandManager;
 //import io.github.farmageddon.markets.Market;
 import io.github.farmageddon.entities.*;
+import io.github.farmageddon.Market;
 import io.github.farmageddon.ultilites.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
@@ -35,24 +37,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import static com.badlogic.gdx.graphics.Color.WHITE;
-//import static io.github.farmageddon.entities.Player.eqipInventory;
-//import static io.github.farmageddon.ultilites.GameTimeClock.*;
+//import static io.github.farmageddon.Player.maxEqipInventorySize;
+//import static io.github.farmageddon.Player.slotCursor;
+
 
 public class GameScreen implements Screen, InputProcessor{
     private final Main game;
 
-    private OrthographicCamera camera;
-    private Viewport viewport;
-    private Player player; // Your player class
+    private final OrthographicCamera camera;
+    private final Viewport viewport;
+    private final Player player; // Your player class
     public static TiledMap map; // Your game map
-    private OrthogonalTiledMapRenderer mapRenderer;
-    private Vector3 touchPosition = new Vector3();
-    private BitmapFont font;
+    private final OrthogonalTiledMapRenderer mapRenderer;
+    private final Vector3 touchPosition = new Vector3();
+    private final BitmapFont font;
     public static ShapeRenderer shapeRenderer;
 
-    private GameTimeClock clock;
-    private Timer_ timer;
-    private boolean showDebugInfo = true;
+    private final GameTimeClock clock;
+    private final Timer_ timer;
+    private final boolean showDebugInfo = true;
     private String time;
     private static Label timeLabel, timeStringLabel, daysLeftLabel, daysLeftNum;
     private static Label scoreLabel;
@@ -73,6 +76,7 @@ public class GameScreen implements Screen, InputProcessor{
     public Animator.Activity currentActivity;
     private Animator animation;
 
+
     // Items Texture
     public Texture CoinTexture;
     public Texture item1Texture;
@@ -80,6 +84,7 @@ public class GameScreen implements Screen, InputProcessor{
     public Texture item3Texture;
     public Texture item4Texture;
     public Texture FishTexture;
+    public Texture defaultTexture;
     public Items items;
     public static Items Fish;
     public static Items Default;
@@ -99,12 +104,12 @@ public class GameScreen implements Screen, InputProcessor{
     private float playerY;
 
 
-    private Music music;
+    private final Music music;
 
     private ArrayList<Animal> animals;
-    private Stage stage;
+    private final Stage stage;
 
-    private Vector2 selectedCell;
+    private final Vector2 selectedCell;
     int currentDays;
 
     //demo crops
@@ -115,12 +120,12 @@ public class GameScreen implements Screen, InputProcessor{
     Array<Entity> houses;
 
     // demo land
-    private LandManager landManager;
+    private final LandManager landManager;
 //    private Land singleLand;
 
     public static Array<DroppedItem> droppedItems;
 
-//    public static boolean cursorLeft, cursorRight;
+    private float elapsedTime = 0f;
 //    private Queue<Pair<Animal, Animal>> breedingQueue = new LinkedList<>();
 
     private Array<Monster> zombies;
@@ -166,6 +171,7 @@ public class GameScreen implements Screen, InputProcessor{
         initMarket();
         initPlayerInv();
 
+//        market = new Market(100, 100, 200);
         initAnimal();
         zombies = new Array<Monster>();
         plants = new Array<Plant>();
@@ -248,24 +254,20 @@ public class GameScreen implements Screen, InputProcessor{
     }
 
     public void initPlayerInv() {
+            defaultTexture = new Texture(Gdx.files.internal("default.png"));
+            Default = new Items(defaultTexture, Items.ItemType.NULL , Items.Item.NULL ,0,0);
+        while (player.eqipInventory.size() <= player.maxEqipInventorySize){
+            player.eqipInventory.add(Default);
+        }
+
         FishTexture = new Texture(Gdx.files.internal("Animals\\Bee\\Bee_Hive.png"));
-        Fish = new Items(FishTexture,Items.ItemType.FOOD,Items.Item.FISH, 10);
+        Fish = new Items(FishTexture, Items.ItemType.FOOD, Items.Item.FISH,10,1);
+        player.setItem(Fish);
 
         CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
-        items = new Items(CoinTexture, Items.ItemType.OTHER, Items.Item.COIN, 10);
-        player.setEquipItem(items,0);// them vao equip
+        items = new Items(CoinTexture, Items.ItemType.OTHER, Items.Item.COIN, 10,1);
+        player.setEquipItem(items,0);
 
-//        item1Texture = new Texture(Gdx.files.internal("SellButton.png"));
-//        items = new Items(item1Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
-//        player.setEquipItem(items,0);
-//
-//        item2Texture = new Texture(Gdx.files.internal("BuyButton.png"));
-//        items = new Items(item2Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
-//        player.setEquipItem(items,1);// them vao inventory
-//
-//        item3Texture = new Texture(Gdx.files.internal("moneyBar.png"));
-//        items = new Items(item3Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
-//        player.setEquipItem(items,2);
 
         item4Texture = new Texture(Gdx.files.internal("Well.png"));
         items = new Items(item4Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
@@ -291,7 +293,6 @@ public class GameScreen implements Screen, InputProcessor{
         inventoryUI = new InventoryUI(titleSize);
         marketScreen = new MarketScreen(titleSize,market, player);
         inventoryScreen = new InventoryScreen(titleSize, player);
-
         // fishing minigame
         minigame = new FishingMinigame();
         minigame.create();
@@ -378,6 +379,7 @@ public class GameScreen implements Screen, InputProcessor{
         isNewDay = false;
 
         handleKeyDown(delta);
+
     }
 
     private void updateZombies(float delta) {
@@ -537,11 +539,11 @@ public class GameScreen implements Screen, InputProcessor{
     }
 
     private void handleKeyDown(float delta) {
-
-        // bấm M để hiện lên cửa sổ market
+        // bấm m để hiện lên cửa sổ market
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             isMarketVisible = !isMarketVisible;
             System.out.println("marketScreen");
+
             if (isMarketVisible == true) {
                 marketScreen.show();
             } else {
@@ -552,14 +554,16 @@ public class GameScreen implements Screen, InputProcessor{
             marketScreen.render(delta);
         }
 
+
         // bấm B để hiện lên cửa sổ inventory
         if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
             isInventoryVisible = !isInventoryVisible;
             System.out.println("inventoryScreen");
-
-            if (isInventoryVisible == true) {
+            if (isInventoryVisible) {
+                System.out.println("show");
                 inventoryScreen.show();
             } else {
+                System.out.println("hide");
                 inventoryScreen.hide();
             }
         }
@@ -577,6 +581,7 @@ public class GameScreen implements Screen, InputProcessor{
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             inventoryUI.slotCol = 1;
             player.slotCursor = 1;
+            System.out.println("num 2");
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
             inventoryUI.slotCol = 2;
@@ -591,116 +596,130 @@ public class GameScreen implements Screen, InputProcessor{
             player.slotCursor = 4;
         }
 
-
-        //    bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí SlotCursor của equipInventory == "Coin"
-        if (player.eqipInventory.get(player.slotCursor).getItem() == Items.Item.COIN) {
-            if ((player.getPosition().x < 896f && player.getPosition().x > 887f && player.getPosition().y < 500f && player.getPosition().y > 480f) ||
-                (player.getPosition().x < 881f && player.getPosition().x > 872f && player.getPosition().y < 556f && player.getPosition().y > 518f) ||
-                (player.getPosition().x < 898f && player.getPosition().x > 892f && player.getPosition().y < 570f && player.getPosition().y > 562f)) {
-                if (FishingVisible == false) {
-                    if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-                        cursorRight = !cursorRight;
-                        System.out.println("F clicked");
+        //    bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí player.slotCursor của equipInventory == "Coin"
+//        if (player.eqipInventory.get(player.slotCursor).getNum() != 0) {
+            if (player.eqipInventory.get(player.slotCursor).getItem() == (Items.Item.COIN)) {
+                if ((player.getPosition().x < 896f && player.getPosition().x > 887f && player.getPosition().y < 500f && player.getPosition().y > 480f) ||
+                    (player.getPosition().x < 881f && player.getPosition().x > 872f && player.getPosition().y < 556f && player.getPosition().y > 518f) ||
+                    (player.getPosition().x < 898f && player.getPosition().x > 892f && player.getPosition().y < 570f && player.getPosition().y > 562f)) {
+                    if (FishingVisible == false) {
+                        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                            cursorRight = !cursorRight;
+                            float time = Gdx.graphics.getDeltaTime();
+                            elapsedTime += time;
+                        }
+                    }
+                } else if ((player.getPosition().x < 1028f && player.getPosition().x > 1026f && player.getPosition().y < 587f && player.getPosition().y > 576f) ||
+                    (player.getPosition().x < 1045f && player.getPosition().x > 1039f && player.getPosition().y < 572f && player.getPosition().y > 563f) ||
+                    (player.getPosition().x < 1064f && player.getPosition().x > 1060f && player.getPosition().y < 549f && player.getPosition().y > 516f) ||
+                    (player.getPosition().x < 1041f && player.getPosition().x > 1039f && player.getPosition().y < 514f && player.getPosition().y > 480f) ||
+                    (player.getPosition().x < 1049f && player.getPosition().x > 1044f && player.getPosition().y < 498f && player.getPosition().y > 465f)) {
+                    if (FishingVisible == false) {
+                        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                            cursorLeft = !cursorLeft;
+                            float time = Gdx.graphics.getDeltaTime();
+                            elapsedTime += time;
+                        }
                     }
                 }
-            } else if ((player.getPosition().x < 1028f && player.getPosition().x > 1026f && player.getPosition().y < 587f && player.getPosition().y > 576f) ||
-                (player.getPosition().x < 1045f && player.getPosition().x > 1039f && player.getPosition().y < 572f && player.getPosition().y > 563f) ||
-                (player.getPosition().x < 1064f && player.getPosition().x > 1060f && player.getPosition().y < 549f && player.getPosition().y > 516f) ||
-                (player.getPosition().x < 1041f && player.getPosition().x > 1039f && player.getPosition().y < 514f && player.getPosition().y > 480f) ||
-                (player.getPosition().x < 1049f && player.getPosition().x > 1044f && player.getPosition().y < 498f && player.getPosition().y > 465f)) {
-                if (FishingVisible == false) {
-                    if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-                        cursorLeft = !cursorLeft;
+                if (cursorRight) {
+                    isFishingVisible = !isFishingVisible;
+                    FishingVisible = !FishingVisible;
+//            if (Player.eqipInventory.get(Player.player.slotCursor).getItem() == Items.Item.COIN) {
+                    // Bật hoạt ảnh START_FISHING
+                    player.currentActivity = Animator.Activity.START_FISHING_RIGHT;
+                    player.updateFishingAnimation();
+//            }
+                    cursorRight = false;
+                }
+                if (cursorLeft) {
+                    isFishingVisible = !isFishingVisible;
+                    FishingVisible = !FishingVisible;
+//            if (Player.eqipInventory.get(Player.player.slotCursor).getItem()== Items.Item.COIN) {
+                    // Bật hoạt ảnh START_FISHING
+                    player.currentActivity = Animator.Activity.START_FISHING_LEFT;
+                    player.updateFishingAnimation();
+//            }
+                    cursorLeft = false;
+                }
+                if (FishingVisible) {
+                    switch (player.currentActivity) {
+                        case START_FISHING_RIGHT:
+                            // Kiểm tra nếu hoạt ảnh đã chạy xong
+                            if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                                player.currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
+                            }
+                            break;
+                        case START_FISHING_LEFT:
+                            // Kiểm tra nếu hoạt ảnh đã chạy xong
+                            if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                                player.currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
+                            }
+                            break;
+
+                        case WAIT_FISHING_LEFT:
+                            minigame.render();
+                            // Kiểm tra nếu minigame đã kết thúc
+                            if (FishingMinigame.cursorGameOver) {
+                                player.currentActivity = Animator.Activity.DONE_FISHING_LEFT;
+                            }
+                            break;
+                        case WAIT_FISHING_RIGHT:
+                            minigame.render();
+                            // Kiểm tra nếu minigame đã kết thúc
+                            if (FishingMinigame.cursorGameOver) {
+                                player.currentActivity = Animator.Activity.DONE_FISHING_RIGHT;
+                            }
+                            break;
+                        case DONE_FISHING_RIGHT:
+                            // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
+                            if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                                player.currentActivity = Animator.Activity.NONE;
+                                FishingVisible = false;
+                                Player.hasStartedFishing = false;
+                                FishingMinigame.gameOver = false;
+                                FishingMinigame.cursorGameOver = false;
+                                elapsedTime = 0f;
+                                System.out.println(player.currentActivity);
+                            }
+                            break;
+                        case DONE_FISHING_LEFT:
+                            // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
+                            if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                                System.out.println("Fishing process completed!");
+                                player.currentActivity = Animator.Activity.NONE;
+                                FishingVisible = false;
+                                isFishingVisible = false;
+                                Player.hasStartedFishing = false;
+                                FishingMinigame.gameOver = false;
+                                FishingMinigame.cursorGameOver = false;
+                                elapsedTime = 0f;
+                            }
+                            break;
+
+                        default:
+                            break;
                     }
                 }
             }
-
-            if (cursorRight == true) {
-                FishingVisible = !FishingVisible;
-                isFishingVisible = !isFishingVisible;
-                // Bật hoạt ảnh START_FISHING
-                player.currentActivity = Animator.Activity.START_FISHING_RIGHT;
-                player.updateFishingAnimation();
-                cursorRight = false;
-            }
-            if (cursorLeft == true) {
-                FishingVisible = !FishingVisible;
-                isFishingVisible = !isFishingVisible;
-                // Bật hoạt ảnh START_FISHING
-                player.currentActivity = Animator.Activity.START_FISHING_LEFT;
-                player.updateFishingAnimation();
-//                }
-                cursorLeft = false;
-            }
-            if (FishingVisible == true) {
-                switch (player.currentActivity) {
-                    case START_FISHING_RIGHT:
-                        // Kiểm tra nếu hoạt ảnh đã chạy xong
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
-                            player.currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
-                            System.out.println(player.currentActivity);
-                        }
-                        break;
-                    case START_FISHING_LEFT:
-                        // Kiểm tra nếu hoạt ảnh đã chạy xong
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
-                            player.currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
-                            System.out.println("Start fishing animation left completed. Waiting for minigame...");
-                        }
-                        break;
-
-                    case WAIT_FISHING_LEFT:
-                        minigame.render();
-                        // Kiểm tra nếu minigame đã kết thúc
-                        if (FishingMinigame.cursorGameOver == true) {
-                            player.currentActivity = Animator.Activity.DONE_FISHING_LEFT;
-                            System.out.println("Minigame finished. Moving to Done Fishing animation...");
-                        }
-                        break;
-
-                    case WAIT_FISHING_RIGHT:
-                        minigame.render();
-                        // Kiểm tra nếu minigame đã kết thúc
-                        if (FishingMinigame.cursorGameOver == true) {
-                            player.currentActivity = Animator.Activity.DONE_FISHING_RIGHT;
-//                        System.out.println("Minigame finished. Moving to Done Fishing animation...");
-                            System.out.println(player.currentActivity);
-                        }
-                        break;
-                    case DONE_FISHING_RIGHT:
-                        // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
-//                        System.out.println("Fishing process completed!");
-                            player.currentActivity = Animator.Activity.NONE;
-                            FishingVisible = false;
-                            Player.hasStartedFishing = false;
-                            FishingMinigame.gameOver = false;
-                            FishingMinigame.cursorGameOver = false;
-                            System.out.println(player.currentActivity);
-                        }
-                        break;
-
-                    case DONE_FISHING_LEFT:
-                        // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
-//                            System.out.println("Fishing process completed!");
-                            player.currentActivity = Animator.Activity.NONE;
-                            FishingVisible = false;
-                            isFishingVisible = false;
-                            Player.hasStartedFishing = false;
-                            FishingMinigame.gameOver = false;
-                            FishingMinigame.cursorGameOver = false;
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-            cursorLeft = false;
-        }
-
+//        }
     }
+
+    private boolean isAnimationPlaying(Animator animation, Animator.Activity currentActivity) {
+        if (animation == null) return false;
+
+        int index = currentActivity.ordinal();
+        if (index < 0 || index >= actionAnimations.length) return false;
+
+        Animation currentAnimation = actionAnimations[index];
+        if (currentAnimation == null) return false;
+
+        return !currentAnimation.isAnimationFinished(Animator.stateTime);
+    }
+
+
+
+
     private void renderSelectedCell() {
         if (player.currentActivity != Animator.Activity.NONE) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -809,6 +828,7 @@ public class GameScreen implements Screen, InputProcessor{
 
     private void renderPlayer() {
         player.render(game.batch);
+
     }
 
     private void renderDebugInfo() {
@@ -1029,4 +1049,5 @@ public class GameScreen implements Screen, InputProcessor{
     public boolean scrolled(float amountX, float amountY) {
         return false;
     }
+
 }
