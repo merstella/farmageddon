@@ -16,7 +16,7 @@ public class Animator {
     private final Animation<TextureRegion>[] animations;
     public final Animation<TextureRegion>[] actionAnimations;
     public final Animation<TextureRegion>[] monsterAnimations;
-    public float stateTime;
+    public static float stateTime;
 
 
     public enum Direction {
@@ -153,7 +153,7 @@ public class Animator {
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = animations[direction.ordinal()].getKeyFrame(stateTime, true);
         // Draw the current frame at the specified position
-        batch.draw(currentFrame, x, y, Player.WIDTH , Player.HEIGHT);
+        batch.draw(currentFrame, x, y, 32 , 32);
 
 
     }

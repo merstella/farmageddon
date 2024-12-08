@@ -7,8 +7,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.screens.GameScreen;
-import io.github.farmageddon.ultilites.CollisionHandling;
+import io.github.farmageddon.ultilites.FishingMinigame;
 import io.github.farmageddon.ultilites.Items;
+import io.github.farmageddon.ultilites.CollisionHandling;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -18,20 +19,27 @@ public class Player extends Entity {
     public static final int HEIGHT = 32;
 
 
-    private final Animator animation;
+    public Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
-    public static ArrayList<Items> inventory;
-    public static ArrayList<Items> eqipInventory;
+    public ArrayList<Items> inventory;
+    public ArrayList<Items> eqipInventory;
     private final int maxInventorySize = 25;
-    private final int maxEqipInventorySize = 5;
-    public static int slotCursor;
+    public final int maxEqipInventorySize = 5;
+    public int slotCursor;
     public int money = 0;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;
+
+    // Fishing
     public static boolean hasStartedFishing;
+    private boolean isFishing;
+    private boolean fishingComplete;
+    public FishingMinigame minigame;
+    private float elapsedTime = 0f;
+//    private TorchLightHandler torchLightHandler;
 
     public Player(float x, float y, float speed) {
         super(x, y, speed, false, 100);
@@ -44,8 +52,8 @@ public class Player extends Entity {
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
     // inventory contact
-    public void setEquipItem(Items item) {
-        eqipInventory.add(item);
+    public void setEquipItem(Items item, int index) {
+        eqipInventory.set(index, item);
     }
 
     public void removeEquipItem(Items item) {
@@ -72,10 +80,14 @@ public class Player extends Entity {
     public void update(float delta) {
         super.update(delta);
         updateDirectionAnimation(delta);
+        minigame = new FishingMinigame();
+        minigame.create();
+
     }
 
     public void updateFishingAnimation() {
         currentActivity = getFishingDirection();
+        System.out.println(currentActivity);
     }
 
     public void updateActivityAnimation(String type, Vector2 lookPoint) {
@@ -197,10 +209,6 @@ public class Player extends Entity {
     }
 
     public Animator.Activity getFishingDirection() {
-//        if ((getPosition().x < 896f && getPosition().x > 891f && getPosition().y < 485f && getPosition().y > 480f)  ) {
-//            return PlayerAnimation.Activity.START_FISHING_RIGHT;
-//        }
-//        else return null;
         if (!hasStartedFishing) {
             hasStartedFishing = true; // Đánh dấu rằng hành động đã bắt đầu
             if (GameScreen.cursorRight) {

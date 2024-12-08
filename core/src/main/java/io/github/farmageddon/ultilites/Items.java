@@ -11,6 +11,7 @@ public class Items {
     private int num;
     private int cost;
     public enum ItemType{
+        DEFAULT,
         SEED,
         TOOL,
         FOOD,
@@ -18,6 +19,7 @@ public class Items {
     }
 
     public enum Item{
+        DEFAULT,
         RICE,
         TOMATO,
         CARROT,

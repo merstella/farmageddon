@@ -1,5 +1,7 @@
 package io.github.farmageddon.screens;
 
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
@@ -33,7 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import static com.badlogic.gdx.graphics.Color.WHITE;
 
-public class GameScreen implements Screen, InputProcessor {
+public class GameScreen implements Screen, InputProcessor{
     private final Main game;
 
     private OrthographicCamera camera;
@@ -149,6 +152,17 @@ public class GameScreen implements Screen, InputProcessor {
 //        music.setLooping(true);
 //        music.setVolume(0.2f);
 //        music.play();
+
+        // torch
+//        torch = new TorchLightHandler(world);
+    }
+
+    public void initMarket() {
+        Texture defaultTexture = new Texture(Gdx.files.internal("default.png"));
+        Default = new Items(defaultTexture,Items.ItemType.DEFAULT,Items.Item.DEFAULT, 0);
+        while (player.eqipInventory.size() <= player.maxEqipInventorySize) {
+            player.eqipInventory.add(Default);
+        }
     }
 
 

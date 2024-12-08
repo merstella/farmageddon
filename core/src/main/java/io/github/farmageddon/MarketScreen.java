@@ -126,7 +126,6 @@ public class MarketScreen implements Screen {
 
     @Override
     public void render(float v) {
-
         batch.begin();
 
         // kich thuoc cua screen

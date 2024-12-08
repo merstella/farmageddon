@@ -15,14 +15,10 @@ public class Main extends Game {
     public SpriteBatch batch;
     public static AssetManager manager;
     public Texture blank;
-    private FileApplicationLogger logger;
+
 
     @Override
     public void create() {
-        logger = new FileApplicationLogger("game_logs.log");
-        Gdx.app.setApplicationLogger(logger);
-        Gdx.app.log("Startup", "Game started successfully.");
-
         batch = new SpriteBatch();
         blank = new Texture(Gdx.files.internal("farm.png"));
 
@@ -41,9 +37,6 @@ public class Main extends Game {
     public void dispose() {
         manager.dispose();
         batch.dispose();
-        if (logger != null) {
-            logger.dispose();
-        }
     }
 
 }
