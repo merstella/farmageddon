@@ -145,10 +145,10 @@ public class GameScreen implements Screen, InputProcessor {
 //        specialPlant = new Plants();
         droppedItems = new Array<>();
         initDebug();
-        music = Main.manager.get("Sound/music.mp3", Music.class);
-        music.setLooping(true);
-        music.setVolume(0.2f);
-        music.play();
+//        music = Main.manager.get("Sound/music.mp3", Music.class);
+//        music.setLooping(true);
+//        music.setVolume(0.2f);
+//        music.play();
     }
 
 
