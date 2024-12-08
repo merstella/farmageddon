@@ -11,7 +11,16 @@ import static io.github.farmageddon.screens.GameScreen.shapeRenderer;
 
 public class CollisionHandling {
     static GameScreen gameScreen;
-    private static final MapObjects collisionLayer = GameScreen.map.getLayers().get("Object Layer 1").getObjects();
+    public static final MapObjects collisionLayer = GameScreen.map.getLayers().get("Object Layer 1").getObjects();
+
+    /**
+     * Retrieves the collision layer containing all collision objects.
+     *
+     * @return The MapObjects representing collision objects.
+     */
+    public static MapObjects getCollisionLayer() {
+        return collisionLayer;
+    }
 
     public static boolean isColliding(Rectangle entityBound) {
         for (MapObject object : collisionLayer) {

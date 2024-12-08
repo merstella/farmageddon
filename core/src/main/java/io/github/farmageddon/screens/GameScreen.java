@@ -99,9 +99,9 @@ public class GameScreen implements Screen, InputProcessor {
     public static boolean cursorLeft, cursorRight;
 //    private Queue<Pair<Animal, Animal>> breedingQueue = new LinkedList<>();
 
-    private Monster monster;
-//    private Plants specialPlant;
-//
+    private Array<Monster> zombies;
+    private static Array<Plant> plants;
+    private PathFinder pathFinder;
 
     public GameScreen(Main game) {
         this.game = game;
@@ -109,7 +109,7 @@ public class GameScreen implements Screen, InputProcessor {
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
-        camera.zoom = .25f;
+        camera.zoom = .75f;
         camera.update();
         map = new TmxMapLoader().load("mapok.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
@@ -141,7 +141,22 @@ public class GameScreen implements Screen, InputProcessor {
 //        initPlayerInv();
 
         initAnimal();
-        monster = new Monster(500, 300, 50, player.getPosition().x, player.getPosition().y, 100);
+        zombies = new Array<Monster>();
+        plants = new Array<Plant>();
+        pathFinder = new PathFinder(Main.GAME_WIDTH, Main.GAME_HEIGHT, 16, 16);
+        // Initialize zombies and plants
+        zombies.add(new Monster(322, 143, 30,100));
+        zombies.add(new Monster(120, 455, 30,100));
+        zombies.add(new Monster(178, 456, 30,100));
+
+
+        plants.add(new Plant(600, 300, 100));
+        plants.add(new Plant(300, 400, 100));
+        plants.add(new Plant(100, 100, 100));
+        plants.add(new Plant(700, 100, 100));
+
+        loadCollisionLayer();
+
 //        specialPlant = new Plants();
         droppedItems = new Array<>();
         initDebug();
@@ -152,15 +167,26 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
 
+    private void loadCollisionLayer() {
+        // Example: Assuming you have a list of collision objects
+        for (MapObject object : CollisionHandling.collisionLayer) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
+                pathFinder.addCollisionObject(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+            }
+        }
+    }
+
+
     private void initAnimal() {
 //        animal = new Animal(680, 230, "Chicken", stage);
 //        animal.setBound(620, 690, 160, 260);
         animals = new ArrayList<>();
         Animal chicken1 = new Animal(650, 180, "Chicken", stage);
-        chicken1.setBound(620, 690, 160, 260); // Set boundaries
+        chicken1.setBound(620, 690, 160, 260);
 
         Animal chicken2 = new Animal(670, 200, "Chicken", stage);
-        chicken2.setBound(620, 690, 160, 260); // Set boundaries
+        chicken2.setBound(620, 690, 160, 260);
         animals.add(chicken1);
         animals.add(chicken2);
 
@@ -225,8 +251,9 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         player.update(delta);
-        monster.setTargetPosition(player.getPosition());
-        monster.update(delta);
+        System.out.println(player.getPosition());
+
+        updateZombies(delta);
         camera.position.set(
             player.getPosition().x + 16,
             player.getPosition().y + 16,
@@ -250,10 +277,18 @@ public class GameScreen implements Screen, InputProcessor {
         shapeRenderer.setProjectionMatrix(camera.combined);
         renderHouse();
         renderLand(delta);
-//        renderAnimal();
-        // renderplant, render monster
+
+
+
         renderPlayer();
-        monster.render(game.batch);
+        for (Plant plant : plants) {
+            plant.render(game.batch);
+        }
+        for (Monster monster : zombies) {
+            monster.render(game.batch);
+
+        }
+        renderGridDebug();
         renderSelectedCell();
         handleCrop();
         renderCrop();
@@ -262,11 +297,85 @@ public class GameScreen implements Screen, InputProcessor {
         checkItemPickup(player);
         renderAmbientLighting();
         renderDebugInfo();
+//        drawDebug();
 //        printAnimalDebugInfo();
         CollisionHandling.renderCollision();
         isNewDay = false;
 
 //        handleKeyDown(delta);
+    }
+
+    private void updateZombies(float delta) {
+
+        // Assign paths to all zombies
+        assignPathsToZombies(zombies, plants, pathFinder);
+
+        // Update each zombie's position
+        for (Monster zombie : zombies) {
+            zombie.update(delta); // Move the zombie along the path
+        }
+
+    }
+
+    public void assignPathsToZombies(Array<Monster> zombies, Array<Plant> plants, PathFinder pathFinder) {
+        for (Monster zombie : zombies) {
+            // Check if the zombie already has a target plant
+            Plant currentTarget = zombie.getTargetPlant();
+
+            // If the target plant is null or disposed, find a new target
+            if (currentTarget == null || currentTarget.isMarkedForRemoval()) {
+                // Check if there are any plants left to target
+                if (plants.size > 0) {
+                    // Find the nearest valid plant
+                    Plant nearestPlant = findNearestPlant(zombie, plants);
+                    if (nearestPlant != null && !nearestPlant.isMarkedForRemoval()) {
+                        // Find a path to the nearest plant
+                        GridNode startNode = pathFinder.getGridNodeForEntity(zombie.getPosition());
+                        GridNode endNode = pathFinder.getGridNodeForEntity(nearestPlant.getPosition());
+
+                        int startX = pathFinder.getGridX(startNode);
+                        int startY = pathFinder.getGridY(startNode);
+                        int endX = pathFinder.getGridX(endNode);
+                        int endY = pathFinder.getGridY(endNode);
+
+                        Array<GridNode> path = new Array<>();
+                        if (pathFinder.findPath(startX, startY, endX, endY, path) == PathFinder.FOUND) {
+                            zombie.setPath(path); // Assign the path to the zombie
+                            zombie.setTargetPlant(nearestPlant); // Set the new target plant
+                        }
+                    }
+                } else {
+                    // If no plants left, make the zombie idle or stop movement
+                    zombie.setTargetPlant(null); // Set target to null as no plant is available
+                    zombie.updateIdleAnimation(); // Update idle animation or stop movement
+                }
+            }
+        }
+    }
+
+
+
+    public Plant findNearestPlant(Monster zombie, Array<Plant> plants) {
+        Plant nearestPlant = null;
+        float minDistance = Float.MAX_VALUE; // Start with a very large value
+
+        for (Plant plant : plants) {
+            float distance = zombie.getPosition().dst(plant.getPosition()); // Distance between zombie and plant
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPlant = plant; // Update nearest plant
+            }
+        }
+        System.out.println(nearestPlant.getPosition());
+        return nearestPlant;
+    }
+    private void renderGridDebug() {
+        // Set up the ShapeRenderer
+
+        // Draw the grid (you can call this method)
+        pathFinder.drawGrid(shapeRenderer);
+        for (Monster zombie : zombies)
+            pathFinder.drawPath(shapeRenderer, zombie.getPath());
     }
 
     private void checkBreeding() {
@@ -622,9 +731,35 @@ public class GameScreen implements Screen, InputProcessor {
             currentAct = "water";
         } else if (keycode == Input.Keys.K) {
             currentAct = "harvest";
+        } else if (keycode == Input.Keys.Z) {
+            disposeArbitraryPlant();
+
         }
         return true;
     }
+
+    private void disposeArbitraryPlant() {
+        if (plants.size > 0) {
+            // You can dispose of the first plant or any other plant based on your logic
+            Plant plantToDispose = plants.get(0); // Example: Get the first plant
+
+            // Mark the plant for removal
+            plantToDispose.markForRemoval(); // Mark it as disposed
+
+            // Optionally, remove it from the list of plants if it is no longer needed
+            plants.removeValue(plantToDispose, true);
+
+            // Now, check if any zombie has this plant as a target and set it to null
+            for (Monster zombie : zombies) {
+                if (zombie.getTargetPlant() == plantToDispose) {
+                    zombie.setTargetPlant(null); // Set the zombie's target to null
+                }
+            }
+
+            System.out.println("Disposed of plant: " + plantToDispose);
+        }
+    }
+
 
     @Override
     public boolean keyUp(int keycode) {
