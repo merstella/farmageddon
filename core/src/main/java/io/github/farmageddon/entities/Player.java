@@ -19,16 +19,16 @@ public class Player extends Entity {
     public static final int HEIGHT = 32;
 
 
-    private final Animator animation;
+    public Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
     // danh sach vat pham su dung trong kho do
-    public static ArrayList<Items> inventory;
-    public static ArrayList<Items> eqipInventory;
+    public ArrayList<Items> inventory;
+    public ArrayList<Items> eqipInventory;
     private final int maxInventorySize = 25;
     public final int maxEqipInventorySize = 5;
-    public static int slotCursor;
+    public int slotCursor;
     public int money = 0;
     private CollisionHandling collisionHandling;
     Rectangle playerBounds;

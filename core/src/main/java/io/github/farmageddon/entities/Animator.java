@@ -16,7 +16,7 @@ public class Animator {
     private final Animation<TextureRegion>[] animations;
     public final Animation<TextureRegion>[] actionAnimations;
     public final Animation<TextureRegion>[] monsterAnimations;
-    public float stateTime;
+    public static float stateTime;
 
 
     public enum Direction {

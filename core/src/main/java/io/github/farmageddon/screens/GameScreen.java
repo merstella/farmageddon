@@ -35,7 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import static com.badlogic.gdx.graphics.Color.WHITE;
-import static io.github.farmageddon.ultilites.GameTimeClock.*;
+//import static io.github.farmageddon.entities.Player.eqipInventory;
+//import static io.github.farmageddon.ultilites.GameTimeClock.*;
 
 public class GameScreen implements Screen, InputProcessor{
     private final Main game;
@@ -119,7 +120,7 @@ public class GameScreen implements Screen, InputProcessor{
 
     public static Array<DroppedItem> droppedItems;
 
-    public static boolean cursorLeft, cursorRight;
+//    public static boolean cursorLeft, cursorRight;
 //    private Queue<Pair<Animal, Animal>> breedingQueue = new LinkedList<>();
 
 //    private Monster monster;
@@ -162,18 +163,18 @@ public class GameScreen implements Screen, InputProcessor{
         landManager = new LandManager(Main.GAME_HEIGHT/16,Main.GAME_WIDTH/16);
         player = new Player(640, 300, 100f);
 
-//        market = new Market(100, 100, 200);
-//        initPlayerInv();
+        initMarket();
+        initPlayerInv();
 
         initAnimal();
 //        monster = new Monster();
 //        specialPlant = new Plants();
         droppedItems = new Array<>();
         initDebug();
-        music = Main.manager.get("Sound/music.mp3", Music.class);
-        music.setLooping(true);
-        music.setVolume(0.2f);
-        music.play();
+//        music = Main.manager.get("Sound/music.mp3", Music.class);
+//        music.setLooping(true);
+//        music.setVolume(0.2f);
+//        music.play();
 
         // torch
 //        torch = new TorchLightHandler(world);
@@ -181,11 +182,11 @@ public class GameScreen implements Screen, InputProcessor{
 
     public void initMarket() {
         Texture defaultTexture = new Texture(Gdx.files.internal("default.png"));
-        Default = new Items("default",defaultTexture, 0);
-        while (player.eqipInventory.size() <= player.maxEqipInventorySize){
+        Default = new Items(defaultTexture,Items.ItemType.DEFAULT,Items.Item.DEFAULT, 0);
+        while (player.eqipInventory.size() <= player.maxEqipInventorySize) {
             player.eqipInventory.add(Default);
         }
-        }
+    }
 
 
     private void initAnimal() {
@@ -218,26 +219,26 @@ public class GameScreen implements Screen, InputProcessor{
 
     public void initPlayerInv() {
         FishTexture = new Texture(Gdx.files.internal("Animals\\Bee\\Bee_Hive.png"));
-        Fish = new Items("Fish", FishTexture, 10);
+        Fish = new Items(FishTexture,Items.ItemType.FOOD,Items.Item.FISH, 10);
 
         CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
-        items = new Items("Coin", CoinTexture, 10);
-        player.setEquipItem(items);// them vao equip
+        items = new Items(CoinTexture, Items.ItemType.OTHER, Items.Item.COIN, 10);
+        player.setEquipItem(items,0);// them vao equip
 
-        item1Texture = new Texture(Gdx.files.internal("SellButton.png"));
-        items = new Items("Sell", item1Texture, 10);
-        player.setEquipItem(items);
-
-        item2Texture = new Texture(Gdx.files.internal("BuyButton.png"));
-        items = new Items("Buy", item2Texture, 10);
-        player.setEquipItem(items);// them vao inventory
-
-        item3Texture = new Texture(Gdx.files.internal("moneyBar.png"));
-        items = new Items("Money", item3Texture, 10);
-        player.setEquipItem(items);
+//        item1Texture = new Texture(Gdx.files.internal("SellButton.png"));
+//        items = new Items(item1Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
+//        player.setEquipItem(items,0);
+//
+//        item2Texture = new Texture(Gdx.files.internal("BuyButton.png"));
+//        items = new Items(item2Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
+//        player.setEquipItem(items,1);// them vao inventory
+//
+//        item3Texture = new Texture(Gdx.files.internal("moneyBar.png"));
+//        items = new Items(item3Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
+//        player.setEquipItem(items,2);
 
         item4Texture = new Texture(Gdx.files.internal("Well.png"));
-        items = new Items("Well", item4Texture, 10);
+        items = new Items(item4Texture, Items.ItemType.OTHER, Items.Item.CARROT,10);
         player.setItem(items);
 
         //money
@@ -257,20 +258,17 @@ public class GameScreen implements Screen, InputProcessor{
     public void show() {
         // inventory & market
         int titleSize = 32;
-//        inventoryUI = new InventoryUI(titleSize);
-//        marketScreen = new MarketScreen(titleSize,market, player);
-//        inventoryScreen = new InventoryScreen(titleSize, player);
+        inventoryUI = new InventoryUI(titleSize);
+        marketScreen = new MarketScreen(titleSize,market, player);
+        inventoryScreen = new InventoryScreen(titleSize, player);
 
         // fishing minigame
-        // fishing minigame
-//        minigame = new FishingMinigame();
-//        minigame.create();
         minigame = new FishingMinigame();
         minigame.create();
 
 
         boolean isHoldingTorch = false;
-        if (eqipInventory.get(player.slotCursor).getItemName() == "Coin"){
+        if (player.eqipInventory.get(player.slotCursor).getItem() == Items.Item.COIN){
             isHoldingTorch = true;
         } else {
             isHoldingTorch = false;
@@ -418,28 +416,22 @@ public class GameScreen implements Screen, InputProcessor{
     }
 
     private void handleCrop() {
-
     }
     private void renderCrop() {
-
     }
 
-
-
     private void handleKeyDown(float delta) {
+
         // bấm M để hiện lên cửa sổ market
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             isMarketVisible = !isMarketVisible;
             System.out.println("marketScreen");
-
             if (isMarketVisible == true) {
                 marketScreen.show();
             } else {
                 marketScreen.hide();
             }
-            //game.setScreen(marketScreen);
         }
-
         if (isMarketVisible) {
             marketScreen.render(delta);
         }
@@ -454,7 +446,6 @@ public class GameScreen implements Screen, InputProcessor{
             } else {
                 inventoryScreen.hide();
             }
-            //game.setScreen(marketScreen);
         }
 
         if (isInventoryVisible) {
@@ -465,7 +456,7 @@ public class GameScreen implements Screen, InputProcessor{
         inventoryUI.drawInventory(player);
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             inventoryUI.slotCol = 0;
-            Player.slotCursor = 0;
+            player.slotCursor = 0;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             inventoryUI.slotCol = 1;
@@ -486,7 +477,7 @@ public class GameScreen implements Screen, InputProcessor{
 
 
      //    bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí SlotCursor của equipInventory == "Coin"
-        if (eqipInventory.get(player.slotCursor).getItemName() == ("Coin")) {
+        if (player.eqipInventory.get(player.slotCursor).getItem() == Items.Item.COIN) {
             if ((player.getPosition().x < 896f && player.getPosition().x > 887f && player.getPosition().y < 500f && player.getPosition().y > 480f) ||
                 (player.getPosition().x < 881f && player.getPosition().x > 872f && player.getPosition().y < 556f && player.getPosition().y > 518f) ||
                 (player.getPosition().x < 898f && player.getPosition().x > 892f && player.getPosition().y < 570f && player.getPosition().y > 562f)) {
@@ -512,34 +503,32 @@ public class GameScreen implements Screen, InputProcessor{
                 FishingVisible = !FishingVisible;
                 isFishingVisible = !isFishingVisible;
                 // Bật hoạt ảnh START_FISHING
-                currentActivity = Animator.Activity.START_FISHING_RIGHT;
+                player.currentActivity = Animator.Activity.START_FISHING_RIGHT;
                 player.updateFishingAnimation();
                 cursorRight = false;
             }
             if (cursorLeft == true) {
                 FishingVisible = !FishingVisible;
                 isFishingVisible = !isFishingVisible;
-//                if (player.eqipInventory.get(player.slotCursor).getItemName() == ("Coin")) {
                     // Bật hoạt ảnh START_FISHING
-                    currentActivity = Animator.Activity.START_FISHING_LEFT;
+                    player.currentActivity = Animator.Activity.START_FISHING_LEFT;
                     player.updateFishingAnimation();
 //                }
                 cursorLeft = false;
             }
             if (FishingVisible == true) {
-                switch (currentActivity) {
+                switch (player.currentActivity) {
                     case START_FISHING_RIGHT:
                         // Kiểm tra nếu hoạt ảnh đã chạy xong
-                        if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                            currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
-//                        System.out.println("Start fishing animation right completed. Waiting for minigame...");
-                            System.out.println(currentActivity);
+                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                            player.currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
+                            System.out.println(player.currentActivity);
                         }
                         break;
                     case START_FISHING_LEFT:
                         // Kiểm tra nếu hoạt ảnh đã chạy xong
-                        if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                            currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
+                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                            player.currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
                             System.out.println("Start fishing animation left completed. Waiting for minigame...");
                         }
                         break;
@@ -547,8 +536,8 @@ public class GameScreen implements Screen, InputProcessor{
                     case WAIT_FISHING_LEFT:
                         minigame.render();
                         // Kiểm tra nếu minigame đã kết thúc
-                        if (minigame.cursorGameOver == true) {
-                            currentActivity = Animator.Activity.DONE_FISHING_LEFT;
+                        if (FishingMinigame.cursorGameOver == true) {
+                            player.currentActivity = Animator.Activity.DONE_FISHING_LEFT;
                             System.out.println("Minigame finished. Moving to Done Fishing animation...");
                         }
                         break;
@@ -556,30 +545,30 @@ public class GameScreen implements Screen, InputProcessor{
                     case WAIT_FISHING_RIGHT:
                         minigame.render();
                         // Kiểm tra nếu minigame đã kết thúc
-                        if (minigame.cursorGameOver == true) {
-                            currentActivity = Animator.Activity.DONE_FISHING_RIGHT;
+                        if (FishingMinigame.cursorGameOver == true) {
+                            player.currentActivity = Animator.Activity.DONE_FISHING_RIGHT;
 //                        System.out.println("Minigame finished. Moving to Done Fishing animation...");
-                            System.out.println(currentActivity);
+                            System.out.println(player.currentActivity);
                         }
                         break;
                     case DONE_FISHING_RIGHT:
                         // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                        if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
+                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
 //                        System.out.println("Fishing process completed!");
-                            currentActivity = Animator.Activity.NONE;
+                            player.currentActivity = Animator.Activity.NONE;
                             FishingVisible = false;
                             Player.hasStartedFishing = false;
                             FishingMinigame.gameOver = false;
                             FishingMinigame.cursorGameOver = false;
-                            System.out.println(currentActivity);
+                            System.out.println(player.currentActivity);
                         }
                         break;
 
                     case DONE_FISHING_LEFT:
                         // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                        if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
+                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
 //                            System.out.println("Fishing process completed!");
-                            currentActivity = Animator.Activity.NONE;
+                            player.currentActivity = Animator.Activity.NONE;
                             FishingVisible = false;
                             isFishingVisible = false;
                             Player.hasStartedFishing = false;
@@ -594,59 +583,7 @@ public class GameScreen implements Screen, InputProcessor{
             }
             cursorLeft = false;
         }
-        if (isFishingVisible) {
-            switch (currentActivity) {
-                case START_FISHING_RIGHT:
-                    // Kiểm tra nếu hoạt ảnh đã chạy xong
-                    if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                        currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
-                        System.out.println("Start fishing animation right completed. Waiting for minigame...");
-                    }
-                    break;
-                case START_FISHING_LEFT:
-                    // Kiểm tra nếu hoạt ảnh đã chạy xong
-                    if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                        currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
-                        System.out.println("Start fishing animation left completed. Waiting for minigame...");
-                    }
-                    break;
 
-                case WAIT_FISHING_LEFT:
-                    minigame.render();
-
-                    // Kiểm tra nếu minigame đã kết thúc
-                    if (minigame.cursorGameOver == true) {
-                        currentActivity = Animator.Activity.DONE_FISHING_LEFT;
-                        System.out.println("Minigame finished. Moving to Done Fishing animation...");
-                    }
-                    break;
-
-                case WAIT_FISHING_RIGHT:
-                    minigame.render();
-
-                    // Kiểm tra nếu minigame đã kết thúc
-                    if (minigame.cursorGameOver == true) {
-                        currentActivity = Animator.Activity.DONE_FISHING_RIGHT;
-                        System.out.println("Minigame finished. Moving to Done Fishing animation...");
-                    }
-                    break;
-                case DONE_FISHING_RIGHT:
-                case DONE_FISHING_LEFT:
-                    // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                    if (animation.actionAnimations[currentActivity.ordinal()].isAnimationFinished(animation.stateTime)) {
-                        System.out.println("Fishing process completed!");
-                        currentActivity = Animator.Activity.NONE;
-                        isFishingVisible = false;
-                        Player.hasStartedFishing = false;
-                        FishingMinigame.gameOver = false;
-                        FishingMinigame.cursorGameOver = false;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
     }
     private void renderSelectedCell() {
         if (player.currentActivity != Animator.Activity.NONE) {
@@ -673,7 +610,7 @@ public class GameScreen implements Screen, InputProcessor{
     }
 
     private void renderAmbientLighting() {
-        if (eqipInventory.get(player.slotCursor).getItemName() == ("Coin")) {
+        if (player.eqipInventory.get(player.slotCursor).getItem() == Items.Item.COIN) {
         float circleCenterX = playerX + 16; // Tọa độ X trung tâm của player
         float circleCenterY = playerY + 16; // Tọa độ Y trung tâm của player
         float circleRadius = 50;            // Bán kính hình tròn
