@@ -14,9 +14,9 @@ public class Animator {
     private final Texture playerFishingSheet;
     private final Texture monsterSheet;
     private final Animation<TextureRegion>[] animations;
-    public final Animation<TextureRegion>[] actionAnimations;
-    public final Animation<TextureRegion>[] monsterAnimations;
+    public static Animation<TextureRegion>[] actionAnimations;
     public static float stateTime;
+    public Animation<TextureRegion>[] monsterAnimations;
 
 
     public enum Direction {
@@ -192,10 +192,8 @@ public class Animator {
     }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity) {
         if (activity == Activity.NONE) return;
-
         stateTime += Gdx.graphics.getDeltaTime();
         Animation<TextureRegion> activityAnimation = actionAnimations[activity.ordinal()];
-
         if (activity == Activity.WAIT_FISHING_RIGHT) {
             // Change to true to loop the animation
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
