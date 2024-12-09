@@ -33,6 +33,10 @@ public class Entity {
         }
     }
 
+    public float getHealth () {
+        return health;
+    }
+
     public void heal(float amount) {
         if (hasHealthBar) {
             health = Math.min(maxHealth, health + amount);

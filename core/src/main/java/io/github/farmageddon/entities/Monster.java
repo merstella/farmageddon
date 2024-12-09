@@ -1,11 +1,14 @@
 package io.github.farmageddon.entities;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.GridNode;
+
+import java.util.Optional;
 
 public class Monster extends Entity {
     private final Animator animation;
@@ -17,14 +20,65 @@ public class Monster extends Entity {
     private boolean markedForRemoval;
     // Movement and Path
     private float speed; // Pixels per second
-    private Plant targetPlant;
 
-    public Plant getTargetPlant() {
+    private int typeTarget;
+    private ProtectPlant targetPlant;
+    private Player targetPlayer;
+    private Entity targetEntity;
+    private float range = 0;
+    private float maxTimeForPlayer = 5f;
+    private float timeSinceTargetPlayer;
+    private float damagePoint;
+
+    public ProtectPlant getTargetPlant() {
         return targetPlant;
     }
+    public int getTypeTarget () {return typeTarget;}
+    public void setTypeTarget (int typeTarget) {this.typeTarget = typeTarget;}
+    public float getRange () {return this.range;}
+    public void setRange (float range) {this.range = range;}
+    public boolean isNowTargetPlayer () {return timeSinceTargetPlayer <= maxTimeForPlayer;}
+    public void setTimeSinceTargetPlayer (float timeSinceTargetPlayer) {this.timeSinceTargetPlayer = timeSinceTargetPlayer;}
 
-    public void setTargetPlant(Plant targetPlant) {
+    public void setTargetPlant(ProtectPlant targetPlant) {
+        this.typeTarget = 0;
         this.targetPlant = targetPlant;
+    }
+    public void setTargetEntity(Entity entity) {
+        this.typeTarget = 1;
+        this.targetEntity = entity;
+    }
+    public void setTargetPlayer(Player player) {
+        this.typeTarget = 2;
+        this.targetPlayer = player;
+    }
+    public Entity getTargetEntity () {return this.targetEntity;}
+
+    public boolean isDifferentTarget (ProtectPlant targetPlant) {
+        if(targetPlant != this.targetPlant) return true;
+        return false;
+    }
+    public boolean isDifferentTarget (Entity targetEntity) {
+        if(targetEntity != this.targetEntity) return true;
+        return false;
+    }
+    public boolean isDifferentTarget (Player player){
+        if(player != this.targetPlayer)return false;
+        return true;
+    }
+
+    public Vector2 getTargetPosition () {
+        switch (typeTarget) {
+            case -1:
+                return null;
+            case 0:
+                return targetPlant.getPosition();
+            case 1:
+                return targetEntity.getPosition();
+            case 2:
+                return targetPlayer.getPosition();
+        }
+        return null;
     }
     // Constants
     private static final float DEATH_ANIMATION_DURATION = 0.5f; // Seconds
@@ -35,14 +89,53 @@ public class Monster extends Entity {
     }
 
     public Monster(float x, float y, float speed, int maxHealth) {
-        super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)
+        super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
         this.speed = speed;
         animation = new Animator();
+        typeTarget = -1;
+        maxTimeForPlayer = 5f;
+        damagePoint = 1000;
+        timeSinceTargetPlayer = 0f;
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
         // Adjust based on sprite size
         this.path = null;
         this.currentPathIndex = 0; // Start at the first node in the path
     }
+    public Monster(float x, float y, float speed, int maxHealth, ProtectPlant targetPlant) {
+            super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
+            this.speed = speed;
+        animation = new Animator();
+        typeTarget = 0;
+        this.targetPlant = targetPlant;
+        currentActivity = Animator.MonsterActivity.IDLE_DOWN;
+        // Adjust based on sprite size
+        this.path = null;
+        this.currentPathIndex = 0; // Start at the first node in the path
+    }
+    public Monster(float x, float y, float speed, int maxHealth, Player targetPlayer) {
+        super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
+        this.speed = speed;
+        animation = new Animator();
+        typeTarget = 2;
+        this.targetPlayer = targetPlayer;
+        currentActivity = Animator.MonsterActivity.IDLE_DOWN;
+        // Adjust based on sprite size
+        this.path = null;
+        this.currentPathIndex = 0; // Start at the first node in the path
+    }
+    public Monster(float x, float y, float speed, int maxHealth, Entity targetEntity) {
+        super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
+        this.speed = speed;
+        animation = new Animator();
+        typeTarget = 1;
+        this.targetEntity = targetEntity;
+        currentActivity = Animator.MonsterActivity.IDLE_DOWN;
+        // Adjust based on sprite size
+        this.path = null;
+        this.currentPathIndex = 0; // Start at the first node in the path
+    }
+
+
     public void setPath(Array<GridNode> path) {
         this.path = path;
         this.currentPathIndex = 0; // Reset path to start from the beginning
@@ -77,6 +170,26 @@ public class Monster extends Entity {
         }
     }
 
+    public boolean isNearEnough () {
+        if(position.dst(getTargetPosition()) <= range) return true;
+        return false;
+    }
+
+    public void applyDamageToTarget () {
+        switch (typeTarget) {
+            case -1:
+                break;
+            case 0:
+                targetPlant.takeDamage(damagePoint);
+                break;
+            case 1:
+
+                break;
+            case 2:
+                targetPlayer.takeDamage(damagePoint);
+        }
+    }
+
 
     /**
      * Updates the monster's state, moving along the path.
@@ -86,6 +199,7 @@ public class Monster extends Entity {
     @Override
     public void update(float delta) {
         super.update(delta); // Assuming Entity.update(delta) handles health reduction, etc.
+        timeSinceTargetPlayer += delta;
 
         if (isDying) {
             deathTimer += delta;
@@ -95,7 +209,15 @@ public class Monster extends Entity {
             }
             return; // Skip other updates while dying
         }
-
+        if (isNearEnough()) {
+            applyDamageToTarget();
+            return;
+        }
+        if(typeTarget == -1 || typeTarget == 2)return;
+        System.out.println(typeTarget);
+        System.out.print(getTargetPosition().x);
+        System.out.print(' ');
+        System.out.println(getTargetPosition().y);
         if (isDead) return; // Skip updates if dead and not yet removed
 
         // If there's no valid path, the monster should idle
@@ -197,7 +319,7 @@ public class Monster extends Entity {
     @Override
     public void render(SpriteBatch batch) {
         batch.begin();
-        animation.render(batch, position.x, position.y, currentActivity);
+        batch.draw(new Texture("Coin_Icon.png"), position.x, position.y, 10, 10);
         batch.end();
     }
 
