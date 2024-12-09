@@ -7,13 +7,10 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.DroppedItem;
-import io.github.farmageddon.ultilites.HealthBarActor;
+import io.github.farmageddon.ultilites.HealthBar;
 import io.github.farmageddon.ultilites.Items;
 
-import static com.badlogic.gdx.scenes.scene2d.ui.Table.Debug.actor;
 import static io.github.farmageddon.screens.GameScreen.droppedItems;
 import static io.github.farmageddon.screens.GameScreen.shapeRenderer;
 
@@ -60,7 +57,7 @@ public class Animal extends Actor {
     private float layCooldown = 0;
     private float layCooldownMAX = 10f;
 
-    private HealthBarActor healthBar;
+    private HealthBar.HealthBarActor healthBar;
     public boolean isHighlighted;
 
 
@@ -83,7 +80,7 @@ public class Animal extends Actor {
         initAnimation();
         this.currentActivity = Activity.IDLE_LEFT;
         randomizeActivityChangeDelay();
-        healthBar = new HealthBarActor(this, maxHealth);
+        healthBar = new HealthBar.HealthBarActor(this, maxHealth);
         healthBar.setShapeRenderer(shapeRenderer);
         this.setTouchable(Touchable.enabled);
         this.stage = stage;

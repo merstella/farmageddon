@@ -28,11 +28,15 @@ public class LogicalEntities {
         }
         for (int i = monsters.size - 1; i >= 0; i--) {
             Monster monster = monsters.get(i);
+            if(monster.getTargetHealth() <= 0){
+                monster.setTypeTarget(-1);
+            }
             if (monster.getHealth() <= 0) {
                 monsters.removeIndex(i);
                 continue;
             }
-            if (isUpdateMonsterTarget(monster, plants, entities, player)) {
+            if (monster.getTypeTarget() == -1) {
+                boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
                 assignPathToMonster(monster, pathFinder);
             }
             monster.update(delta);
@@ -44,6 +48,7 @@ public class LogicalEntities {
                 continue;
             }
             plant.update(delta);
+            if(monsters.size == 0)continue;
             if (plant.getIsShooting()){
                 plant.shooted();
                 float range = plant.getRange();

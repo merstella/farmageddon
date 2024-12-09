@@ -53,6 +53,19 @@ public class Monster extends Entity {
         this.targetPlayer = player;
     }
     public Entity getTargetEntity () {return this.targetEntity;}
+    public float getTargetHealth () {
+        switch (typeTarget) {
+            case 0:
+                return targetPlant.getHealth();
+            case 1:
+                return targetEntity.getHealth();
+            case 2:
+                return targetPlayer.getHealth();
+        }
+        return 0;
+    }
+
+
 
     public boolean isDifferentTarget (ProtectPlant targetPlant) {
         if(targetPlant != this.targetPlant) return true;
@@ -87,19 +100,23 @@ public class Monster extends Entity {
     public Array<GridNode> getPath() {
         return path;  // Get the current path
     }
-
+    private Rectangle monsterBounds;
     public Monster(float x, float y, float speed, int maxHealth) {
         super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
         this.speed = speed;
         animation = new Animator();
         typeTarget = -1;
         maxTimeForPlayer = 5f;
-        damagePoint = 1000;
+        damagePoint = 10000;
         timeSinceTargetPlayer = 0f;
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
         // Adjust based on sprite size
         this.path = null;
         this.currentPathIndex = 0; // Start at the first node in the path
+        this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
+    }
+    public Rectangle getMonsterBounds() {
+        return monsterBounds;
     }
     public Monster(float x, float y, float speed, int maxHealth, ProtectPlant targetPlant) {
             super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
@@ -171,7 +188,7 @@ public class Monster extends Entity {
     }
 
     public boolean isNearEnough () {
-        if(position.dst(getTargetPosition()) <= range) return true;
+        if(position.dst(getTargetPosition()) <= Math.sqrt(200)) return true;
         return false;
     }
 
@@ -213,7 +230,7 @@ public class Monster extends Entity {
             applyDamageToTarget();
             return;
         }
-        if(typeTarget == -1 || typeTarget == 2)return;
+//        if(typeTarget == -1 || typeTarget == 2)return;
         System.out.println(typeTarget);
         System.out.print(getTargetPosition().x);
         System.out.print(' ');
@@ -319,7 +336,7 @@ public class Monster extends Entity {
     @Override
     public void render(SpriteBatch batch) {
         batch.begin();
-        batch.draw(new Texture("Coin_Icon.png"), position.x, position.y, 10, 10);
+        animation.render(batch, position.x, position.y, currentActivity);
         batch.end();
     }
 

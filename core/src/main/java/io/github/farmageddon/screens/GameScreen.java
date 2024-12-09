@@ -37,11 +37,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import static com.badlogic.gdx.graphics.Color.WHITE;
+import static java.lang.Math.clamp;
 //import static io.github.farmageddon.Player.maxEqipInventorySize;
 //import static io.github.farmageddon.Player.slotCursor;
 
 
 public class GameScreen implements Screen, InputProcessor{
+
     private final Main game;
 
     private final OrthographicCamera camera;
@@ -144,7 +146,7 @@ public class GameScreen implements Screen, InputProcessor{
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
-        camera.zoom = .75f;
+        camera.zoom = 0.75f;
         camera.update();
         map = new TmxMapLoader().load("mapok.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
@@ -340,10 +342,12 @@ public class GameScreen implements Screen, InputProcessor{
 
 //        updateZombies(delta);
         camera.position.set(
-            player.getPosition().x + 16,
-            player.getPosition().y + 16,
+            MathUtils.clamp(player.getPosition().x + 16, Main.GAME_WIDTH * camera.zoom /2, Main.GAME_WIDTH *  (1 - camera.zoom/2)),
+            MathUtils.clamp(player.getPosition().y + 16, Main.GAME_HEIGHT * camera.zoom /2, Main.GAME_HEIGHT *  (1 - camera.zoom/2)),
             0
         );
+
+
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
         mapRenderer.setView(camera);
@@ -382,7 +386,7 @@ public class GameScreen implements Screen, InputProcessor{
 //
 //        }
         renderGridDebug();
-        renderSelectedCell();
+        if (currentAct != "attack") renderSelectedCell();
         handleCrop();
         renderCrop();
         //update all the thing before render minimap
@@ -425,8 +429,8 @@ public class GameScreen implements Screen, InputProcessor{
 
         // Draw the grid (you can call this method)
         pathFinder.drawGrid(shapeRenderer);
-//        for (Monster zombie : zombies)
-//            pathFinder.drawPath(shapeRenderer, zombie.getPath());
+        for (Monster zombie : monsters)
+            pathFinder.drawPath(shapeRenderer, zombie.getPath());
     }
 
     private void checkBreeding() {
@@ -894,6 +898,10 @@ public class GameScreen implements Screen, InputProcessor{
         } else if (keycode == Input.Keys.Z) {
             disposeArbitraryPlant();
 
+        } else if (keycode == Input.Keys.L) {
+            currentAct = "attack";
+        } else if (keycode == Input.Keys.T) {
+            Player.itemHolding = "torch";
         }
         return true;
     }
@@ -935,7 +943,7 @@ public class GameScreen implements Screen, InputProcessor{
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
         if (button == Input.Buttons.LEFT) {
-//            // Convert screen coordinates to world coordinates
+            // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
             int cellX = (int) touchPosition.x / 16;
@@ -944,40 +952,60 @@ public class GameScreen implements Screen, InputProcessor{
 
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             if (player.getPosition().dst(touchPosition2D) <= 50) {
-//                System.out.println(touchPosition2D);
-//                System.out.println(player.getPosition());
-                player.updateActivityAnimation(currentAct, touchPosition2D);
-                Land land = landManager.getLand(cellY,cellX);
 
+                // Update activity and direction based on touch position (for animation purposes)
+                player.updateActivityAnimation(currentAct, touchPosition2D);
+
+                // Handle land interactions (hoe, water, harvest)
+                Land land = landManager.getLand(cellY, cellX);
                 if (Objects.equals(currentAct, "hoe")) {
                     land.hoe();
-//                    System.out.println(land.getCurrentState());
                     if (land.isEmpty()) {
                         Crop crop = new Crop(Items.Item.RICE, cellX * 16, cellY * 16); // Example crop
                         land.plantCrop(crop);
                     }
-//                    System.out.println(land.isEmpty());
                 }
-                else if (Objects.equals(currentAct, "water")){
+                else if (Objects.equals(currentAct, "water")) {
                     land.water();
                     if (!land.isEmpty()) {
                         land.getCrop().setWatered(true);
                     }
-//                    System.out.println(land.getCurrentState());
-                } else if (Objects.equals(currentAct, "harvest")){
+                }
+                else if (Objects.equals(currentAct, "harvest")) {
                     if (!land.isEmpty()) {
                         DroppedItem droppedItem = land.harvestCrop();
                         if (droppedItem != null) {
                             droppedItems.add(droppedItem);
-//                            System.out.println("Item dropped: " + droppedItem.getItemType());
                         }
                     }
                 }
+
             }
+
+            if (Objects.equals(currentAct, "attack")) {
+
+                // Calculate attack direction based on the touch position
+//                    player.attackDirection = touchPosition2D.sub(player.getPosition()).nor(); // Calculate direction vector
+                if (Player.timeSinceLastAttack >= Player.attackCooldown && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                    Player.timeSinceLastAttack = 0f;  // Reset the attack cooldown
+                }
+
+                // Optional: Set the attack animation for the player
+                player.updateActivityAnimation(currentAct, touchPosition2D);
+                // Additional logic for attacking nearby enemies, if needed.
+                // You may want to loop through enemies in the range of the attack and deal damage.
+                for (Monster enemy : monsters) {
+                    if (player.getBounds().overlaps(enemy.getMonsterBounds())) {
+//                            enemy.takeDamage(player.getAttackDamage());
+                    }
+                }
+            }
+
             return true;
         }
         return false;
     }
+
 
 
     @Override
@@ -1018,7 +1046,7 @@ public class GameScreen implements Screen, InputProcessor{
         monsters.add(new Monster(626, 176, 50, 3000));
         monsters.add(new Monster(761, 650, 50, 2000));
         monsters.add(new Monster(149, 680, 50, 3000));
-        plants.add(new ProtectPlant(500, 500, 7000));
+        plants.add(new ProtectPlant(500, 500, 7000000));
     }
 
 }

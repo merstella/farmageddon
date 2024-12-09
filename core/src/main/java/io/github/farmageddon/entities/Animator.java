@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public class Animator {
 
     private final Texture playerSheet;
+    private final Texture torchSheet;
     private final Texture playerActionSheet;
     private final Texture playerFishingSheet;
     private final Texture monsterSheet;
@@ -18,11 +19,13 @@ public class Animator {
     public static float stateTime;
     public Animation<TextureRegion>[] monsterAnimations;
 
-
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
         IDLE_UP, IDLE_RIGHT, IDLE_DOWN, IDLE_LEFT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
-        IDLE_UP_RIGHT, WALK, SLEEP, IDLE, IDLE_UP_LEFT
+        IDLE_UP_RIGHT, WALK, SLEEP, IDLE, IDLE_UP_LEFT,
+        TORCH_UP, TORCH_UP_RIGHT, TORCH_RIGHT, TORCH_DOWN_RIGHT, TORCH_DOWN, TORCH_DOWN_LEFT, TORCH_LEFT, TORCH_UP_LEFT,
+        IDLE_TORCH_UP, IDLE_TORCH_RIGHT, IDLE_TORCH_DOWN, IDLE_TORCH_LEFT, IDLE_TORCH_DOWN_RIGHT, IDLE_TORCH_DOWN_LEFT,
+        IDLE_TORCH_UP_RIGHT, IDLE_TORCH_UP_LEFT,
     }
 
     public enum Activity {
@@ -30,6 +33,7 @@ public class Animator {
         HOE_UP, HOE_DOWN, HOE_LEFT, HOE_RIGHT,
         WATER_UP, WATER_DOWN, WATER_LEFT, WATER_RIGHT, START_FISHING_RIGHT, START_FISHING_LEFT,
         WAIT_FISHING_RIGHT, WAIT_FISHING_LEFT , DONE_FISHING_RIGHT, DONE_FISHING_LEFT,
+        ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP
     }
     public enum MonsterActivity {
         IDLE_DOWN, IDLE_LEFT, IDLE_RIGHT, IDLE_UP, IDLE_UP_LEFT, IDLE_UP_RIGHT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
@@ -42,6 +46,7 @@ public class Animator {
 
         // Load textures and initialize animations as before
         playerSheet = new Texture(Gdx.files.internal("player.png"));
+        torchSheet = new Texture(Gdx.files.internal("Player/PLayer_Old/Player_Holding_Torch_Lantern.png"));
         playerActionSheet = new Texture(Gdx.files.internal("Player/Player_Actions.png"));
         playerFishingSheet = new Texture(Gdx.files.internal("Player\\Player_Fishing.png"));
         monsterSheet = new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Swordman.png"));
@@ -56,6 +61,8 @@ public class Animator {
 
         TextureRegion[][] tmpFrames4 = TextureRegion.split(monsterSheet, 32, 32);
         TextureRegion[][] tmpFrames5 = TextureRegion.split(new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Swordman_Attack.png")), 64, 64);
+        TextureRegion[][] tmpFrames6 = TextureRegion.split(torchSheet, 32, 32);
+
         animations = new Animation[Direction.values().length];
         actionAnimations = new Animation[Activity.values().length];
         monsterAnimations = new Animation[MonsterActivity.values().length];
@@ -79,6 +86,24 @@ public class Animator {
         animations[Direction.IDLE_UP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[4], 0, 1);
         animations[Direction.IDLE_UP_LEFT.ordinal()] = createAnimation(tmpFrames[4], 0, 1);
 
+        animations[Direction.TORCH_UP.ordinal()] = createAnimation(tmpFrames6[5], 0, 6); // Assuming 4 frames in the first row for UP
+        animations[Direction.TORCH_UP_RIGHT.ordinal()] = createAnimation(tmpFrames6[4], 0, 6); // Adjust indices based on layout
+        animations[Direction.TORCH_RIGHT.ordinal()] = createAnimation(tmpFrames6[4], 0, 6);
+        animations[Direction.TORCH_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames6[4], 0, 6);
+        animations[Direction.TORCH_DOWN.ordinal()] = createAnimation(tmpFrames6[3], 0, 6);
+        animations[Direction.TORCH_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames6[4], 0, 6);
+        animations[Direction.TORCH_LEFT.ordinal()] = createFlippedAnimation(tmpFrames6[4], 0, 6);
+        animations[Direction.TORCH_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames6[4], 0, 6);
+
+        animations[Direction.IDLE_TORCH_UP.ordinal()] = createAnimation(tmpFrames6[2], 0, 6);
+        animations[Direction.IDLE_TORCH_RIGHT.ordinal()] = createAnimation(tmpFrames6[1], 0, 6);
+        animations[Direction.IDLE_TORCH_LEFT.ordinal()] = createFlippedAnimation(tmpFrames6[1], 0, 6);
+        animations[Direction.IDLE_TORCH_DOWN.ordinal()] = createFlippedAnimation(tmpFrames6[0], 0, 6);
+        animations[Direction.IDLE_TORCH_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames6[4], 0, 1);
+        animations[Direction.IDLE_TORCH_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames6[1], 0, 6);
+        animations[Direction.IDLE_TORCH_UP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames6[4], 0, 1);
+        animations[Direction.IDLE_TORCH_UP_LEFT.ordinal()] = createAnimation(tmpFrames6[4], 0, 1);
+
         actionAnimations[Activity.HOE_UP.ordinal()] = createAnimation(tmpFrames2[8], 0, 6);
         actionAnimations[Activity.HOE_DOWN.ordinal()] = createAnimation(tmpFrames2[7], 0, 6);
         actionAnimations[Activity.HOE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames2[6], 0, 6);
@@ -87,7 +112,10 @@ public class Animator {
         actionAnimations[Activity.WATER_DOWN.ordinal()] = createAnimation(tmpFrames2[9], 0, 6);
         actionAnimations[Activity.WATER_LEFT.ordinal()] = createFlippedAnimation(tmpFrames2[11], 0, 6);
         actionAnimations[Activity.WATER_RIGHT.ordinal()] = createAnimation(tmpFrames2[11], 0, 6);
-
+        actionAnimations[Activity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames[6], 0, 4);
+        actionAnimations[Activity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames[9], 0, 4);
+        actionAnimations[Activity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[9], 0, 4);
+        actionAnimations[Activity.ATTACK_UP.ordinal()] = createFlippedAnimation(tmpFrames[12], 0, 4);
         actionAnimations[Activity.START_FISHING_RIGHT.ordinal()] = createAnimation(tmpFrames3[0], 0, 9);
         actionAnimations[Activity.START_FISHING_LEFT.ordinal()] = createFlippedAnimation(tmpFrames3[0], 0, 9);
         actionAnimations[Activity.WAIT_FISHING_RIGHT.ordinal()] = createAnimation(tmpFrames3[1], 0, 4);
@@ -133,7 +161,7 @@ public class Animator {
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
         System.arraycopy(frames, startFrame, directionFrames, 0, frameCount);
-        return new Animation<>(0.1f, directionFrames);
+        return new Animation<>(0.2f, directionFrames);
     }
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
@@ -146,7 +174,7 @@ public class Animator {
             directionFrames[i] = new TextureRegion(frames[startFrame + i]);
             directionFrames[i].flip(true, false); // Flip horizontally
         }
-        return new Animation<>(0.1f, directionFrames);
+        return new Animation<>(0.2f, directionFrames);
     }
     private Animation<TextureRegion> createFlippedAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
@@ -194,6 +222,11 @@ public class Animator {
         if (activity == Activity.NONE) return;
         stateTime += Gdx.graphics.getDeltaTime();
         Animation<TextureRegion> activityAnimation = actionAnimations[activity.ordinal()];
+        if (activity == Activity.ATTACK_DOWN || activity == Activity.ATTACK_UP || activity == Activity.ATTACK_LEFT || activity == Activity.ATTACK_RIGHT) {
+            TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
+            batch.draw(currentFrame, x, y , 32, 32);
+            return;
+        }
         if (activity == Activity.WAIT_FISHING_RIGHT) {
             // Change to true to loop the animation
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);

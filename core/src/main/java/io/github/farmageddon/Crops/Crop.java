@@ -50,7 +50,7 @@ public class Crop extends Sprite {
                 for(int i = 2; i <= 5; i++)
                     cropFrames.insert(i-2, textureFrames[0][i]);
                 currentFrame = cropFrames.get(0);
-                this.growthStageDuration = 2;
+                this.growthStageDuration = 3;
                 this.price = 10;
                 break;
             case TOMATO:
@@ -83,11 +83,11 @@ public class Crop extends Sprite {
     }
 
     public void addDay(){
+        this.daysOld++;
         if(isWatered) {
             daysNotWatered = 0;
-            this.daysOld++;
         }
-        if(!isWatered && growthStage != 3)
+        if(!isWatered)
             daysNotWatered++;
         if(daysNotWatered == 2)
             isDead = true;

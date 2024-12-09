@@ -9,9 +9,8 @@ import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.FishingMinigame;
-import io.github.farmageddon.ultilites.FishingMinigame;
 import io.github.farmageddon.ultilites.Items;
-import io.github.farmageddon.ultilites.CollisionHandling;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -38,9 +37,14 @@ public class Player extends Entity {
     private boolean isFishing;
     private boolean fishingComplete;
     public FishingMinigame minigame;
-
+    // Attack properties
+    public static int attackDamage = 10;  // Attack damage
+    public static float attackRange = 50f;  // Attack range
+    public static float attackCooldown = 0.5f;  // Time between attacks (cooldown)
+    public static float timeSinceLastAttack = 0f;  // Timer to track time since last attack
+    public static String itemHolding;
     public Player(float x, float y, float speed) {
-        super(x, y, speed, false, 100);
+        super(x, y, speed, true, 100);
         animation = new Animator(); // Initialize animation instance
         currentDirection = Animator.Direction.IDLE_DOWN; // Default direction
         currentActivity = Animator.Activity.NONE; // Default activity
@@ -52,7 +56,7 @@ public class Player extends Entity {
     //        while (eqipInventory.size() <= slotCursor) {
     //            eqipInventory.add(null);
     //        }
-
+        itemHolding = "none";
 
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
@@ -85,8 +89,12 @@ public class Player extends Entity {
     @Override
     public void update(float delta) {
         super.update(delta);
+        timeSinceLastAttack += delta;
         updateDirectionAnimation(delta);
+
     }
+
+
 
     public void updateFishingAnimation() {
         currentActivity = getFishingDirection();
@@ -129,21 +137,78 @@ public class Player extends Entity {
 
             // Set direction for animation
             if (up && right) {
-                currentDirection = Animator.Direction.UP_RIGHT;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.UP_RIGHT;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_UP_RIGHT;
+                        break;
+                }
+
             } else if (up && left) {
-                currentDirection = Animator.Direction.UP_LEFT;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.UP_LEFT;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_UP_LEFT;
+                        break;
+                }
             } else if (down && right) {
-                currentDirection = Animator.Direction.DOWN_RIGHT;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.DOWN_RIGHT;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_DOWN_RIGHT;
+                        break;
+                }
             } else if (down && left) {
-                currentDirection = Animator.Direction.DOWN_LEFT;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.DOWN_LEFT;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_DOWN_LEFT;
+                        break;
+                }
             } else if (up) {
-                currentDirection = Animator.Direction.UP;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.UP;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_UP;
+                        break;
+                }
             } else if (down) {
-                currentDirection = Animator.Direction.DOWN;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.DOWN;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_DOWN;
+                        break;
+                }
             } else if (right) {
-                currentDirection = Animator.Direction.RIGHT;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.RIGHT;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_RIGHT;
+                        break;
+                }
             } else if (left) {
-                currentDirection = Animator.Direction.LEFT;
+                switch (itemHolding){
+                    case "none":
+                        currentDirection = Animator.Direction.LEFT;
+                        break;
+                    default:
+                        currentDirection = Animator.Direction.TORCH_LEFT;
+                        break;
+                }
             }
         } else {
             // Idle animations based on last movement direction
@@ -170,6 +235,22 @@ public class Player extends Entity {
                 return Animator.Direction.IDLE_UP_LEFT;
             case UP_RIGHT:
                 return Animator.Direction.IDLE_UP_RIGHT;
+            case TORCH_UP:
+                return Animator.Direction.IDLE_TORCH_UP;
+            case TORCH_DOWN:
+                return Animator.Direction.IDLE_TORCH_DOWN;
+            case TORCH_LEFT:
+                return Animator.Direction.IDLE_TORCH_LEFT;
+            case TORCH_RIGHT:
+                return Animator.Direction.IDLE_TORCH_RIGHT;
+            case TORCH_DOWN_LEFT:
+                return Animator.Direction.IDLE_TORCH_DOWN_LEFT;
+            case TORCH_DOWN_RIGHT:
+                return Animator.Direction.IDLE_TORCH_DOWN_RIGHT;
+            case TORCH_UP_LEFT:
+                return Animator.Direction.IDLE_TORCH_UP_LEFT;
+            case TORCH_UP_RIGHT:
+                return Animator.Direction.IDLE_TORCH_UP_RIGHT;
             default:
                 return direction;
         }
@@ -186,28 +267,37 @@ public class Player extends Entity {
         if (angle >= 45 && angle < 135) {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_UP;
-            } else {
+            } else if (Objects.equals(type, "water")){
                 return Animator.Activity.WATER_UP;
+            } else if (Objects.equals(type, "attack")){
+                return Animator.Activity.ATTACK_UP;
             }
         } else if (angle >= 135 && angle < 225) {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_LEFT;
-            } else {
+            } else if (Objects.equals(type, "water")){
                 return Animator.Activity.WATER_LEFT;
-            } // Facing left
+            } else if (Objects.equals(type, "attack")){
+                return Animator.Activity.ATTACK_LEFT;
+            }
         } else if (angle >= 225 && angle < 315) {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_DOWN;
-            } else {
+            } else if (Objects.equals(type, "water")){
                 return Animator.Activity.WATER_DOWN;
-            } // Facing downward
+            } else if (Objects.equals(type, "attack")){
+                return Animator.Activity.ATTACK_DOWN;
+            }
         } else {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_RIGHT;
-            } else {
+            } else if (Objects.equals(type, "water")){
                 return Animator.Activity.WATER_RIGHT;
-            } // Facing right
+            } else if (Objects.equals(type, "attack")){
+                return Animator.Activity.ATTACK_RIGHT;
+            }
         }
+        return Animator.Activity.NONE;
     }
 
     public Animator.Activity getFishingDirection() {
@@ -225,6 +315,7 @@ public class Player extends Entity {
 
     @Override
     public void render(SpriteBatch batch) {
+        super.render(batch);
         batch.begin();
         if (currentActivity == Animator.Activity.NONE) {
             animation.render(batch, position.x, position.y, currentDirection);
