@@ -146,7 +146,7 @@ public class GameScreen implements Screen, InputProcessor{
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
-        camera.zoom = 0.75f;
+        camera.zoom = 0.25f;
         camera.update();
         map = new TmxMapLoader().load("mapok.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
@@ -1042,11 +1042,14 @@ public class GameScreen implements Screen, InputProcessor{
         plants = new Array<>();
         projectiles = new Array<>();
         entities = new Array<>();
-        monsters.add(new Monster(0, 0, 50, 3000));
-        monsters.add(new Monster(626, 176, 50, 3000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        plants.add(new ProtectPlant(500, 500, 7000000));
+//        monsters.add(new Monster(0, 0, 50, 3000));
+//        monsters.add(new Monster(626, 176, 50, 3000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        for(int i = 1; i <= 50; i++){
+//            monsters.add(new Monster(0, 0, 50, 3000));
+//        }
+//        plants.add(new ProtectPlant(500, 500, 7000000));
     }
 
 }

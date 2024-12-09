@@ -9,15 +9,19 @@ import io.github.farmageddon.ultilites.PathFinder;
 
 public class LogicalEntities {
     private PathFinder pathFinder;
+    private float timerLogic;
 
     public void setPathFinder(PathFinder pathFinder) {
         this.pathFinder = pathFinder;
+        timerLogic = 0;
     }
 
     public LogicalEntities () {
         int i = 1;
+        timerLogic = 0;
     }
     public void updateEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<Entity> entities, Player player, float delta) {
+        timerLogic += delta;
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.update(delta);
@@ -37,10 +41,17 @@ public class LogicalEntities {
             }
             if (monster.getTypeTarget() == -1) {
                 boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
-                assignPathToMonster(monster, pathFinder);
+//                if(timerLogic >= 1) {
+//                    timerLogic = 0;
+                if(monster.getTypeTarget() != 2 || timerLogic >= 0.5) {
+                    assignPathToMonster(monster, pathFinder);
+                }
+
+//              }
             }
             monster.update(delta);
         }
+        if(timerLogic >= 0.5)timerLogic = 0;
         for (int i = plants.size - 1; i >= 0; i--) {
             ProtectPlant plant = plants.get(i);
             if(plant.getHealth() <= 0){
@@ -111,6 +122,8 @@ public class LogicalEntities {
 
             Array<GridNode> path = new Array<>();
             if (pathFinder.findPath(startX, startY, endX, endY, path) == PathFinder.FOUND) {
+//                if(monster.getTypeTarget() == 2 && timerLogic <= 2)return;
+//                timerLogic = 0;
                 monster.setPath(path); // Assign the path to the zombie
             }
 //            Plant currentTarget = monster.getTargetPlant();

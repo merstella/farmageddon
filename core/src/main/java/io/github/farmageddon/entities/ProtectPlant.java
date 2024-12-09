@@ -52,7 +52,7 @@ public class ProtectPlant extends Entity{
     public ProtectPlant (float x, float y, float maxHealth) {
         super(x, y, 0f, true, maxHealth);
         cooldown = 1f;
-        range = 1000f;
+        range = 100f;
         fromLastShoot = 0f;
         isShooting = false;
         timeMul = 1f;
@@ -79,7 +79,7 @@ public class ProtectPlant extends Entity{
     public void update (float delta) {
         fromLastShoot += delta * timeMul;
         if (fromLastShoot >= cooldown) {
-            fromLastShoot -= cooldown;
+            fromLastShoot = 0;
             isShooting = true;
         }
     }

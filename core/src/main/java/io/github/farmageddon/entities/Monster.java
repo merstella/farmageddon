@@ -37,7 +37,10 @@ public class Monster extends Entity {
     public void setTypeTarget (int typeTarget) {this.typeTarget = typeTarget;}
     public float getRange () {return this.range;}
     public void setRange (float range) {this.range = range;}
-    public boolean isNowTargetPlayer () {return timeSinceTargetPlayer <= maxTimeForPlayer;}
+    public boolean isNowTargetPlayer () {
+        return false;
+//        return timeSinceTargetPlayer <= maxTimeForPlayer;
+    }
     public void setTimeSinceTargetPlayer (float timeSinceTargetPlayer) {this.timeSinceTargetPlayer = timeSinceTargetPlayer;}
 
     public void setTargetPlant(ProtectPlant targetPlant) {
@@ -91,6 +94,7 @@ public class Monster extends Entity {
             case 2:
                 return targetPlayer.getPosition();
         }
+        System.out.println("No target position\n\n\n");
         return null;
     }
     // Constants
@@ -155,7 +159,7 @@ public class Monster extends Entity {
 
     public void setPath(Array<GridNode> path) {
         this.path = path;
-        this.currentPathIndex = 0; // Reset path to start from the beginning
+        this.currentPathIndex = 1; // Reset path to start from the beginning
     }
 
     // Getters and Setters

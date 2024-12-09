@@ -40,9 +40,13 @@ public class Entity {
 
     // Method to reduce health (for damage)
     public void takeDamage(float damage) {
-        if (hasHealthBar) {
+//        if (hasHealthBar) {
             health = Math.max(0, health - damage);
-        }
+            System.out.println("Auch!???");
+            System.out.print(health);
+            System.out.print(' ');
+            System.out.println(damage);
+//        }
     }
 
 
