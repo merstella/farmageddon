@@ -27,7 +27,7 @@ public class Player extends Entity {
     public ArrayList<Items> inventory;
     public ArrayList<Items> eqipInventory;
     private final int maxInventorySize = 25;
-    public static int maxEqipInventorySize = 5;
+    public final int maxEqipInventorySize = 5;
     public int slotCursor = 0;
     public int money = 0;
     private CollisionHandling collisionHandling;
@@ -48,31 +48,8 @@ public class Player extends Entity {
         this.inventory = new ArrayList<>();
         this.eqipInventory = new ArrayList<>();
 
-
-    //        while (eqipInventory.size() <= slotCursor) {
-    //            eqipInventory.add(null);
-    //        }
-
-
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
-
-    // inventory contact
-//    public void setEquipItem(Items item, int index) {
-//        // Kiểm tra chỉ số hợp lệ
-//        if (index >= 0 && index <= maxEqipInventorySize) {
-//            // Đảm bảo danh sách đủ phần tử
-//            while (eqipInventory.size() <= index) {
-//                eqipInventory.add(null); // Thêm các phần tử null để mở rộng danh sách
-//            }
-//
-//            // Thêm hoặc ghi đè item tại vị trí chỉ định
-//            eqipInventory.set(index, item);
-//            System.out.println("Đã thêm item vào vị trí: " + index);
-//        } else {
-//            System.out.println("Chỉ số không hợp lệ!");
-//        }
-//    }
 
 
     public void setEquipItem(Items item, int index) {
@@ -103,8 +80,6 @@ public class Player extends Entity {
     public void update(float delta) {
         super.update(delta);
         updateDirectionAnimation(delta);
-//        minigame = new FishingMinigame();
-//        minigame.create();
     }
 
     public void updateFishingAnimation() {

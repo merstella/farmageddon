@@ -67,6 +67,9 @@ public class GameScreen implements Screen, InputProcessor {
     public static boolean isFishingVisible = false;
     private boolean FishingVisible = false;
 
+    private UI ui;
+    private OptionScreen optionScreen;
+
     // Items Texture
     public Texture CoinTexture;
     public Texture bucketTexture;
@@ -79,10 +82,10 @@ public class GameScreen implements Screen, InputProcessor {
 //    fishing minigame
     public FishingMinigame minigame;
 
-    private final Music music;
+    public Music music;
 
     private ArrayList<Animal> animals;
-    private final Stage stage;
+    public final Stage stage;
 
     private final Vector2 selectedCell;
     int currentDays;
@@ -109,7 +112,6 @@ public class GameScreen implements Screen, InputProcessor {
     private Plants specialPlant;
     public GameScreen(Main game) {
         this.game = game;
-
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
@@ -164,7 +166,6 @@ public class GameScreen implements Screen, InputProcessor {
         chicken2.setBound(620, 690, 160, 260); // Set boundaries
         animals.add(chicken1);
         animals.add(chicken2);
-
     }
 
     private void initHouses() {
@@ -196,7 +197,6 @@ public class GameScreen implements Screen, InputProcessor {
         items = new Items(CoinTexture, Items.ItemType.OTHER, Items.Item.COIN, 10,1);
         player.setEquipItem(items,0);
 
-
         bucketTexture = new Texture(Gdx.files.internal("toolcutted/bucket.png"));
         items = new Items(bucketTexture, Items.ItemType.TOOL, Items.Item.BUCKET, 10,1);
         player.setItem(items);
@@ -221,7 +221,10 @@ public class GameScreen implements Screen, InputProcessor {
         inventoryUI = new InventoryUI(titleSize);
         marketScreen = new MarketScreen(titleSize,market, player);
         inventoryScreen = new InventoryScreen(titleSize, player);
-        // fishing minigame
+
+        optionScreen = new OptionScreen();
+        ui = new UI();
+        Gdx.input.setInputProcessor(ui.stage);
         minigame = new FishingMinigame();
         minigame.create();
     }
@@ -272,6 +275,22 @@ public class GameScreen implements Screen, InputProcessor {
         CollisionHandling.renderCollision();
         isNewDay = false;
         handleKeyDown(delta);
+
+        ui.render();
+        isOptionScreen(delta);
+        if (ui.isOptionVisible == true){
+            System.out.println("ui");
+        }
+    }
+
+    private void isOptionScreen(float delta) {
+        if (ui.isOptionVisible ==  true){
+            optionScreen.show();
+        }
+        else { optionScreen.hide(); }
+        if (ui.isOptionVisible){
+            optionScreen.render(delta);
+        }
 
     }
 
@@ -371,8 +390,8 @@ public class GameScreen implements Screen, InputProcessor {
 
     private void handleKeyDown(float delta) {
 
-// bấm m để hiện lên cửa sổ market
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+    // bấm m để hiện lên cửa sổ market
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
             isMarketVisible = !isMarketVisible;
             System.out.println("marketScreen");
             if (isMarketVisible) {
@@ -380,7 +399,6 @@ public class GameScreen implements Screen, InputProcessor {
             } else {
                 marketScreen.hide();
             }
-            //game.setScreen(marketScreen);
         }
         if (isMarketVisible) {
             marketScreen.render(delta);
@@ -391,14 +409,11 @@ public class GameScreen implements Screen, InputProcessor {
             isInventoryVisible = !isInventoryVisible;
             System.out.println("inventoryScreen");
             if (isInventoryVisible) {
-                System.out.println("show");
                 inventoryScreen.show();
             } else {
-                System.out.println("hide");
                 inventoryScreen.hide();
             }
         }
-
         if (isInventoryVisible) {
             inventoryScreen.render(delta);
         }
@@ -412,7 +427,6 @@ public class GameScreen implements Screen, InputProcessor {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
             inventoryUI.slotCol = 1;
             player.slotCursor = 1;
-            System.out.println("num 2");
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
             inventoryUI.slotCol = 2;
@@ -428,7 +442,6 @@ public class GameScreen implements Screen, InputProcessor {
         }
 
         //    bấm F để bắt đầu câu cá, nếu ItemName trà về tại vị trí player.slotCursor của equipInventory == "Coin"
-//        if (player.eqipInventory.get(player.slotCursor).getNum() != 0) {
             if (player.eqipInventory.get(player.slotCursor).getItem() == (Items.Item.COIN)) {
                 if ((player.getPosition().x < 896f && player.getPosition().x > 887f && player.getPosition().y < 500f && player.getPosition().y > 480f) ||
                     (player.getPosition().x < 881f && player.getPosition().x > 872f && player.getPosition().y < 556f && player.getPosition().y > 518f) ||
@@ -456,21 +469,18 @@ public class GameScreen implements Screen, InputProcessor {
                 if (cursorRight) {
                     isFishingVisible = !isFishingVisible;
                     FishingVisible = !FishingVisible;
-//            if (Player.eqipInventory.get(Player.player.slotCursor).getItem() == Items.Item.COIN) {
                     // Bật hoạt ảnh START_FISHING
                     player.currentActivity = PlayerAnimation.Activity.START_FISHING_RIGHT;
                     player.updateFishingAnimation();
-//            }
+
                     cursorRight = false;
                 }
                 if (cursorLeft) {
                     isFishingVisible = !isFishingVisible;
                     FishingVisible = !FishingVisible;
-//            if (Player.eqipInventory.get(Player.player.slotCursor).getItem()== Items.Item.COIN) {
                     // Bật hoạt ảnh START_FISHING
                     player.currentActivity = PlayerAnimation.Activity.START_FISHING_LEFT;
                     player.updateFishingAnimation();
-//            }
                     cursorLeft = false;
                 }
                 if (FishingVisible) {
@@ -533,22 +543,7 @@ public class GameScreen implements Screen, InputProcessor {
                     }
                 }
             }
-//        }
     }
-
-    private boolean isAnimationPlaying(PlayerAnimation animation, PlayerAnimation.Activity currentActivity) {
-        if (animation == null) return false;
-
-        int index = currentActivity.ordinal();
-        if (index < 0 || index >= actionAnimations.length) return false;
-
-        Animation currentAnimation = actionAnimations[index];
-        if (currentAnimation == null) return false;
-
-        return !currentAnimation.isAnimationFinished(PlayerAnimation.stateTime);
-    }
-
-
 
     private void renderSelectedCell() {
         if (player.currentActivity != PlayerAnimation.Activity.NONE) {

@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.Player;
-//import static io.github.farmageddon.Player.inventory;
 
 public class FishingMinigame extends ApplicationAdapter {
     private ShapeRenderer shapeRenderer;
@@ -24,14 +23,14 @@ public class FishingMinigame extends ApplicationAdapter {
     private float GreenX;          // Tọa độ x của vùng xanh
     private int level = 1;
 
-    public static int success = 0;  // Trạng thái nhấn phím chính xác
+    public int success = 0;  // Trạng thái nhấn phím chính xác
     public static boolean gameOver = false;
     public static boolean cursorGameOver = false;
 
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
-
+        this.player = new Player(640, 300, 100f);
         // Tính toán vị trí thanh bar
         barX = Gdx.graphics.getWidth() / 2f + 50;
         barY = Gdx.graphics.getHeight() / 2f + 150;
@@ -45,8 +44,8 @@ public class FishingMinigame extends ApplicationAdapter {
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-                player.inventory.add(GameScreen.Fish);
                 System.out.println("Fish Added!");
+                player.setItem(GameScreen.Fish);
                 cursorGameOver = true;
             }
             gameOver = true;
@@ -74,8 +73,6 @@ public class FishingMinigame extends ApplicationAdapter {
                 cursorGameOver = true;
             }
         }
-
-        // Vẽ các thành phần trên màn hình
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 

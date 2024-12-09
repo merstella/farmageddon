@@ -112,7 +112,6 @@ public class MarketScreen implements Screen {
             }
         });
 
-
         stage.addActor(buyButton);
         stage.addActor(sellButton);
     }
@@ -127,7 +126,6 @@ public class MarketScreen implements Screen {
     public void render(float v) {
 
         batch.begin();
-
         // kich thuoc cua screen
         float screenWidth = Gdx.graphics.getWidth();
         float screenHeight = Gdx.graphics.getHeight();
