@@ -16,9 +16,7 @@ public class Animator {
     private final Texture monsterSheet;
     private final Animation<TextureRegion>[] animations;
     public static Animation<TextureRegion>[] actionAnimations;
-    public static float stateTime;
     public Animation<TextureRegion>[] monsterAnimations;
-
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
         IDLE_UP, IDLE_RIGHT, IDLE_DOWN, IDLE_LEFT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
@@ -156,12 +154,11 @@ public class Animator {
         monsterAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames4[14], 0, 4);
         monsterAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames4[14], 0, 4);
         monsterAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[14], 0, 4);
-        stateTime = 0f;
     }
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
         System.arraycopy(frames, startFrame, directionFrames, 0, frameCount);
-        return new Animation<>(0.2f, directionFrames);
+        return new Animation<>(0.1f, directionFrames);
     }
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
@@ -174,7 +171,7 @@ public class Animator {
             directionFrames[i] = new TextureRegion(frames[startFrame + i]);
             directionFrames[i].flip(true, false); // Flip horizontally
         }
-        return new Animation<>(0.2f, directionFrames);
+        return new Animation<>(0.1f, directionFrames);
     }
     private Animation<TextureRegion> createFlippedAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
@@ -185,9 +182,7 @@ public class Animator {
         return new Animation<>(frameDuration, directionFrames);
     }
     // Remove or modify this method
-    public void render(SpriteBatch batch, float x, float y, Direction direction) {
-        // Update state time
-        stateTime += Gdx.graphics.getDeltaTime();
+    public void render(SpriteBatch batch, float x, float y, Direction direction, float stateTime) {
 
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = animations[direction.ordinal()].getKeyFrame(stateTime, true);
@@ -197,9 +192,7 @@ public class Animator {
 
 
     }
-    public void render(SpriteBatch batch, float x, float y, MonsterActivity monsterActivity) {
-        stateTime += Gdx.graphics.getDeltaTime();
-
+    public void render(SpriteBatch batch, float x, float y, MonsterActivity monsterActivity,  float stateTime) {
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
         if (monsterActivity == MonsterActivity.DEAD) {
@@ -218,9 +211,8 @@ public class Animator {
             batch.draw(currentFrame, x, y, 32, 32);
         }
     }
-    public void renderActivity(SpriteBatch batch, float x, float y, Activity activity) {
+    public void renderActivity(SpriteBatch batch, float x, float y, Activity activity,  float stateTime) {
         if (activity == Activity.NONE) return;
-        stateTime += Gdx.graphics.getDeltaTime();
         Animation<TextureRegion> activityAnimation = actionAnimations[activity.ordinal()];
         if (activity == Activity.ATTACK_DOWN || activity == Activity.ATTACK_UP || activity == Activity.ATTACK_LEFT || activity == Activity.ATTACK_RIGHT) {
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);

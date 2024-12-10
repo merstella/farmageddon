@@ -20,7 +20,7 @@ public class Player extends Entity {
     public static final int HEIGHT = 32;
 
 
-    public Animator animation;
+    public static Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
     public ShapeRenderer shapeRenderer;
@@ -44,7 +44,7 @@ public class Player extends Entity {
     public static float timeSinceLastAttack = 0f;  // Timer to track time since last attack
     public static String itemHolding;
     public Player(float x, float y, float speed) {
-        super(x, y, speed, true, 100);
+        super(x, y, speed, true, 100000);
         animation = new Animator(); // Initialize animation instance
         currentDirection = Animator.Direction.IDLE_DOWN; // Default direction
         currentActivity = Animator.Activity.NONE; // Default activity
@@ -318,17 +318,12 @@ public class Player extends Entity {
         super.render(batch);
         batch.begin();
         if (currentActivity == Animator.Activity.NONE) {
-            animation.render(batch, position.x, position.y, currentDirection);
+            animation.render(batch, position.x, position.y, currentDirection, GameScreen.stateTime);
         } else {
-            animation.renderActivity(batch, position.x, position.y, currentActivity);
+            animation.renderActivity(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
             System.out.println(currentActivity);
         }
         batch.end();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        // Draw playerBounds in red
-        shapeRenderer.setColor(1, 0, 0, 1); // Red color
-        shapeRenderer.rect(playerBounds.x, playerBounds.y, playerBounds.width, playerBounds.height);
-        shapeRenderer.end();
     }
 
     public void dispose() {

@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 
-public class Projectile extends Entity{
+public class Projectile extends Entity {
     private float damagePoint;
     private int typeTarget;
     private Entity targetEntity;
@@ -50,13 +50,13 @@ public class Projectile extends Entity{
     public Vector2 getTargetPosition () {
         switch (typeTarget) {
             case 0:
-                return targetEntity.position;
+                return new Vector2(targetEntity.position.x + 16, targetEntity.position.y + 16);
 
             case 1:
-                return targetMonster.position;
+                return new Vector2(targetMonster.position.x + 16, targetMonster.position.y + 16);
 
             case 2:
-                return targetPlant.position;
+                return new Vector2(targetPlant.position.x + 16, targetPlant.position.y + 16);
         }
         return new Vector2(-1, -1);
     }

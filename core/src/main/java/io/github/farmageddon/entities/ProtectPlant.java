@@ -17,11 +17,13 @@ import java.util.Objects;
 public class ProtectPlant extends Entity{
     private float cooldown, fromLastShoot, range;
     private float timeMul;
-    private Texture curTexture;
     private boolean isShooting;
     private int typePlant;
     private float additionState;
-
+    private float opacity;
+    private boolean isPlanted;
+    private final Animator animation;
+    private Animator.MonsterActivity currentActivity;
 
     public void setTypePlant (int typePlant) {this.typePlant = typePlant;}
     public void setAdditionState (float additionState) {this.additionState = additionState;}
@@ -38,10 +40,6 @@ public class ProtectPlant extends Entity{
 
     public void shooted () {this.isShooting = false;}
 
-    @Override
-    public Vector2 getPosition() {
-        return super.getPosition();
-    }
     public float getCooldown () {
         return cooldown;
     }
@@ -49,32 +47,28 @@ public class ProtectPlant extends Entity{
     public void setTimeMul (float timeMul) {this.timeMul = timeMul;}
     public void setFromLastShoot (float fromLastShoot) {this.fromLastShoot = fromLastShoot;}
 
+
     public ProtectPlant (float x, float y, float maxHealth) {
         super(x, y, 0f, true, maxHealth);
         cooldown = 1f;
+
         range = 100f;
         fromLastShoot = 0f;
         isShooting = false;
         timeMul = 1f;
-        curTexture = new Texture("Well.png");
+
         typePlant = 0;
+        opacity = 0f;
+        isPlanted = false;
+        animation = new Animator();
+        currentActivity = Animator.MonsterActivity.IDLE_DOWN;
     }
-
-
-
-//    public ProtectPlant (float x, float y, float maxHealth, int typePlant, float additionState) {
-//        super(x, y, 0f, true, maxHealth);
-//        cooldown = 1f;
-//        range = 1000f;
-//        fromLastShoot = 0f;
-//        isShooting = false;
-//        timeMul = 1f;
-//        curTexture = new Texture("Well.png");
-//        typePlant = 0;
-//        this.typePlant = typePlant;
-//        this.additionState = additionState;
-//
-//    }
+    public void setOpacity(float opacity) {
+        this.opacity = opacity;
+    }
+    public void setPlanted(boolean isPlanted) {
+        this.isPlanted = isPlanted;
+    }
 
     public void update (float delta) {
         fromLastShoot += delta * timeMul;
@@ -86,8 +80,21 @@ public class ProtectPlant extends Entity{
 
     public void render (SpriteBatch batch) {
         batch.begin();
-        batch.draw(curTexture, position.x, position.y, 10, 10);
+        batch.setColor(1f, 1f, 1f, opacity);
+        animation.render(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
+        batch.setColor(1f, 1f, 1f, 1f);
         batch.end();
+    }
+
+    @Override
+    public void dispose()  {
+        super.dispose();
+        animation.dispose();
+    }
+
+    public void incrementOpacity(float delta) {
+        this.opacity += delta;  // Increment opacity by delta (gradually fade in)
+        this.opacity = Math.min(this.opacity, 1f);  // Ensure opacity doesn't exceed 1
     }
 
 }

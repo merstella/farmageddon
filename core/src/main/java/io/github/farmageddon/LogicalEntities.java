@@ -39,13 +39,15 @@ public class LogicalEntities {
                 monsters.removeIndex(i);
                 continue;
             }
-            if (monster.getTypeTarget() == -1) {
+            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
                 boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
 //                if(timerLogic >= 1) {
 //                    timerLogic = 0;
-                if(monster.getTypeTarget() != 2 || timerLogic >= 0.5) {
-                    assignPathToMonster(monster, pathFinder);
-                }
+                assignPathToMonster(monster, pathFinder);
+                System.out.println("________________");
+                System.out.print(monster.getTypeTarget());
+                System.out.print(' ');
+                System.out.println(timerLogic);
 
 //              }
             }
@@ -110,22 +112,22 @@ public class LogicalEntities {
     }
 
     public void assignPathToMonster(Monster monster, PathFinder pathFinder) {
-            // Check if the zombie already has a target plant
-            Vector2 targetPosition = monster.getTargetPosition();
-            GridNode startNode = pathFinder.getGridNodeForEntity(monster.getPosition());
-            GridNode endNode = pathFinder.getGridNodeForEntity(targetPosition);
+        // Check if the zombie already has a target plant
+        Vector2 targetPosition = monster.getTargetPosition();
+        GridNode startNode = pathFinder.getGridNodeForEntity(monster.getPosition());
+        GridNode endNode = pathFinder.getGridNodeForEntity(targetPosition);
 
-            int startX = pathFinder.getGridX(startNode);
-            int startY = pathFinder.getGridY(startNode);
-            int endX = pathFinder.getGridX(endNode);
-            int endY = pathFinder.getGridY(endNode);
+        int startX = pathFinder.getGridX(startNode);
+        int startY = pathFinder.getGridY(startNode);
+        int endX = pathFinder.getGridX(endNode);
+        int endY = pathFinder.getGridY(endNode);
 
-            Array<GridNode> path = new Array<>();
-            if (pathFinder.findPath(startX, startY, endX, endY, path) == PathFinder.FOUND) {
+        Array<GridNode> path = new Array<>();
+        if (pathFinder.findPath(startX, startY, endX, endY, path) == PathFinder.FOUND) {
 //                if(monster.getTypeTarget() == 2 && timerLogic <= 2)return;
 //                timerLogic = 0;
-                monster.setPath(path); // Assign the path to the zombie
-            }
+            monster.setPath(path); // Assign the path to the zombie
+        }
 //            Plant currentTarget = monster.getTargetPlant();
 //
 //            // If the target plant is null or disposed, find a new target

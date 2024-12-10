@@ -7,6 +7,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -75,15 +76,9 @@ public class GameScreen implements Screen, InputProcessor{
     private boolean FishingVisible = false;
     public static boolean cursorRight = false;
     public static boolean cursorLeft = false;
-    public Animator.Activity currentActivity;
-    private Animator animation;
-
 
     // Items Texture
     public Texture CoinTexture;
-    public Texture item1Texture;
-    public Texture item2Texture;
-    public Texture item3Texture;
     public Texture item4Texture;
     public Texture FishTexture;
     public Texture defaultTexture;
@@ -99,49 +94,36 @@ public class GameScreen implements Screen, InputProcessor{
     private PointLight torchLight;
     private World world;
 
-    // torch
-//    private TorchLightHandler torch;
-//    private boolean isTorchHeld = true;
     private float playerX;
     private float playerY;
-
-
-//    private final Music music;
-
     private ArrayList<Animal> animals;
     private final Stage stage;
 
     private final Vector2 selectedCell;
     int currentDays;
 
-    //demo crops
-//    Crop riceCrop;
-//    Crop tomatoCrop;
-
-    // demo house
     Array<Entity> houses;
 
-    // demo land
     private final LandManager landManager;
-//    private Land singleLand;
-
     public static Array<DroppedItem> droppedItems;
 
     private float elapsedTime = 0f;
-//    private Queue<Pair<Animal, Animal>> breedingQueue = new LinkedList<>();
 
     private Array<Monster> monsters;
-    private Array<ProtectPlant> plants;
+
     private Array<Entity> entities;
     private Array<Projectile> projectiles;
     private LogicalEntities logic;
-//    private Array<Monster> zombies;
-//    private static Array<Plant> plants;
     private PathFinder pathFinder;
+    public static float stateTime;
+
+    private boolean isPlacing;
+    private Array<ProtectPlant> plants;
 
     public GameScreen(Main game) {
 
         this.game = game;
+        stateTime = 0f;
         logic = new LogicalEntities();
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
@@ -176,45 +158,29 @@ public class GameScreen implements Screen, InputProcessor{
         player = new Player(640, 300, 100f);
 
         create();
-//        monsters.add(new Monster(0, 0, 30, 600, 400, 1000));
-//        monsters.add(new Monster(0, 70, 40, 600, 400, 2000));
+
         plants.add(new ProtectPlant(400, 400, 1000));
 
-//        market = new Market(100, 100, 200);
-//        initPlayerInv();
         initMarket();
         initPlayerInv();
 
-//        market = new Market(100, 100, 200);
         initAnimal();
-//        zombies = new Array<Monster>();
-//        plants = new Array<Plant>();
+
         pathFinder = new PathFinder(Main.GAME_WIDTH, Main.GAME_HEIGHT, 16, 16);
         logic.setPathFinder(pathFinder);
-        // Initialize zombies and plants
-//        zombies.add(new Monster(322, 143, 30,100));
-//        zombies.add(new Monster(120, 455, 30,100));
-//        zombies.add(new Monster(178, 456, 30,100));
-//
-//
-//        plants.add(new Plant(600, 300, 100));
-//        plants.add(new Plant(300, 400, 100));
-//        plants.add(new Plant(100, 100, 100));
-//        plants.add(new Plant(700, 100, 100));
 
         loadCollisionLayer();
 
-//        specialPlant = new Plants();
         droppedItems = new Array<>();
         initDebug();
-//        music = Main.manager.get("Sound/music.mp3", Music.class);
-//        music.setLooping(true);
-//        music.setVolume(0.2f);
-//        music.play();
-//        music = Main.manager.get("Sound/music.mp3", Music.class);
-//        music.setLooping(true);
-//        music.setVolume(0.2f);
-//        music.play();
+
+        initProtectedPlant();
+
+    }
+
+    private void initProtectedPlant() {
+        isPlacing = false;
+        plants = new Array<>();
     }
 
 
@@ -226,13 +192,6 @@ public class GameScreen implements Screen, InputProcessor{
                 pathFinder.addCollisionObject(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
             }
         }
-//        music = Main.manager.get("Sound/music.mp3", Music.class);
-//        music.setLooping(true);
-//        music.setVolume(0.2f);
-//        music.play();
-
-        // torch
-//        torch = new TorchLightHandler(world);
     }
 
     public void initMarket() {
@@ -335,12 +294,11 @@ public class GameScreen implements Screen, InputProcessor{
     boolean isNewDay;
     @Override
     public void render(float delta) {
+        stateTime += delta;
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         player.update(delta);
-        System.out.println(player.getPosition());
 
-//        updateZombies(delta);
         camera.position.set(
             MathUtils.clamp(player.getPosition().x + 16, Main.GAME_WIDTH * camera.zoom /2, Main.GAME_WIDTH *  (1 - camera.zoom/2)),
             MathUtils.clamp(player.getPosition().y + 16, Main.GAME_HEIGHT * camera.zoom /2, Main.GAME_HEIGHT *  (1 - camera.zoom/2)),
@@ -356,18 +314,10 @@ public class GameScreen implements Screen, InputProcessor{
         handleDayPassed();
         clock.act(delta);
 
-
         checkBreeding();
         stage.act(delta);
         stage.draw();
 
-        playerX = player.getPosition().x;
-        playerY = player.getPosition().y;
-
-//        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-//            animal.feed();
-//        }
-        //printAnimalDebugInfo();
 
         time = timer.getFormattedTimeofDay();
         timeLabel.setText(time);
@@ -378,13 +328,6 @@ public class GameScreen implements Screen, InputProcessor{
 
 
         renderPlayer();
-//        for (Plant plant : plants) {
-//            plant.render(game.batch);
-//        }
-//        for (Monster monster : zombies) {
-//            monster.render(game.batch);
-//
-//        }
         renderGridDebug();
         if (currentAct != "attack") renderSelectedCell();
         handleCrop();
@@ -394,35 +337,28 @@ public class GameScreen implements Screen, InputProcessor{
         checkItemPickup(player);
         renderAmbientLighting();
         renderDebugInfo();
-//        drawDebug();
-//        printAnimalDebugInfo();
+
         CollisionHandling.renderCollision();
         isNewDay = false;
 
         logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         logic.renderEntities(monsters, plants, projectiles, game.batch);
-
-//        handleKeyDown(delta);
         handleKeyDown(delta);
-
+        updateProtectPlant(delta);
+        renderProtectPlant();
     }
 
-//    private void updateZombies(float delta) {
-//
-//        // Assign paths to all zombies
-//        logic.assignPathsToZombies(zombies, plants, pathFinder);
-//
-//        // Update each zombie's position
-//        for (Monster zombie : zombies) {
-//            zombie.update(delta); // Move the zombie along the path
-//        }
-//
-//    }
+    private void updateProtectPlant(float delta) {
+        for (ProtectPlant plant : plants) {
+            plant.update(delta);
+        }
+    }
 
-
-
-
-
+    private void renderProtectPlant() {
+        for (ProtectPlant plant : plants) {
+            plant.render(game.batch);
+        }
+    }
 
     private void renderGridDebug() {
         // Set up the ShapeRenderer
@@ -624,13 +560,13 @@ public class GameScreen implements Screen, InputProcessor{
                 switch (player.currentActivity) {
                     case START_FISHING_RIGHT:
                         // Kiểm tra nếu hoạt ảnh đã chạy xong
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                        if (Player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(stateTime)) {
                             player.currentActivity = Animator.Activity.WAIT_FISHING_RIGHT;
                         }
                         break;
                     case START_FISHING_LEFT:
                         // Kiểm tra nếu hoạt ảnh đã chạy xong
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                        if (Player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(stateTime)) {
                             player.currentActivity = Animator.Activity.WAIT_FISHING_LEFT;
                         }
                         break;
@@ -651,7 +587,7 @@ public class GameScreen implements Screen, InputProcessor{
                         break;
                     case DONE_FISHING_RIGHT:
                         // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                        if (Player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(stateTime)) {
                             player.currentActivity = Animator.Activity.NONE;
                             FishingVisible = false;
                             Player.hasStartedFishing = false;
@@ -663,7 +599,7 @@ public class GameScreen implements Screen, InputProcessor{
                         break;
                     case DONE_FISHING_LEFT:
                         // Chạy hoạt ảnh DONE_FISHING (có thể thêm logic nếu cần)
-                        if (player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(Animator.stateTime)) {
+                        if (Player.animation.actionAnimations[player.currentActivity.ordinal()].isAnimationFinished(stateTime)) {
                                 System.out.println("Fishing process completed!");
                                 player.currentActivity = Animator.Activity.NONE;
                                 FishingVisible = false;
@@ -902,6 +838,8 @@ public class GameScreen implements Screen, InputProcessor{
             currentAct = "attack";
         } else if (keycode == Input.Keys.T) {
             Player.itemHolding = "torch";
+        } else if (keycode == Input.Keys.X) {
+            currentAct = "protectplant";
         }
         return true;
     }
@@ -943,6 +881,7 @@ public class GameScreen implements Screen, InputProcessor{
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
         if (button == Input.Buttons.LEFT) {
+
             // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
@@ -951,6 +890,11 @@ public class GameScreen implements Screen, InputProcessor{
             selectedCell.set(cellX, cellY);
 
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
+            if (Objects.equals(currentAct, "protectplant")) {
+                isPlacing = true;  // Start the planting process
+                ProtectPlant newPlant = new ProtectPlant(cellX * 16,cellY * 16, 100f);
+                plants.add(newPlant);
+            }
             if (player.getPosition().dst(touchPosition2D) <= 50) {
 
                 // Update activity and direction based on touch position (for animation purposes)
@@ -1011,6 +955,16 @@ public class GameScreen implements Screen, InputProcessor{
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (button == Input.Buttons.LEFT) {
+            if (!Objects.equals(currentAct, "protectplant")) return true;
+            if (isPlacing) {
+
+                if (!plants.isEmpty()) {
+                    ProtectPlant plantToConfirm = plants.peek();
+                    plantToConfirm.setOpacity(1f);
+                    plantToConfirm.setPlanted(true);
+                }
+                isPlacing = false;
+            }
             player.stopActivity();
             return true;
         }
@@ -1019,11 +973,22 @@ public class GameScreen implements Screen, InputProcessor{
 
     @Override
     public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+
         return false;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        if (!Objects.equals(currentAct, "protectplant")) return false;
+        if (isPlacing && !plants.isEmpty()) {
+            touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPosition);
+            int cellX = (int) touchPosition.x / 16;
+            int cellY = (int) touchPosition.y / 16;
+            ProtectPlant lastPlant = plants.peek();
+            lastPlant.setPosition(new Vector2(cellX * 16, cellY * 16));
+            lastPlant.incrementOpacity(Gdx.graphics.getDeltaTime() * 0.5f);
+        }
         return false;
     }
 
@@ -1042,14 +1007,24 @@ public class GameScreen implements Screen, InputProcessor{
         plants = new Array<>();
         projectiles = new Array<>();
         entities = new Array<>();
-//        monsters.add(new Monster(0, 0, 50, 3000));
-//        monsters.add(new Monster(626, 176, 50, 3000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        for(int i = 1; i <= 50; i++){
-//            monsters.add(new Monster(0, 0, 50, 3000));
-//        }
-//        plants.add(new ProtectPlant(500, 500, 7000000));
+        monsters.add(new Monster(0, 0, 50, 3000));
+        monsters.add(new Monster(626, 176, 50, 3000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+
     }
 
 }

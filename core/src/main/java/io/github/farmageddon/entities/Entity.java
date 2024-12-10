@@ -16,7 +16,9 @@ public class Entity {
     public float getHealth() {
         return health;
     }
-
+    public void setSpeed(float speed){
+        this.speed = speed;
+    }
     public Entity(float x, float y, float speed, boolean hasHealthBar, float maxHealth) {
         this.position = new Vector2(x, y);
         this.hasHealthBar = hasHealthBar;
@@ -37,16 +39,20 @@ public class Entity {
     public Vector2 getPosition() {
         return position;
     }
+    public void setPosition(Vector2 position) {
+        this.position = position;
+    }
 
     // Method to reduce health (for damage)
     public void takeDamage(float damage) {
-//        if (hasHealthBar) {
+        if (hasHealthBar) {
             health = Math.max(0, health - damage);
+            healthBar.setHealth(health);
             System.out.println("Auch!???");
             System.out.print(health);
             System.out.print(' ');
             System.out.println(damage);
-//        }
+        }
     }
 
 
