@@ -1,7 +1,10 @@
 package io.github.farmageddon.ultilites;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import static io.github.farmageddon.ultilites.Items.ItemType.*;
 
 public class Items {
 
@@ -10,8 +13,11 @@ public class Items {
     private Item item;
     private int num;
     private int cost;
+
+
     public enum ItemType{
         NULL,
+        DEFAULT,
         SEED,
         TOOL,
         FOOD,
@@ -19,13 +25,14 @@ public class Items {
     }
 
     public enum Item{
+        DEFAULT,
         NULL,// default Item
         RICE,
         TOMATO,
         CARROT,
         CORN,
         BUCKET,
-        HOE,
+        HOE,SWORD,TORCH,FISHINGROD,
         EGG,
         FISH, COIN,
 
@@ -38,6 +45,7 @@ public class Items {
         this.num = 0;
         this.cost = cost;
         this.num = num;
+
     }
     public Items(TextureRegion textureRegion, ItemType type, Item item, int cost){
         this.type = type;
@@ -70,44 +78,6 @@ public class Items {
     public int getNum() {
         return num;
     }
+
 }
-//package io.github.farmageddon.markets;
-//
-//import com.badlogic.gdx.graphics.Texture;
-//import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-//import com.badlogic.gdx.scenes.scene2d.ui.Image;
-//
-//public class Items {
-//    private String itemName;
-//    private Texture texture;
-//    public int Cost;
-//
-//    public Items(String itemName, Texture texture, int Cost) {
-//        this.itemName = itemName;
-//        this.texture = texture;
-//        this.Cost = Cost;
-//    }
-//
-//    public void render(SpriteBatch batch, float x, float y) {
-//        batch.draw(texture, x, y);
-//    }
-//
-//    public String getItemName() {
-//        return itemName;
-//    }
-//
-//    public int getCost() {
-//        return Cost;
-//    }
-//
-//    public Texture getTexture() {
-//        return texture;
-//    }
-//
-//    public void dispose() {
-//        if (texture != null) {
-//            texture.dispose();
-//        }
-//    }
-//
-//}
+

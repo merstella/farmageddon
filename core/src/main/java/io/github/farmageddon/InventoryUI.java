@@ -1,11 +1,11 @@
 package io.github.farmageddon;
 // 1280 x 768
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import io.github.farmageddon.entities.Player;
 
 
 public class InventoryUI {
@@ -15,7 +15,8 @@ public class InventoryUI {
     public int slotCol; // vị trí con trỏ cột
     public int slotRow; // vị trí con trỏ hàng
     private Texture inventoryTexture;
-    private Texture cursorTexture;
+    private Texture selectedSheet;
+    private TextureRegion cursorTexture;
 
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
     private SpriteBatch spriteBatch = new SpriteBatch();
@@ -24,7 +25,8 @@ public class InventoryUI {
     public InventoryUI(int titleSize) {
         this.titleSize = titleSize;
         this.inventoryTexture = new Texture(Gdx.files.internal("inventoryBar.png"));
-        this.cursorTexture = new Texture(Gdx.files.internal("chickencutted/tile001.png"));
+        this.selectedSheet = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Selectors.png"));
+        this.cursorTexture = new TextureRegion(selectedSheet, 3*(selectedSheet.getWidth()/4), 2*(selectedSheet.getHeight()/12), selectedSheet.getWidth()/4, selectedSheet.getHeight()/12);
     }
 
     public void drawInventory(Player player) {
@@ -57,8 +59,7 @@ public class InventoryUI {
         float cursorY = slotYstart + 25;
         float cursorWeight = 0;
         float cursorHeight = 0;
-        spriteBatch.draw(cursorTexture,cursorX,cursorY);
-
+        spriteBatch.draw(cursorTexture,cursorX-15,cursorY-30,cursorTexture.getRegionWidth()*1.5f,cursorTexture.getRegionHeight()*1.5f);
         spriteBatch.end();
     }
     public void disapose(){

@@ -59,11 +59,12 @@ public final class UI {
         optionButton.setSize(optionsTextureActive.getRegionWidth() * 3, optionsTextureActive.getRegionHeight() * 3); // Đặt kích thước nút
         optionButton.setPosition(Gdx.graphics.getWidth()-(UI_sheet.getWidth() / 39) - 30, Gdx.graphics.getHeight()-(UI_sheet.getHeight() / 19) - 30);
         stage.addActor(optionButton);
-
+        Gdx.input.setInputProcessor(stage);
         optionScreen = new OptionScreen();
     }
 
     public void create() {
+        Gdx.input.setInputProcessor(stage);
     }
 
     public void resize(int width, int height) {
@@ -71,7 +72,7 @@ public final class UI {
     }
 
     public void render() {
-        Gdx.input.setInputProcessor(stage);
+//        Gdx.input.setInputProcessor(stage);
         float delta = Gdx.graphics.getDeltaTime();
         stage.act(delta);
         stage.draw();

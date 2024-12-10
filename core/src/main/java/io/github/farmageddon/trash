@@ -1,0 +1,153 @@
+
+public class GameScreen implements Screen, InputProcessor {
+ // minimap
+    private int minimapWidth = 158;
+    private int minimapHeight = 96;
+    FrameBuffer minimapFrameBuffer;
+    TextureRegion minimapTexture;
+    OrthographicCamera minimapCamera = new OrthographicCamera(Main.GAME_WIDTH, Main.GAME_HEIGHT);}
+
+    public GameScreen(Main game) {
+            this.game = game;
+
+            camera = new OrthographicCamera();
+            viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
+            camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
+            camera.zoom = 0.25f;
+            camera.update();
+            map = new TmxMapLoader().load("mapok.tmx");
+            mapRenderer = new OrthogonalTiledMapRenderer(map);
+            stage = new Stage(viewport);
+            shapeRenderer = new ShapeRenderer();
+            initMinimap();
+            font = new BitmapFont();
+            font.setColor(WHITE);
+
+            InputMultiplexer inputMultiplexer = new InputMultiplexer();
+            inputMultiplexer.addProcessor(this);
+            inputMultiplexer.addProcessor(stage);
+            Gdx.input.setInputProcessor(inputMultiplexer);
+            selectedCell = new Vector2();
+
+            timer = new Timer_();
+            timer.setTimeRatio(20000);
+            timer.StartNew(120, true, true);
+            timer.setStartTime(0, 12, 30, 0);
+            clock = new GameTimeClock(timer);
+            time = timer.getFormattedTimeofDay();
+            currentDays = 0;
+            daysLeft = 30;
+            initHouses();
+            landManager = new LandManager(Main.GAME_HEIGHT/16,Main.GAME_WIDTH/16);
+            player = new Player(640, 300, 100f);
+
+    //        market = new Market(100, 100, 200);
+    //        initPlayerInv();
+
+            initAnimal();
+    //        monster = new Monster();
+    //        specialPlant = new Plants();
+            droppedItems = new Array<>();
+            initDebug();
+            music = Main.manager.get("Sound/music.mp3", Music.class);
+            music.setLooping(true);
+            music.setVolume(0.2f);
+            music.play();
+        }
+
+    private void initMinimap() {
+            minimapFrameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, minimapWidth, minimapHeight, false);
+            minimapTexture = new TextureRegion(minimapFrameBuffer.getColorBufferTexture());
+            minimapTexture.flip(false, true); // Correct the orientation for rendering
+            minimapCamera.position.set(Main.GAME_WIDTH / 2f, Main.GAME_HEIGHT / 2f, 0);
+            minimapCamera.update();
+        }
+
+    @Override
+        public void render(float delta) {
+            Gdx.gl.glClearColor(0, 0, 0, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            player.update(delta);
+            camera.position.set(
+                player.getPosition().x + 16,
+                player.getPosition().y + 16,
+                0
+            );
+            camera.update();
+            game.batch.setProjectionMatrix(camera.combined);
+            mapRenderer.setView(camera);
+            mapRenderer.render();
+            isNewDay = false;
+            handleDayPassed();
+            clock.act(delta);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                for (Animal animal : animals) {
+                    animal.feed();
+                }
+            }
+
+            checkBreeding(delta);
+            stage.act(delta);
+            stage.draw();
+
+            time = timer.getFormattedTimeofDay();
+            timeLabel.setText(time);
+            shapeRenderer.setProjectionMatrix(camera.combined);
+            renderHouse();
+            renderLand(delta);
+    //        renderAnimal();
+            // renderplant, render monster
+            renderPlayer();
+            renderSelectedCell();
+            handleCrop();
+            renderCrop();
+            //update all the thing before render minimap
+            minimapCamera.update();
+            renderMinimap();
+            checkItemPickup(player);
+            renderAmbientLighting();
+            renderDebugInfo();
+            printAnimalDebugInfo();
+            CollisionHandling.renderCollision();
+            isNewDay = false;
+    //        handleKeyDown(delta);
+        }
+
+       private void renderMinimap() {
+               minimapFrameBuffer.begin();
+               Gdx.gl.glClearColor(0, 0, 0, 1); // Clear with background color
+               Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+               // Render the world from the minimap's perspective
+               mapRenderer.setView(minimapCamera);
+               mapRenderer.render(); // Render your game world here
+
+               minimapFrameBuffer.end();
+               game.batch.begin();
+               game.batch.draw(minimapTexture, 600, 300, minimapWidth, minimapHeight);
+               renderEntitySigns(shapeRenderer);
+               game.batch.end();
+           }
+
+           void renderEntitySigns(ShapeRenderer shapeRenderer) {
+               shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+               float scaleFactor = 8f;
+               // Example for Player
+               shapeRenderer.setColor(Color.BLUE);
+               shapeRenderer.circle(player.getPosition().x / scaleFactor, player.getPosition().y / scaleFactor, 3);
+
+       //        // Example for Mutated Plants
+       //        shapeRenderer.setColor(Color.GREEN);
+       //        for (Vector2 plantPosition : plantPositions) {
+       //            shapeRenderer.circle(plantPosition.x / scaleFactor, plantPosition.y / scaleFactor, 2);
+       //        }
+       //
+       //        // Example for Zombies
+       //        shapeRenderer.setColor(Color.RED);
+       //        for (Vector2 zombiePosition : zombiePositions) {
+       //            shapeRenderer.circle(zombiePosition.x / scaleFactor, zombiePosition.y / scaleFactor, 2);
+       //        }
+
+               shapeRenderer.end();
+           }
+}

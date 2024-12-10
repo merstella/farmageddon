@@ -51,11 +51,12 @@ public class Land {
         return null;
     }
     public void update(float delta) {
+        if (crop != null && crop.isDead()) crop = null;
         if (currentState == LandState.HOED) {
             timeSinceHoed += delta;
             if (timeSinceHoed >= DRYING_TIME) {
                 transitionTo(LandState.PLAIN);
-                transitionTo(LandState.PLAIN);
+                crop = null;
             }
         }
     }
