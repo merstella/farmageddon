@@ -10,6 +10,7 @@ import io.github.farmageddon.ultilites.PathFinder;
 public class LogicalEntities {
     private PathFinder pathFinder;
     private float timerLogic;
+    private Projectile baseProjectile;
 
     public void setPathFinder(PathFinder pathFinder) {
         this.pathFinder = pathFinder;
@@ -39,7 +40,14 @@ public class LogicalEntities {
                 monsters.removeIndex(i);
                 continue;
             }
-            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
+            if(timerLogic <= 0.5) {
+                monster.update(delta);
+                continue;
+            }
+            if (monster.isNullTarget()) {
+                monster.setTypeTarget(-1);
+            }
+            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2) {
                 boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
 //                if(timerLogic >= 1) {
 //                    timerLogic = 0;
@@ -51,6 +59,11 @@ public class LogicalEntities {
 
 //              }
             }
+//            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
+//                if(monster.getTypeTarget() == 2 ||  isUpdateMonsterTarget(monster, plants, entities, player)) {
+//                    assignPathToMonster(monster, pathFinder);
+//                }
+//            }
             monster.update(delta);
         }
         if(timerLogic >= 0.5)timerLogic = 0;

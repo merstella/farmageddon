@@ -75,6 +75,7 @@ public class Projectile extends Entity {
                 targetPlant.takeDamage(damagePoint);
                 break;
         }
+        System.out.println("Projectile hit");
         System.out.println(getTargetHP());
     }
 

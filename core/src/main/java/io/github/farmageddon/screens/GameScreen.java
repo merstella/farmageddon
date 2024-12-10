@@ -892,7 +892,7 @@ public class GameScreen implements Screen, InputProcessor{
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             if (Objects.equals(currentAct, "protectplant")) {
                 isPlacing = true;  // Start the planting process
-                ProtectPlant newPlant = new ProtectPlant(cellX * 16,cellY * 16, 100f);
+                ProtectPlant newPlant = new ProtectPlant(cellX * 16,cellY * 16, 1000000f);
                 plants.add(newPlant);
             }
             if (player.getPosition().dst(touchPosition2D) <= 50) {
@@ -1025,6 +1025,22 @@ public class GameScreen implements Screen, InputProcessor{
         monsters.add(new Monster(761, 650, 50, 2000));
         monsters.add(new Monster(761, 650, 50, 2000));
 
+        monsters.add(new Monster(0, 0, 50, 3000));
+        monsters.add(new Monster(626, 176, 50, 3000));
+        monsters.add(new Monster(761, 650, 50, 2000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+        monsters.add(new Monster(149, 680, 50, 3000));
+//        for(int i = 1; i <= 50; i++){
+//            monsters.add(new Monster(0, 0, 50, 3000));
+//        }
+        plants.add(new ProtectPlant(500, 500, 100000000));
     }
 
 }

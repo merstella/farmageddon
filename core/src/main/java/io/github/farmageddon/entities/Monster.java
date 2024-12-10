@@ -21,15 +21,17 @@ public class Monster extends Entity {
     private boolean markedForRemoval;
     // Movement and Path
     private float speed; // Pixels per second
+//    private boolean
 
     private int typeTarget;
     private ProtectPlant targetPlant;
     private Player targetPlayer;
     private Entity targetEntity;
-    private float range = 0;
+    private float range = 10, attackRange;
     private float maxTimeForPlayer = 5f;
     private float timeSinceTargetPlayer;
     private float damagePoint;
+    private float cooldown, timePassed;
 
     public Monster(float x, float y, float speed, int maxHealth) {
         super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
@@ -42,7 +44,8 @@ public class Monster extends Entity {
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
         // Adjust based on sprite size
         this.path = null;
-        this.range = 20;
+        this.range = 100;
+        this.attackRange = 20;
         this.currentPathIndex = 0; // Start at the first node in the path
         this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
     }
@@ -84,6 +87,20 @@ public class Monster extends Entity {
         return 0;
     }
     public Player getTargetPlayer () {return targetPlayer;}
+    public boolean isNullTarget () {
+        switch (typeTarget) {
+            case -1:
+                return true;
+            case 0:
+                if(targetPlant == null) return true;
+            case 1:
+                if(targetEntity == null) return true;
+            case 2:
+                break;
+        }
+        if(position.dst(getTargetPosition()) > attackRange) return true;
+        return false;
+    }
 
 
 
@@ -163,7 +180,7 @@ public class Monster extends Entity {
     }
 
     public boolean isNearEnough () {
-        if(position.dst(getTargetPosition()) <= Math.sqrt(200)) return true;
+        if(position.dst(getTargetPosition()) <= attackRange) return true;
         return false;
     }
 
@@ -191,6 +208,7 @@ public class Monster extends Entity {
     @Override
     public void update(float delta) {
         super.update(delta); // Assuming Entity.update(delta) handles health reduction, etc.
+        timePassed += delta;
         timeSinceTargetPlayer += delta;
 
         if (isDying) {
@@ -201,7 +219,8 @@ public class Monster extends Entity {
             }
             return; // Skip other updates while dying
         }
-        if (isNearEnough()) {
+        if (isNearEnough() && timePassed >= cooldown) {
+            timePassed = 0;
             applyDamageToTarget();
             return;
         }
@@ -245,8 +264,8 @@ public class Monster extends Entity {
 
         // Simulate next position to check for collisions
         Vector2 newPosition = position.cpy().add(direction);
-        position.add(direction);
         updateMovementAnimation(direction);
+        position.add(direction);
     }
 
 
