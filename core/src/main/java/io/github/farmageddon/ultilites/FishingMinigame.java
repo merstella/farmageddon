@@ -11,7 +11,7 @@ import io.github.farmageddon.entities.Player;
 
 public class FishingMinigame extends ApplicationAdapter {
     private ShapeRenderer shapeRenderer;
-    public Player player;
+    private Player player;
     private float barWidth = 300; // Chiều dài của thanh bar
     private float barHeight = 20; // Chiều cao của thanh bar
 
@@ -23,18 +23,20 @@ public class FishingMinigame extends ApplicationAdapter {
     private float GreenX;          // Tọa độ x của vùng xanh
     private int level = 1;
 
-    public static int success = 0;  // Trạng thái nhấn phím chính xác
+    public int success = 0;  // Trạng thái nhấn phím chính xác
     public static boolean gameOver = false;
     public static boolean cursorGameOver = false;
 
+    public FishingMinigame(Player player) {
+        shapeRenderer = new ShapeRenderer();
+        this.player = new Player(640, 300, 100f);
+    }
+
     @Override
     public void create() {
-        shapeRenderer = new ShapeRenderer();
-
         // Tính toán vị trí thanh bar
         barX = Gdx.graphics.getWidth() / 2f + 50;
         barY = Gdx.graphics.getHeight() / 2f + 150;
-
         setGreen();
     }
 
@@ -44,9 +46,14 @@ public class FishingMinigame extends ApplicationAdapter {
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-                player.inventory.add(GameScreen.Fish);
-                System.out.println("Fish Added!");
-                cursorGameOver = true;
+                for (int i = 0; i < 25; i++) {
+                    if (player.inventory.get(i).getItem() == Items.Item.DEFAULT) {
+                        System.out.println("Fish Added!");
+//                        player.setItem(GameScreen.Fish, i);
+                        cursorGameOver = true;
+                        break;
+                    }
+                }
             }
             gameOver = true;
             level = 1;
@@ -55,11 +62,8 @@ public class FishingMinigame extends ApplicationAdapter {
         }
 
         elapsedTime += Gdx.graphics.getDeltaTime(); // Tăng thời gian theo khung hình
-
-
         // Tính toán vị trí con trỏ
         float cursorX = barX - barWidth / 2 + (float) Math.abs(Math.cos(elapsedTime) * barWidth);
-
         // Kiểm tra khi người chơi nhấn phím
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             // Kiểm tra con trỏ có nằm trong vùng xanh không
@@ -73,8 +77,6 @@ public class FishingMinigame extends ApplicationAdapter {
                 cursorGameOver = true;
             }
         }
-
-        // Vẽ các thành phần trên màn hình
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 

@@ -86,8 +86,6 @@ public class Projectile extends Entity implements Pool.Poolable {
                 targetPlant.takeDamage(damagePoint);
                 break;
         }
-        System.out.println("Projectile hit");
-        System.out.println(getTargetHP());
     }
 
     private float getTargetHP () {

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import io.github.farmageddon.Main;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.FishingMinigame;
@@ -18,7 +19,8 @@ public class Player extends Entity {
 
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
-
+    private Main game;
+    private GameScreen gameScreen;
     public static Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
@@ -26,16 +28,14 @@ public class Player extends Entity {
     // danh sach vat pham su dung trong kho do
     public ArrayList<Items> inventory;
     public ArrayList<Items> eqipInventory;
-    private final int maxInventorySize = 25;
-    public static int maxEqipInventorySize = 5;
+    public final int maxInventorySize = 25;
+    public final int maxEqipInventorySize = 5;
     public int slotCursor = 0;
-    public int money = 0;
+    public int inventoryCursor = 0;
+    public int money = 100;
     private CollisionHandling collisionHandling;
-    Rectangle playerBounds;
+    public Rectangle playerBounds;
     public static boolean hasStartedFishing;
-    private boolean isFishing;
-    private boolean fishingComplete;
-    public FishingMinigame minigame;
     // Attack properties
     public static int attackDamage = 10;  // Attack damage
     public static float attackRange = 50f;  // Attack range
@@ -59,12 +59,7 @@ public class Player extends Entity {
         shapeRenderer = new ShapeRenderer();
         this.inventory = new ArrayList<>();
         this.eqipInventory = new ArrayList<>();
-
-    //        while (eqipInventory.size() <= slotCursor) {
-    //            eqipInventory.add(null);
-    //        }
         itemHolding = "none";
-
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
     }
 
@@ -77,12 +72,12 @@ public class Player extends Entity {
         eqipInventory.remove(item);
     }
 
-    public void setItem(Items item) {
-        inventory.add(item);
+    public void setItem(Items item, int index) {
+        inventory.set(index, item);
     }
 
     public void removeItem(Items item) {
-        inventory.remove(item);
+        inventory.set(inventoryCursor,gameScreen.Default);
     }
 
     public void addMoney(int amount) {
