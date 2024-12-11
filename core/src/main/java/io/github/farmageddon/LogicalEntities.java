@@ -7,28 +7,51 @@ import io.github.farmageddon.entities.*;
 import io.github.farmageddon.ultilites.GameDifficulty;
 import io.github.farmageddon.ultilites.GridNode;
 import io.github.farmageddon.ultilites.PathFinder;
+import io.github.farmageddon.ultilites.PrepareMonsters;
 
 public class LogicalEntities {
     private PathFinder pathFinder;
     private float timerLogic;
-    private Projectile baseProjectile;
-    private GameDifficulty gameDifficulty;
-    private float amountThisDaySpawn, numMonsterSpawned;
+    private float timePerDay, timeStartSpawn, timeFinishSpawn, secondSinceStart;
+    private int curNumMonsterReleased, numMonsterNeedRelease;
+    private boolean hasChangedDay;
+//    private GameDifficulty gameDifficulty;
+    private PrepareMonsters spawner;
+//    private float amountThisDaySpawn, numMonsterSpawned;
 
     public void setPathFinder(PathFinder pathFinder) {
         this.pathFinder = pathFinder;
         timerLogic = 0;
     }
-    public void setGameDifficulty (GameDifficulty gameDifficulty) {this.gameDifficulty = gameDifficulty;}
+//    public void setGameDifficulty (GameDifficulty gameDifficulty) {this.gameDifficulty = gameDifficulty;}
+    public void setSpawner (PrepareMonsters spawner) {this.spawner = spawner;}
 
     public LogicalEntities () {
         int i = 1;
         timerLogic = 0;
+        secondSinceStart = 0;
+        timePerDay = 300;
+        hasChangedDay = true;
+        timeStartSpawn = 10;
+        timeFinishSpawn = 30;
+        hasChangedDay = false;
+        curNumMonsterReleased = 1;
+        numMonsterNeedRelease = 1;
     }
 
     public void increaseTimerLogic (float delta) {this.timerLogic += delta;}
 
+    public String checkTimeType(float time) {
+        if(time < timeStartSpawn) return "Farming time";
+        if(time < timeFinishSpawn) return "Spawn and update";
+        if(time <= timePerDay) return "Update";
+        return "Not giving";
+    }
+
     public void updateEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<Entity> entities, Player player, float delta) {
+        secondSinceStart += delta;
+        float timeThisDay = secondSinceStart % timePerDay;
+
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.update(delta);
@@ -37,42 +60,76 @@ public class LogicalEntities {
                 projectiles.removeIndex(i);
             }
         }
-        for (int i = monsters.size - 1; i >= 0; i--) {
-            Monster monster = monsters.get(i);
-            if(monster.getTargetHealth() <= 0){
-                monster.setTypeTarget(-1);
-            }
-            if (monster.getHealth() <= 0) {
-                monsters.removeIndex(i);
-                continue;
-            }
-            if(timerLogic <= 0.5) {
-                monster.update(delta);
-                continue;
-            }
-            if (monster.isNullTarget()) {
-                monster.setTypeTarget(-1);
-            }
-            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2) {
-                boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
-//                if(timerLogic >= 1) {
-//                    timerLogic = 0;
-                assignPathToMonster(monster, pathFinder);
-//                System.out.println("________________");
-//                System.out.print(monster.getTypeTarget());
-//                System.out.print(' ');
-//                System.out.println(timerLogic);
 
-//              }
-            }
-//            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
-//                if(monster.getTypeTarget() == 2 ||  isUpdateMonsterTarget(monster, plants, entities, player)) {
-//                    assignPathToMonster(monster, pathFinder);
-//                }
-//            }
-            monster.update(delta);
+        String whatToDo = checkTimeType(timeThisDay);
+//        System.out.println(whatToDo);
+        switch (whatToDo) {
+            case "Farming time" :
+                // this time will split time for spawn zombie
+                // spawn and add to monsters but not release
+                if(spawner.isArrayNull())spawner.prepareArrays();
+                if(monsters.size > 0 && hasChangedDay) {
+                    monsters.removeIndex(0);
+                    hasChangedDay = false;
+                    break;
+                }
+                if(curNumMonsterReleased != 0) {
+                    curNumMonsterReleased = 0;
+
+                    numMonsterNeedRelease = 10;
+
+                    spawner.prepareMonsters(numMonsterNeedRelease, timeStartSpawn, timeFinishSpawn);
+                    spawner.addMonstersToMonsters(numMonsterNeedRelease, monsters);
+                }
+
+                break;
+            case "Spawn and update" :
+                hasChangedDay = true;
+                // spawn and fall through to update
+                // spawn but only need release monster prepared
+                if(curNumMonsterReleased < numMonsterNeedRelease) {
+                    while (spawner.timeGreaterSummon(timeThisDay, curNumMonsterReleased) && curNumMonsterReleased < numMonsterNeedRelease) {
+//                        spawner.releaseOrderMonster(curNumMonsterReleased);
+                        monsters.get(curNumMonsterReleased).setExist(true);
+                        System.out.println("RELEASE!!!!!!!!!!!!!!\n\n\n\n\n\n\n\n\n\n\n");
+                        curNumMonsterReleased++;
+                    }
+                }
+
+            case "Update" :
+                System.out.println(monsters.size);
+                for (int i = monsters.size - 1; i >= 0; i--) {
+                    Monster monster = monsters.get(i);
+                    if(!monster.isExist())continue;
+                    if(monster.getTargetHealth() <= 0){
+                        monster.setTypeTarget(-1);
+                    }
+                    if (monster.getHealth() <= 0) {
+                        monsters.removeIndex(i);
+                        continue;
+                    }
+                    if(timerLogic <= 0.5) {
+                        monster.update(delta);
+                        continue;
+                    }
+                    if (monster.isNullTarget()) {
+                        monster.setTypeTarget(-1);
+                    }
+                    if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2) {
+                        boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
+                        assignPathToMonster(monster, pathFinder);
+                    }
+                    monster.update(delta);
+                }
+                break;
+
+            case "Not giving":
+                break;
         }
+
+
         if(timerLogic >= 0.5)timerLogic = 0;
+
         for (int i = plants.size - 1; i >= 0; i--) {
             ProtectPlant plant = plants.get(i);
             if(plant.getHealth() <= 0){
@@ -87,6 +144,7 @@ public class LogicalEntities {
                 float minDis = range + 1, dis = 0;
                 Monster target = new Monster(0, 0, 0, 0);
                 for (Monster monster : monsters) {
+                    if(!monster.isExist())continue;
                     dis = (monster.getPosition().x - plant.getPosition().x) * (monster.getPosition().x - plant.getPosition().x) +
                         (monster.getPosition().y - plant.getPosition().y) * (monster.getPosition().y - plant.getPosition().y);
                     dis = (float)Math.sqrt(dis);
@@ -107,10 +165,11 @@ public class LogicalEntities {
                 }
             }
         }
+
     }
 
     public void renderEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, SpriteBatch batch) {
-        for (Monster monster : monsters) monster.render(batch);
+        for (Monster monster : monsters) if(monster.isExist()) monster.render(batch);
         for (ProtectPlant plant : plants) plant.render(batch);
         for (Projectile projectile : projectiles) projectile.render(batch);
     }
@@ -241,6 +300,28 @@ public class LogicalEntities {
         return onlyBoolean;
     }
 
+    public void updatePlaceMonsters (Array<Monster> monsters) {
 
+    }
+
+
+
+    public float getTimePerDay() { return timePerDay; }
+    public void setTimePerDay(float timePerDay) { this.timePerDay = timePerDay; }
+
+    public float getTimeStartSpawn() { return timeStartSpawn; }
+    public void setTimeStartSpawn(float timeStartSpawn) { this.timeStartSpawn = timeStartSpawn; }
+
+    public float getTimeFinishSpawn() { return timeFinishSpawn; }
+    public void setTimeFinishSpawn(float timeFinishSpawn) { this.timeFinishSpawn = timeFinishSpawn; }
+
+    public float getSecondSinceStart() { return secondSinceStart; }
+    public void setSecondSinceStart(float secondSinceStart) { this.secondSinceStart = secondSinceStart; }
+
+    public int getCurNumMonsterReleased() { return curNumMonsterReleased; }
+    public void setCurNumMonsterReleased(int curNumMonsterReleased) { this.curNumMonsterReleased = curNumMonsterReleased; }
+
+    public int getNumMonsterNeedRelease() { return numMonsterNeedRelease; }
+    public void setNumMonsterNeedRelease(int numMonsterNeedRelease) { this.numMonsterNeedRelease = numMonsterNeedRelease; }
 
 }

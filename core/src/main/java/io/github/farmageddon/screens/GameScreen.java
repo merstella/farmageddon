@@ -114,7 +114,7 @@ public class GameScreen implements Screen, InputProcessor{
     private Array<Entity> entities;
     private Array<Projectile> projectiles;
     private LogicalEntities logic;
-    private GameDifficulty spawner;
+    private PrepareMonsters spawner;
     private PathFinder pathFinder;
     public static float stateTime;
 
@@ -126,8 +126,8 @@ public class GameScreen implements Screen, InputProcessor{
         this.game = game;
         stateTime = 0f;
         logic = new LogicalEntities();
-        spawner = new GameDifficulty();
-        logic.setGameDifficulty(spawner);
+        spawner = new PrepareMonsters();
+        logic.setSpawner(spawner);
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);

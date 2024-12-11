@@ -16,6 +16,8 @@ public class Monster extends Entity {
     private final Animator animation;
     private Animator.MonsterActivity currentActivity;
 
+    private boolean isExist;
+
     private boolean isDead;
     private boolean isDying;
     private float deathTimer;
@@ -43,6 +45,7 @@ public class Monster extends Entity {
         damagePoint = 10;
         timeSinceTargetPlayer = 0f;
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
+        isExist = false;
         // Adjust based on sprite size
         this.path = null;
         this.range = 100;
@@ -51,6 +54,8 @@ public class Monster extends Entity {
         this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
     }
 
+    public void setExist (boolean isExist) {this.isExist = isExist;}
+    public boolean isExist () {return this.isExist;}
 
     public float getDamagePoint () {return this.damagePoint;}
     public void setDamagePoint (float damagePoint) {this.damagePoint = damagePoint;}

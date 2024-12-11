@@ -31,7 +31,7 @@ public class GameDifficulty {
         curDiffMulti = 1;
         secondSinceStart = 0;  // time from start game to now
         cooldownSpawn = 30;    // time from last spawn to next spawn
-        timeSinceLastSpawn = 0;// time from last spawn to now
+        timeSinceLastSpawn = 0;// second begin spawning monster last time
         timeForSpawn = 10;     // time for monster spawn
 
         for (int i = 0; i < maxEnemies; i++) {
@@ -90,14 +90,16 @@ public class GameDifficulty {
             monster.setHealth(monster.getHealth() * curDiffMulti);
             monster.setSpeed(monster.getSpeed() * curDiffMulti);
             monster.setPosition(randomPosition());
+            monster.setTypeTarget(-1);
+            monster.setExist(false);
             timeSummon.set(i, randomTimer(0f, timeForSpawn));
         }
     }
 
 
-    public void summonMonsterToGame (Array<Monster> monsters, float delta) {
-        secondSinceStart += delta;
-        timeSinceLastSpawn += delta;
+    public void summonMonsterToGame (Array<Monster> monsters) {
+//        secondSinceStart += delta;
+//        timeSinceLastSpawn += delta;
         if(cooldownSpawn > timeSinceLastSpawn)return;
         while(timeSinceLastSpawn >= cooldownSpawn) timeSinceLastSpawn -= cooldownSpawn;
         prepareMonsters(numEnemiesSpawnToday);
@@ -108,6 +110,12 @@ public class GameDifficulty {
 
     }
 
+    public void update (float delta) {
+        secondSinceStart += delta;
+
+//        if(secondSinceStart)
+
+    }
 
 
 }
