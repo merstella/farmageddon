@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 
 public class HealthBar {
     private float maxHealth;
-    private float currentHealth;
+    public float currentHealth;
     private float width = 10;  // width of health bar
     private float height = 0.5f;  // height of health bar
     private Color backgroundColor = Color.RED;

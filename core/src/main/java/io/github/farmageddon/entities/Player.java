@@ -8,21 +8,18 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.Main;
 import io.github.farmageddon.screens.GameScreen;
-import io.github.farmageddon.ultilites.CollisionHandling;
-import io.github.farmageddon.ultilites.FishingMinigame;
-import io.github.farmageddon.ultilites.ItemList;
-import io.github.farmageddon.ultilites.Items;
+import io.github.farmageddon.ultilites.*;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class Player extends Entity {
-
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
     private Main game;
     private GameScreen gameScreen;
     private ItemList itemList;
+    public HealthBar health;
     public Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
@@ -44,7 +41,11 @@ public class Player extends Entity {
     public static float attackCooldown = 0.5f;  // Time between attacks (cooldown)
     public static float timeSinceLastAttack = 0f;  // Timer to track time since last attack
     public static String itemHolding;
+
+    // test Health
+    public static float currentHealth = 87f;
     public Player(float x, float y, float speed) {
+//        this.health = new HealthBar(100f);
         super(x, y, speed, true, 100);
         animation = new Animator(); // Initialize animation instance
         currentDirection = Animator.Direction.IDLE_DOWN; // Default direction

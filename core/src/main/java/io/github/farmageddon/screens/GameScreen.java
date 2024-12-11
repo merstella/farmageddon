@@ -85,7 +85,7 @@ public class GameScreen implements Screen, InputProcessor {
     private ArrayList<Animal> animals;
     public final Stage stage;
     private final Vector2 selectedCell;
-    int currentDays;
+    public static int currentDays;
     //demo crops
 //    Crop riceCrop;
 //    Crop tomatoCrop;
@@ -271,7 +271,6 @@ public class GameScreen implements Screen, InputProcessor {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         player.update(delta);
 //        System.out.println(player.getPosition());
-
 //        updateZombies(delta);
         camera.position.set(
             MathUtils.clamp(player.getPosition().x + 16, Main.GAME_WIDTH * camera.zoom /2, Main.GAME_WIDTH *  (1 - camera.zoom/2)),
@@ -752,9 +751,9 @@ public class GameScreen implements Screen, InputProcessor {
         game.batch.begin();
         font.draw(game.batch, String.format("Time: %s", timer.getFormattedTimeofDay()), player.getPosition().x, player.getPosition().y);
         font.draw(game.batch, String.format("Day passed: %s", timer.getDaysPassed()), player.getBounds().x, player.getPosition().y - 30);
-        font.draw(game.batch, String.format("CurrentDay : %s", currentDays), 10, 390);
+        font.draw(game.batch, String.format("Day: %s", currentDays),43,Gdx.graphics.getHeight() - 98);
         Color ambient = clock.getAmbientLighting();
-        font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
+//        font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
         game.batch.end();
     }
 
@@ -871,11 +870,9 @@ public class GameScreen implements Screen, InputProcessor {
             // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
-
             int cellX = (int) touchPosition.x / 16;
             int cellY = (int) touchPosition.y / 16;
             selectedCell.set(cellX, cellY);
-
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             if (player.getPosition().dst(touchPosition2D) <= 50) {
                 // Update activity and direction based on touch position (for animation purposes)

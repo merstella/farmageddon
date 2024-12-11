@@ -29,7 +29,7 @@ public class FishingMinigame extends ApplicationAdapter {
 
     public FishingMinigame(Player player) {
         shapeRenderer = new ShapeRenderer();
-        this.player = new Player(640, 300, 100f);
+        this.player = player;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class FishingMinigame extends ApplicationAdapter {
                 for (int i = 0; i < 25; i++) {
                     if (player.inventory.get(i).getItem() == Items.Item.DEFAULT) {
                         System.out.println("Fish Added!");
-//                        player.setItem(GameScreen.Fish, i);
+                        player.setItem(ItemList.Fish, i);
                         cursorGameOver = true;
                         break;
                     }
