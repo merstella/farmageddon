@@ -36,7 +36,7 @@ public class ProtectPlant extends Entity{
     public float getFromLastShoot () {
         return fromLastShoot;
     }
-    public boolean getIsShooting () {return isShooting;}
+    public boolean getIsShooting () {return isShooting && isPlanted;}
 
     public void shooted () {this.isShooting = false;}
 
@@ -47,7 +47,19 @@ public class ProtectPlant extends Entity{
     public void setTimeMul (float timeMul) {this.timeMul = timeMul;}
     public void setFromLastShoot (float fromLastShoot) {this.fromLastShoot = fromLastShoot;}
 
-
+    private float attackStateTimer;
+    @Override
+    public void setBeingAttacked(boolean beingAttacked) {
+        super.setBeingAttacked(beingAttacked);
+        if (beingAttacked) {
+            attackStateTimer = 0.4f;
+        }
+    }
+    @Override
+    public void takeDamage(float damage) {
+        super.takeDamage(damage);
+        setBeingAttacked(true);
+    }
     public ProtectPlant (float x, float y, float maxHealth) {
         super(x, y, 0f, true, maxHealth);
         cooldown = 1f;
@@ -63,6 +75,11 @@ public class ProtectPlant extends Entity{
         animation = new Animator();
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
     }
+
+    public boolean isPlanted() {
+        return isPlanted;
+    }
+
     public void setOpacity(float opacity) {
         this.opacity = opacity;
     }
@@ -71,20 +88,33 @@ public class ProtectPlant extends Entity{
     }
 
     public void update (float delta) {
+        if (beingAttacked) {
+            attackStateTimer -= delta;
+            if (attackStateTimer <= 0) {
+                beingAttacked = false;
+            }
+        }
         fromLastShoot += delta * timeMul;
         if (fromLastShoot >= cooldown) {
             fromLastShoot = 0;
             isShooting = true;
         }
     }
-
+    @Override
     public void render (SpriteBatch batch) {
+        super.render(batch);
         batch.begin();
         batch.setColor(1f, 1f, 1f, opacity);
-        animation.render(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
+        if (isBeingAttacked()) {
+            System.out.println("DIT ME THANG PDA");
+            animation.render(batch, position.x, position.y, Animator.MonsterActivity.HIT_DOWN, GameScreen.stateTime);
+        } else {
+            animation.render(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
+        }
         batch.setColor(1f, 1f, 1f, 1f);
         batch.end();
     }
+
 
     @Override
     public void dispose()  {

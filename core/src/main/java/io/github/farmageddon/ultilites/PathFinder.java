@@ -94,7 +94,7 @@ public class PathFinder {
     public int findPath(int startX, int startY, int endX, int endY, Array<GridNode> finalPath) {
         // Validate start and end positions
         if (!isValidPosition(startX, startY) || !isValidPosition(endX, endY)) {
-            System.out.println("Invalid start or end positions: (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ")");
+//            System.out.println("Invalid start or end positions: (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ")");
             return NON_EXISTENT;
         }
 
@@ -103,7 +103,7 @@ public class PathFinder {
 
         if (startNode == endNode) {
             finalPath.add(startNode);
-            System.out.println("Start and end nodes are the same.");
+//            System.out.println("Start and end nodes are the same.");
             return FOUND;
         }
 
@@ -126,7 +126,7 @@ public class PathFinder {
             // If we've reached the end node, reconstruct the path
             if (current == endNode) {
                 reconstructPath(endNode, finalPath);
-                System.out.println("Path found from (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ") with " + finalPath.size + " nodes.");
+//                System.out.println("Path found from (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ") with " + finalPath.size + " nodes.");
                 return FOUND;
             }
 
@@ -362,7 +362,7 @@ public class PathFinder {
         if (isValidPosition(gridX, gridY)) {
             GridNode node = grid.get(gridY).get(gridX);
             node.type = type;
-            System.out.println("Node (" + gridX + ", " + gridY + ") set to " + type);
+//            System.out.println("Node (" + gridX + ", " + gridY + ") set to " + type);
         }
     }
 
@@ -490,7 +490,7 @@ public class PathFinder {
             }
         }
 
-        System.out.println("Added collision object covering grid cells from (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ")");
+//        System.out.println("Added collision object covering grid cells from (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ")");
     }
 
     // Assuming entity's position is given by a Vector2 (x, y)

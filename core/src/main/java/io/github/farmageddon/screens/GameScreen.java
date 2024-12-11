@@ -119,7 +119,7 @@ public class GameScreen implements Screen, InputProcessor{
 
     private boolean isPlacing;
     private Array<ProtectPlant> plants;
-
+    private final Vector2 invalidPlacementCell = new Vector2(-1, -1);
     public GameScreen(Main game) {
 
         this.game = game;
@@ -297,55 +297,57 @@ public class GameScreen implements Screen, InputProcessor{
         stateTime += delta;
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        player.update(delta);
 
+        player.update(delta);
+        checkItemPickup(player);
         camera.position.set(
             MathUtils.clamp(player.getPosition().x + 16, Main.GAME_WIDTH * camera.zoom /2, Main.GAME_WIDTH *  (1 - camera.zoom/2)),
             MathUtils.clamp(player.getPosition().y + 16, Main.GAME_HEIGHT * camera.zoom /2, Main.GAME_HEIGHT *  (1 - camera.zoom/2)),
             0
         );
-
-
         camera.update();
+
         game.batch.setProjectionMatrix(camera.combined);
         mapRenderer.setView(camera);
         mapRenderer.render();
-        isNewDay = false;
+
         handleDayPassed();
-        clock.act(delta);
+        handleKeyDown(delta);
+        logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
+
 
         checkBreeding();
         stage.act(delta);
-        stage.draw();
-
 
         time = timer.getFormattedTimeofDay();
         timeLabel.setText(time);
         shapeRenderer.setProjectionMatrix(camera.combined);
-//        renderHouse();
+
         renderLand(delta);
-
-
-
         renderPlayer();
-        renderGridDebug();
+//        renderGridDebug();
         if (currentAct != "attack") renderSelectedCell();
+        stage.draw();
         handleCrop();
         renderCrop();
-        //update all the thing before render minimap
 
-        checkItemPickup(player);
-        renderAmbientLighting();
-        renderDebugInfo();
-
-        CollisionHandling.renderCollision();
-        isNewDay = false;
-
-        logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
-        logic.renderEntities(monsters, plants, projectiles, game.batch);
-        handleKeyDown(delta);
+        clock.act(delta);
         updateProtectPlant(delta);
         renderProtectPlant();
+        renderInvalidCell();
+        renderDebugInfo();
+        logic.renderEntities(monsters, plants, projectiles, game.batch);
+        renderAmbientLighting();
+        CollisionHandling.renderCollision();
+    }
+
+    private void renderInvalidCell() {
+        if (invalidPlacementCell.x != -1 && invalidPlacementCell.y != -1) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(1, 0, 0, 1); // Red color
+            shapeRenderer.rect(invalidPlacementCell.x * 16, invalidPlacementCell.y * 16, 16, 16);
+            shapeRenderer.end();
+        }
     }
 
     private void updateProtectPlant(float delta) {
@@ -412,6 +414,7 @@ public class GameScreen implements Screen, InputProcessor{
 
                 if (crop != null && isNewDay) {
                     crop.addDay();
+                    isNewDay = false;
                 }
 
                 if (currentState != Land.LandState.PLAIN) {
@@ -435,14 +438,11 @@ public class GameScreen implements Screen, InputProcessor{
             isNewDay = true;
             if (currentDays % 2 == 0) {
                 for (Animal animal : animals) {
-                    animal.incrementAge(); // Increment the age of each animal daily
-
-                    // Update state if conditions are met (e.g., every 2 days of age)
+                    animal.incrementAge();
                     if (animal.getAge() % 2 == 0 && animal.getHealth() > 80 && animal.getState() < 3) {
                         animal.incState();
                     }
                 }
-
             }
         }
     }
@@ -881,7 +881,6 @@ public class GameScreen implements Screen, InputProcessor{
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 
         if (button == Input.Buttons.LEFT) {
-
             // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
@@ -891,9 +890,16 @@ public class GameScreen implements Screen, InputProcessor{
 
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             if (Objects.equals(currentAct, "protectplant")) {
-                isPlacing = true;  // Start the planting process
-                ProtectPlant newPlant = new ProtectPlant(cellX * 16,cellY * 16, 1000000f);
-                plants.add(newPlant);
+                isPlacing = true; // Start the planting process
+                GridNode gridNode = pathFinder.getGridNodeForEntity(touchPosition2D);
+
+                if (gridNode != null && gridNode.getGridType() != GridNode.GridType.UNPASSABLE) {
+                    ProtectPlant newPlant = new ProtectPlant(cellX * 16, cellY * 16, 100f);
+                    plants.add(newPlant);
+                } else {
+                    // Flag for red border rendering
+                    invalidPlacementCell.set(cellX, cellY); // Store the invalid cell coordinates
+                }
             }
             if (player.getPosition().dst(touchPosition2D) <= 50) {
 
@@ -928,19 +934,19 @@ public class GameScreen implements Screen, InputProcessor{
 
             if (Objects.equals(currentAct, "attack")) {
 
-                // Calculate attack direction based on the touch position
-//                    player.attackDirection = touchPosition2D.sub(player.getPosition()).nor(); // Calculate direction vector
+//                player.attackDirection = touchPosition2D.sub(player.getPosition()).nor();
                 if (Player.timeSinceLastAttack >= Player.attackCooldown && Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
                     Player.timeSinceLastAttack = 0f;  // Reset the attack cooldown
                 }
 
                 // Optional: Set the attack animation for the player
+                player.setBeingAttacked(false);
                 player.updateActivityAnimation(currentAct, touchPosition2D);
                 // Additional logic for attacking nearby enemies, if needed.
                 // You may want to loop through enemies in the range of the attack and deal damage.
                 for (Monster enemy : monsters) {
-                    if (player.getBounds().overlaps(enemy.getMonsterBounds())) {
-//                            enemy.takeDamage(player.getAttackDamage());
+                    if (player.getPosition().dst(enemy.getPosition())<20f) {
+                        enemy.takeDamage(player.getAttackDamage());
                     }
                 }
             }
@@ -955,17 +961,23 @@ public class GameScreen implements Screen, InputProcessor{
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (button == Input.Buttons.LEFT) {
+            player.stopActivity();
             if (!Objects.equals(currentAct, "protectplant")) return true;
             if (isPlacing) {
-
                 if (!plants.isEmpty()) {
                     ProtectPlant plantToConfirm = plants.peek();
-                    plantToConfirm.setOpacity(1f);
-                    plantToConfirm.setPlanted(true);
+                    if (invalidPlacementCell.x == -1 && invalidPlacementCell.y == -1) {
+                        // Valid placement
+                        plantToConfirm.setOpacity(1f);
+                        plantToConfirm.setPlanted(true);
+                    } else {
+                        // Invalid placement, remove the plant
+                        plants.pop();
+                    }
                 }
                 isPlacing = false;
+                invalidPlacementCell.set(-1, -1); // Reset invalid cell
             }
-            player.stopActivity();
             return true;
         }
         return false;
@@ -985,12 +997,24 @@ public class GameScreen implements Screen, InputProcessor{
             camera.unproject(touchPosition);
             int cellX = (int) touchPosition.x / 16;
             int cellY = (int) touchPosition.y / 16;
+
             ProtectPlant lastPlant = plants.peek();
             lastPlant.setPosition(new Vector2(cellX * 16, cellY * 16));
             lastPlant.incrementOpacity(Gdx.graphics.getDeltaTime() * 0.5f);
+
+            // Check if the new position is valid
+            Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
+            GridNode gridNode = pathFinder.getGridNodeForEntity(touchPosition2D);
+
+            if (gridNode != null && gridNode.getGridType() == GridNode.GridType.UNPASSABLE) {
+                invalidPlacementCell.set(cellX, cellY); // Mark invalid cell for red border
+            } else {
+                invalidPlacementCell.set(-1, -1); // Reset invalid cell
+            }
         }
         return false;
     }
+
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
@@ -1007,40 +1031,13 @@ public class GameScreen implements Screen, InputProcessor{
         plants = new Array<>();
         projectiles = new Array<>();
         entities = new Array<>();
-        monsters.add(new Monster(0, 0, 50, 3000));
-        monsters.add(new Monster(626, 176, 50, 3000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
 
-        monsters.add(new Monster(0, 0, 50, 3000));
-        monsters.add(new Monster(626, 176, 50, 3000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-//        for(int i = 1; i <= 50; i++){
-//            monsters.add(new Monster(0, 0, 50, 3000));
-//        }
-        plants.add(new ProtectPlant(500, 500, 100000000));
+        for(int i = 1; i <= 100; i++){
+            int x = MathUtils.random(1280);
+            int y = MathUtils.random(768);
+            monsters.add(new Monster(x, y, 50, 3000));
+        }
+
     }
 
 }

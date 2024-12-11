@@ -12,7 +12,7 @@ public class Entity {
     protected float health, maxHealth;
     private boolean hasHealthBar;
     private HealthBar.HealthBarEntity healthBar;  // Health bar instance
-
+    protected boolean beingAttacked;
     public float getHealth() {
         return health;
     }
@@ -23,13 +23,21 @@ public class Entity {
         this.position = new Vector2(x, y);
         this.hasHealthBar = hasHealthBar;
         this.speed = speed;
-
+        this.beingAttacked = false;
         // Initialize health and health bar if necessary
         if (hasHealthBar) {
             this.maxHealth = maxHealth;
             this.health = maxHealth;
             this.healthBar = new HealthBar.HealthBarEntity(maxHealth);  // Initialize health bar with max health
         }
+    }
+
+    public void setBeingAttacked(boolean beingAttacked) {
+        this.beingAttacked = beingAttacked;
+    }
+
+    public boolean isBeingAttacked() {
+        return beingAttacked;
     }
 
     public void update(float delta) {
@@ -48,10 +56,10 @@ public class Entity {
         if (hasHealthBar) {
             health = Math.max(0, health - damage);
             healthBar.setHealth(health);
-            System.out.println("Auch!???");
-            System.out.print(health);
-            System.out.print(' ');
-            System.out.println(damage);
+//            System.out.println("Auch!???");
+//            System.out.print(health);
+//            System.out.print(' ');
+//            System.out.println(damage);
         }
     }
 

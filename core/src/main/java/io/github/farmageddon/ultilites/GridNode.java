@@ -4,6 +4,10 @@ package io.github.farmageddon.ultilites;
  * Represents a single cell in the grid for pathfinding.
  */
 public class GridNode {
+    public GridType getGridType() {
+        return type;
+    }
+
     public enum GridType {
         PASSABLE,
         UNPASSABLE,

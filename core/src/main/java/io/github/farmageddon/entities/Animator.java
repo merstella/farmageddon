@@ -31,7 +31,8 @@ public class Animator {
         HOE_UP, HOE_DOWN, HOE_LEFT, HOE_RIGHT,
         WATER_UP, WATER_DOWN, WATER_LEFT, WATER_RIGHT, START_FISHING_RIGHT, START_FISHING_LEFT,
         WAIT_FISHING_RIGHT, WAIT_FISHING_LEFT , DONE_FISHING_RIGHT, DONE_FISHING_LEFT,
-        ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP
+        ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP,
+        HIT_UP, HIT_UP_RIGHT, HIT_RIGHT, HIT_DOWN_RIGHT, HIT_DOWN, HIT_DOWN_LEFT, HIT_LEFT, HIT_UP_LEFT,
     }
     public enum MonsterActivity {
         IDLE_DOWN, IDLE_LEFT, IDLE_RIGHT, IDLE_UP, IDLE_UP_LEFT, IDLE_UP_RIGHT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
@@ -121,6 +122,16 @@ public class Animator {
         actionAnimations[Activity.DONE_FISHING_RIGHT.ordinal()] = createAnimation(tmpFrames3[2], 0, 8);
         actionAnimations[Activity.DONE_FISHING_LEFT.ordinal()] = createFlippedAnimation(tmpFrames3[2], 0, 8);
 
+        actionAnimations[Activity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames[16], 0, 4);
+        actionAnimations[Activity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames[17], 0, 4);
+        actionAnimations[Activity.HIT_UP.ordinal()] = createAnimation(tmpFrames[18], 0, 4);
+        actionAnimations[Activity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[17], 0, 4);
+        actionAnimations[Activity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames[17], 0, 4);
+        actionAnimations[Activity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[17], 0, 4);
+        actionAnimations[Activity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames[17], 0, 4);
+        actionAnimations[Activity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[17], 0, 4);
+
+
         monsterAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames4[0], 0, 6);
         monsterAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[1], 0, 6);
         monsterAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames4[1], 0, 6);
@@ -137,7 +148,7 @@ public class Animator {
         monsterAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames4[4], 0, 6);
         monsterAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames4[4], 0, 6);
         monsterAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[4], 0, 6);
-        monsterAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames4[6], 0, 5, 0.5f);
+        monsterAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames4[6], 0, 5, 0.15f);
         monsterAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames5[0], 0, 4);
         monsterAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames5[1], 0, 4);
         monsterAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames5[1], 0, 4);
@@ -196,7 +207,7 @@ public class Animator {
         // Get the current frame of the animation for the specified direction
         TextureRegion currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
         if (monsterActivity == MonsterActivity.DEAD) {
-            currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, false);
+            currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
         }
         // Draw the current frame at the specified position
         if (monsterActivity == MonsterActivity.ATTACK_DOWN ||
@@ -217,6 +228,12 @@ public class Animator {
         if (activity == Activity.ATTACK_DOWN || activity == Activity.ATTACK_UP || activity == Activity.ATTACK_LEFT || activity == Activity.ATTACK_RIGHT) {
             TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
             batch.draw(currentFrame, x, y , 32, 32);
+            return;
+        }
+        if (activity.toString().contains("HIT")) {
+
+            TextureRegion currentFrame = activityAnimation.getKeyFrame(stateTime, true);
+            batch.draw(currentFrame, x, y, 32, 32);
             return;
         }
         if (activity == Activity.WAIT_FISHING_RIGHT) {

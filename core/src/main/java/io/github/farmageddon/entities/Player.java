@@ -19,7 +19,6 @@ public class Player extends Entity {
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
 
-
     public static Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
@@ -43,6 +42,15 @@ public class Player extends Entity {
     public static float attackCooldown = 0.5f;  // Time between attacks (cooldown)
     public static float timeSinceLastAttack = 0f;  // Timer to track time since last attack
     public static String itemHolding;
+
+    private float attackStateTimer;
+    @Override
+    public void setBeingAttacked(boolean beingAttacked) {
+        super.setBeingAttacked(beingAttacked);
+        if (beingAttacked) {
+            attackStateTimer = 0.2f;
+        }
+    }
     public Player(float x, float y, float speed) {
         super(x, y, speed, true, 100000);
         animation = new Animator(); // Initialize animation instance
@@ -51,7 +59,6 @@ public class Player extends Entity {
         shapeRenderer = new ShapeRenderer();
         this.inventory = new ArrayList<>();
         this.eqipInventory = new ArrayList<>();
-
 
     //        while (eqipInventory.size() <= slotCursor) {
     //            eqipInventory.add(null);
@@ -85,10 +92,48 @@ public class Player extends Entity {
     public void subMoney(int amount) {
         money -= amount;
     }
+    @Override
+    public void takeDamage(float damage) {
+        super.takeDamage(damage);
+        setBeingAttacked(true);
+    }
+
+    private Animator.Activity getHitAnimation(Animator.Direction currentDirection) {
+        String direction = currentDirection.toString();
+        if (direction.contains("UP")) {
+            if (direction.contains("LEFT")) {
+                return Animator.Activity.HIT_UP_LEFT;
+            }
+            if (direction.contains("RIGHT")){
+                return Animator.Activity.HIT_UP_RIGHT;
+            }
+            return Animator.Activity.HIT_UP;
+        } else if (direction.contains("DOWN")) {
+            if (direction.contains("LEFT")) {
+                return Animator.Activity.HIT_DOWN_LEFT;
+            }
+            if (direction.contains("RIGHT")){
+                return Animator.Activity.HIT_DOWN_RIGHT;
+            }
+            return Animator.Activity.HIT_DOWN;
+        } else if (direction.contains("LEFT")) {
+            return Animator.Activity.HIT_LEFT;
+        } else if (direction.contains("RIGHT")) {
+            return Animator.Activity.HIT_RIGHT;
+        }
+        return currentActivity;
+    }
 
     @Override
     public void update(float delta) {
         super.update(delta);
+
+        if (beingAttacked) {
+            attackStateTimer -= delta;
+            if (attackStateTimer <= 0) {
+                beingAttacked = false;
+            }
+        }
         timeSinceLastAttack += delta;
         updateDirectionAnimation(delta);
 
@@ -98,7 +143,7 @@ public class Player extends Entity {
 
     public void updateFishingAnimation() {
         currentActivity = getFishingDirection();
-        System.out.println(currentActivity);
+//        System.out.println(currentActivity);
     }
 
     public void updateActivityAnimation(String type, Vector2 lookPoint) {
@@ -317,11 +362,14 @@ public class Player extends Entity {
     public void render(SpriteBatch batch) {
         super.render(batch);
         batch.begin();
-        if (currentActivity == Animator.Activity.NONE) {
+        if (isBeingAttacked()) {
+            System.out.println(currentDirection);
+            animation.renderActivity(batch, position.x, position.y, getHitAnimation(currentDirection), GameScreen.stateTime);
+        } else if (currentActivity == Animator.Activity.NONE) {
             animation.render(batch, position.x, position.y, currentDirection, GameScreen.stateTime);
         } else {
             animation.renderActivity(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
-            System.out.println(currentActivity);
+//            System.out.println(currentActivity);
         }
         batch.end();
     }
@@ -336,5 +384,9 @@ public class Player extends Entity {
 
     public Rectangle getBounds() {
         return playerBounds;
+    }
+
+    public float getAttackDamage() {
+        return attackDamage;
     }
 }

@@ -17,6 +17,11 @@ public class Monster extends Entity {
 
     private boolean isDead;
     private boolean isDying;
+
+    public boolean isDying() {
+        return isDying;
+    }
+
     private float deathTimer;
     private boolean markedForRemoval;
     // Movement and Path
@@ -39,15 +44,19 @@ public class Monster extends Entity {
         animation = new Animator();
         typeTarget = -1;
         maxTimeForPlayer = 5f;
-        damagePoint = 10;
+        damagePoint = 1;
         timeSinceTargetPlayer = 0f;
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
         // Adjust based on sprite size
         this.path = null;
-        this.range = 100;
-        this.attackRange = 20;
+        this.range = 50;
+        this.attackRange = 15;
         this.currentPathIndex = 0; // Start at the first node in the path
         this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
+        this.isDead = false;
+        this.isDying = false;
+        this.deathTimer = 0;
+        this.markedForRemoval = false;
     }
     public ProtectPlant getTargetPlant() {
         return targetPlant;
@@ -92,7 +101,7 @@ public class Monster extends Entity {
             case -1:
                 return true;
             case 0:
-                if(targetPlant == null) return true;
+                if(targetPlant == null || !targetPlant.isPlanted()) return true;
             case 1:
                 if(targetEntity == null) return true;
             case 2:
@@ -101,7 +110,6 @@ public class Monster extends Entity {
         if(position.dst(getTargetPosition()) > attackRange) return true;
         return false;
     }
-
 
 
     public boolean isDifferentTarget (ProtectPlant targetPlant) {
@@ -166,7 +174,14 @@ public class Monster extends Entity {
         markedForRemoval = true;
     }
 
-
+    private float attackStateTimer;
+    @Override
+    public void setBeingAttacked(boolean beingAttacked) {
+        super.setBeingAttacked(beingAttacked);
+        if (beingAttacked) {
+            attackStateTimer = 0.4f;
+        }
+    }
     /**
      * Marks the monster as dead and initiates the death animation.
      */
@@ -177,6 +192,37 @@ public class Monster extends Entity {
             deathTimer = 0f; // Reset the death timer
             currentActivity = Animator.MonsterActivity.DEAD; // Set death animation
         }
+    }
+    @Override
+    public void takeDamage(float damage) {
+        super.takeDamage(damage);
+        setBeingAttacked(true);
+    }
+
+    private Animator.MonsterActivity getHitAnimation(Animator.MonsterActivity currentActivity) {
+        String act = currentActivity.toString();
+        if (act.contains("UP")) {
+            if (act.contains("LEFT")) {
+                return Animator.MonsterActivity.HIT_UP_LEFT;
+            }
+            if (act.contains("RIGHT")){
+                return Animator.MonsterActivity.HIT_UP_RIGHT;
+            }
+            return Animator.MonsterActivity.HIT_UP;
+        } else if (act.contains("DOWN")) {
+            if (act.contains("LEFT")) {
+                return Animator.MonsterActivity.HIT_DOWN_LEFT;
+            }
+            if (act.contains("RIGHT")){
+                return Animator.MonsterActivity.HIT_DOWN_RIGHT;
+            }
+            return Animator.MonsterActivity.HIT_DOWN;
+        } else if (act.contains("LEFT")) {
+            return Animator.MonsterActivity.HIT_LEFT;
+        } else if (act.contains("RIGHT")) {
+            return Animator.MonsterActivity.HIT_RIGHT;
+        }
+        return currentActivity;
     }
 
     public boolean isNearEnough () {
@@ -210,7 +256,12 @@ public class Monster extends Entity {
         super.update(delta); // Assuming Entity.update(delta) handles health reduction, etc.
         timePassed += delta;
         timeSinceTargetPlayer += delta;
-
+        if (beingAttacked) {
+            attackStateTimer -= delta;
+            if (attackStateTimer <= 0) {
+                beingAttacked = false;
+            }
+        }
         if (isDying) {
             deathTimer += delta;
             if (deathTimer >= DEATH_ANIMATION_DURATION) {
@@ -221,8 +272,8 @@ public class Monster extends Entity {
         }
         if (isNearEnough() && timePassed >= cooldown) {
             timePassed = 0;
+            currentActivity = getAttackAnimation(currentActivity);
             applyDamageToTarget();
-            return;
         }
 //        if(typeTarget == -1 || typeTarget == 2)return;
 //        System.out.println(typeTarget);
@@ -268,6 +319,28 @@ public class Monster extends Entity {
         position.add(direction);
     }
 
+    private Animator.MonsterActivity getAttackAnimation(Animator.MonsterActivity currentActivity) {
+        switch (currentActivity) {
+            case UP:
+                return Animator.MonsterActivity.ATTACK_UP;
+            case DOWN:
+                return Animator.MonsterActivity.ATTACK_DOWN;
+            case LEFT:
+                return Animator.MonsterActivity.ATTACK_LEFT;
+            case RIGHT:
+                return Animator.MonsterActivity.ATTACK_RIGHT;
+            case UP_RIGHT:
+                return Animator.MonsterActivity.ATTACK_UP_RIGHT;
+            case UP_LEFT:
+                return Animator.MonsterActivity.ATTACK_UP_LEFT;
+            case DOWN_RIGHT:
+                return Animator.MonsterActivity.ATTACK_DOWN_RIGHT;
+            case DOWN_LEFT:
+                return Animator.MonsterActivity.ATTACK_DOWN_LEFT;
+            default:
+                return currentActivity;
+        }
+    }
 
 
     /**
@@ -329,8 +402,14 @@ public class Monster extends Entity {
 
     @Override
     public void render(SpriteBatch batch) {
+        super.render(batch);
         batch.begin();
-        animation.render(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
+        if (isBeingAttacked()) {
+            System.out.println(currentActivity);
+            animation.render(batch, position.x, position.y, getHitAnimation(currentActivity), GameScreen.stateTime);
+        } else {
+            animation.render(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
+        }
         batch.end();
     }
 

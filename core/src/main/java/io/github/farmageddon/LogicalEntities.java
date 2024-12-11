@@ -3,6 +3,7 @@ package io.github.farmageddon;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import io.github.farmageddon.entities.*;
 import io.github.farmageddon.ultilites.GridNode;
 import io.github.farmageddon.ultilites.PathFinder;
@@ -10,8 +11,7 @@ import io.github.farmageddon.ultilites.PathFinder;
 public class LogicalEntities {
     private PathFinder pathFinder;
     private float timerLogic;
-    private Projectile baseProjectile;
-
+    private Pool<Projectile> projectilePool;
     public void setPathFinder(PathFinder pathFinder) {
         this.pathFinder = pathFinder;
         timerLogic = 0;
@@ -20,88 +20,101 @@ public class LogicalEntities {
     public LogicalEntities () {
         int i = 1;
         timerLogic = 0;
+        projectilePool = new Pool<Projectile>() {
+            @Override
+            protected Projectile newObject() {
+                return new Projectile(0f, 0f, 0f, 0f, (Entity) null);
+            }
+        };
     }
-    public void updateEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<Entity> entities, Player player, float delta) {
+    public void updateEntities(Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<Entity> entities, Player player, float delta) {
         timerLogic += delta;
+
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.update(delta);
+
             if (projectile.getIsHitTarget()) {
-                System.out.println(projectiles.size);
                 projectiles.removeIndex(i);
+                projectilePool.free(projectile);
             }
         }
+
+        // **Update Monsters**
         for (int i = monsters.size - 1; i >= 0; i--) {
             Monster monster = monsters.get(i);
-            if(monster.getTargetHealth() <= 0){
-                monster.setTypeTarget(-1);
-            }
+
             if (monster.getHealth() <= 0) {
-                monsters.removeIndex(i);
-                continue;
+                monster.die();
             }
-            if(timerLogic <= 0.5) {
-                monster.update(delta);
-                continue;
+            if (monster.isDead() && monster.isMarkedForRemoval()) {
+                monsters.removeIndex(i);
             }
             if (monster.isNullTarget()) {
                 monster.setTypeTarget(-1);
             }
-            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2) {
+            if (monster.getTargetHealth() <= 0 || monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
                 boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
 //                if(timerLogic >= 1) {
 //                    timerLogic = 0;
                 assignPathToMonster(monster, pathFinder);
-                System.out.println("________________");
-                System.out.print(monster.getTypeTarget());
-                System.out.print(' ');
-                System.out.println(timerLogic);
 
-//              }
             }
-//            if (monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
-//                if(monster.getTypeTarget() == 2 ||  isUpdateMonsterTarget(monster, plants, entities, player)) {
-//                    assignPathToMonster(monster, pathFinder);
-//                }
-//            }
+
+            // Update monster logic
             monster.update(delta);
         }
-        if(timerLogic >= 0.5)timerLogic = 0;
+
+        // Reset timer for pathfinding frequency
+        if (timerLogic >= 0.5) timerLogic = 0;
+
+        // **Update Plants**
         for (int i = plants.size - 1; i >= 0; i--) {
             ProtectPlant plant = plants.get(i);
-            if(plant.getHealth() <= 0){
+
+            // Handle plant death
+            if (plant.getHealth() <= 0) {
                 plants.removeIndex(i);
                 continue;
             }
+
             plant.update(delta);
-            if(monsters.size == 0)continue;
-            if (plant.getIsShooting()){
+
+            if (monsters.isEmpty()) continue;
+
+            // Shooting logic
+            if (plant.getIsShooting()) {
                 plant.shooted();
-                float range = plant.getRange();
-                float minDis = range + 1, dis = 0;
-                Monster target = new Monster(0, 0, 0, 0);
-                for (Monster monster : monsters) {
-                    dis = (monster.getPosition().x - plant.getPosition().x) * (monster.getPosition().x - plant.getPosition().x) +
-                        (monster.getPosition().y - plant.getPosition().y) * (monster.getPosition().y - plant.getPosition().y);
-                    dis = (float)Math.sqrt(dis);
-                    if(dis > minDis)continue;
-                    target = monster;
-                    minDis = dis;
-                }
-                if(minDis == range + 1){
-                    plant.setFromLastShoot(plant.getCooldown() - delta);
-                    continue;
-                }
-                projectiles.add(new Projectile(plant.getPosition().x, plant.getPosition().y, 100, 100, target));
-                switch (plant.getTypePlant()) {
-                    case 0:
-                        break;
-                    case 1:
-                        projectiles.get(projectiles.size - 1).setSlowPoint(plant.getAdditionState());
+                Monster target = findNearestMonster(plant, monsters, plant.getRange());
+
+                if (target != null) {
+                    Projectile projectile = projectilePool.obtain();
+                    projectile.reset();
+                    projectile.initialize(plant.getPosition().x, plant.getPosition().y, 100, 1, target);
+                    projectiles.add(projectile);
+                    if (plant.getTypePlant() == 1) {
+                        projectile.setSlowPoint(plant.getAdditionState());
+                    }
                 }
             }
         }
     }
+
+    private Monster findNearestMonster(ProtectPlant plant, Array<Monster> monsters, float range) {
+        Monster nearestMonster = null;
+        float minDistance = range * range; // Compare squared distances to avoid sqrt calculation
+
+        for (Monster monster : monsters) {
+            float distanceSquared = monster.getPosition().dst2(plant.getPosition());
+            if (distanceSquared < minDistance) {
+                nearestMonster = monster;
+                minDistance = distanceSquared;
+            }
+        }
+
+        return nearestMonster;
+    }
+
 
     public void renderEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, SpriteBatch batch) {
         for (Monster monster : monsters) monster.render(batch);
@@ -120,7 +133,7 @@ public class LogicalEntities {
                 nearestPlant = plant; // Update nearest plant
             }
         }
-        System.out.println(nearestPlant.getPosition());
+//        System.out.println(nearestPlant.getPosition());
         return nearestPlant;
     }
 
@@ -141,36 +154,7 @@ public class LogicalEntities {
 //                timerLogic = 0;
             monster.setPath(path); // Assign the path to the zombie
         }
-//            Plant currentTarget = monster.getTargetPlant();
-//
-//            // If the target plant is null or disposed, find a new target
-//            if (currentTarget == null || currentTarget.isMarkedForRemoval()) {
-//                // Check if there are any plants left to target
-//                if (plants.size > 0) {
-//                    // Find the nearest valid plant
-//                    Plant nearestPlant = findNearestPlant(zombie, plants);
-//                    if (nearestPlant != null && !nearestPlant.isMarkedForRemoval()) {
-//                        // Find a path to the nearest plant
-//                        GridNode startNode = pathFinder.getGridNodeForEntity(zombie.getPosition());
-//                        GridNode endNode = pathFinder.getGridNodeForEntity(nearestPlant.getPosition());
-//
-//                        int startX = pathFinder.getGridX(startNode);
-//                        int startY = pathFinder.getGridY(startNode);
-//                        int endX = pathFinder.getGridX(endNode);
-//                        int endY = pathFinder.getGridY(endNode);
-//
-//                        Array<GridNode> path = new Array<>();
-//                        if (pathFinder.findPath(startX, startY, endX, endY, path) == PathFinder.FOUND) {
-//                            zombie.setPath(path); // Assign the path to the zombie
-//                            zombie.setTargetPlant(nearestPlant); // Set the new target plant
-//                        }
-//                    }
-//                } else {
-//                    // If no plants left, make the zombie idle or stop movement
-//                    zombie.setTargetPlant(null); // Set target to null as no plant is available
-//                    zombie.updateIdleAnimation(); // Update idle animation or stop movement
-//                }
-//            }
+
     }
 
     public boolean isUpdateMonsterTarget (Monster monster, Array<ProtectPlant> plants, Array<Entity> entities, Player player) {
