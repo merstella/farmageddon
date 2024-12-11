@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.GridNode;
+import sun.security.mscapi.CPublicKey;
 
 import java.util.Optional;
 
@@ -49,6 +50,10 @@ public class Monster extends Entity {
         this.currentPathIndex = 0; // Start at the first node in the path
         this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
     }
+
+
+    public float getDamagePoint () {return this.damagePoint;}
+    public void setDamagePoint (float damagePoint) {this.damagePoint = damagePoint;}
     public ProtectPlant getTargetPlant() {
         return targetPlant;
     }
@@ -180,6 +185,7 @@ public class Monster extends Entity {
     }
 
     public boolean isNearEnough () {
+        if(getTypeTarget() == -1)return false;
         if(position.dst(getTargetPosition()) <= attackRange) return true;
         return false;
     }

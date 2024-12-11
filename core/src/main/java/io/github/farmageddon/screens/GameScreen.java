@@ -114,6 +114,7 @@ public class GameScreen implements Screen, InputProcessor{
     private Array<Entity> entities;
     private Array<Projectile> projectiles;
     private LogicalEntities logic;
+    private GameDifficulty spawner;
     private PathFinder pathFinder;
     public static float stateTime;
 
@@ -125,6 +126,9 @@ public class GameScreen implements Screen, InputProcessor{
         this.game = game;
         stateTime = 0f;
         logic = new LogicalEntities();
+        spawner = new GameDifficulty();
+        logic.setGameDifficulty(spawner);
+
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
@@ -146,7 +150,7 @@ public class GameScreen implements Screen, InputProcessor{
         selectedCell = new Vector2();
 
         timer = new Timer_();
-        timer.setTimeRatio(20000);
+        timer.setTimeRatio(24 * 6);
         timer.StartNew(120, true, true);
         timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
@@ -176,6 +180,7 @@ public class GameScreen implements Screen, InputProcessor{
 
         initProtectedPlant();
 
+//        spawner.setMonsters(monsters);
     }
 
     private void initProtectedPlant() {
@@ -340,12 +345,15 @@ public class GameScreen implements Screen, InputProcessor{
 
         CollisionHandling.renderCollision();
         isNewDay = false;
-
+        logic.increaseTimerLogic(delta);
         logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         logic.renderEntities(monsters, plants, projectiles, game.batch);
+//        spawner.update(delta, monsters);
+//        spawner.summonMonsterToGame(monsters, delta);
         handleKeyDown(delta);
         updateProtectPlant(delta);
         renderProtectPlant();
+
     }
 
     private void updateProtectPlant(float delta) {
@@ -1008,35 +1016,35 @@ public class GameScreen implements Screen, InputProcessor{
         projectiles = new Array<>();
         entities = new Array<>();
         monsters.add(new Monster(0, 0, 50, 3000));
-        monsters.add(new Monster(626, 176, 50, 3000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-
-        monsters.add(new Monster(0, 0, 50, 3000));
-        monsters.add(new Monster(626, 176, 50, 3000));
-        monsters.add(new Monster(761, 650, 50, 2000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
-        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(626, 176, 50, 3000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//
+//        monsters.add(new Monster(0, 0, 50, 3000));
+//        monsters.add(new Monster(626, 176, 50, 3000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
 //        for(int i = 1; i <= 50; i++){
 //            monsters.add(new Monster(0, 0, 50, 3000));
 //        }

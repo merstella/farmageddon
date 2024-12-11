@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.entities.*;
+import io.github.farmageddon.ultilites.GameDifficulty;
 import io.github.farmageddon.ultilites.GridNode;
 import io.github.farmageddon.ultilites.PathFinder;
 
@@ -11,18 +12,23 @@ public class LogicalEntities {
     private PathFinder pathFinder;
     private float timerLogic;
     private Projectile baseProjectile;
+    private GameDifficulty gameDifficulty;
+    private float amountThisDaySpawn, numMonsterSpawned;
 
     public void setPathFinder(PathFinder pathFinder) {
         this.pathFinder = pathFinder;
         timerLogic = 0;
     }
+    public void setGameDifficulty (GameDifficulty gameDifficulty) {this.gameDifficulty = gameDifficulty;}
 
     public LogicalEntities () {
         int i = 1;
         timerLogic = 0;
     }
+
+    public void increaseTimerLogic (float delta) {this.timerLogic += delta;}
+
     public void updateEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<Entity> entities, Player player, float delta) {
-        timerLogic += delta;
         for (int i = projectiles.size - 1; i >= 0; i--) {
             Projectile projectile = projectiles.get(i);
             projectile.update(delta);
@@ -52,10 +58,10 @@ public class LogicalEntities {
 //                if(timerLogic >= 1) {
 //                    timerLogic = 0;
                 assignPathToMonster(monster, pathFinder);
-                System.out.println("________________");
-                System.out.print(monster.getTypeTarget());
-                System.out.print(' ');
-                System.out.println(timerLogic);
+//                System.out.println("________________");
+//                System.out.print(monster.getTypeTarget());
+//                System.out.print(' ');
+//                System.out.println(timerLogic);
 
 //              }
             }
@@ -234,5 +240,7 @@ public class LogicalEntities {
         }
         return onlyBoolean;
     }
+
+
 
 }
