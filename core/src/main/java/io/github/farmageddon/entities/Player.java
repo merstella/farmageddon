@@ -10,6 +10,7 @@ import io.github.farmageddon.Main;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.FishingMinigame;
+import io.github.farmageddon.ultilites.ItemList;
 import io.github.farmageddon.ultilites.Items;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class Player extends Entity {
     public static final int HEIGHT = 32;
     private Main game;
     private GameScreen gameScreen;
+    private ItemList itemList;
     public Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
@@ -43,8 +45,6 @@ public class Player extends Entity {
     public static float timeSinceLastAttack = 0f;  // Timer to track time since last attack
     public static String itemHolding;
     public Player(float x, float y, float speed) {
-//        this.game = new Main();
-//        this.gameScreen = new GameScreen(game);
         super(x, y, speed, true, 100);
         animation = new Animator(); // Initialize animation instance
         currentDirection = Animator.Direction.IDLE_DOWN; // Default direction
@@ -70,7 +70,7 @@ public class Player extends Entity {
     }
 
     public void removeItem(Items item) {
-        inventory.set(inventoryCursor,gameScreen.Default);
+        inventory.set(inventoryCursor,ItemList.Default);
     }
 
     public void addMoney(int amount) {
