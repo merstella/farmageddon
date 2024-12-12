@@ -32,7 +32,7 @@ public class PrepareMonsters {
         preparedMonsters = new Array<>();
         timeSummon = new Array<>();
         for(int i = 0; i < maxEnemies; i++){
-            preparedMonsters.add(new Monster(0, 0, 0, 0));
+            preparedMonsters.add(new Monster(0, 0, 0, 1000));
             timeSummon.add(0f);
         }
     }
@@ -55,12 +55,16 @@ public class PrepareMonsters {
         switch (positionCase) {
             case 1:
                 position.x = posMin.x;
+                break;
             case 2:
                 position.y = posMin.y;
+                break;
             case 3:
                 position.x = posMax.x;
+                break;
             case 4:
                 position.y = posMax.x;
+                break;
         }
         return position;
     }
@@ -74,6 +78,9 @@ public class PrepareMonsters {
     public void addMonstersToMonsters (int numMonsterNeedSpawn, Array<Monster> monsters) {
         for(int i = 0; i < numMonsterNeedSpawn; i++) {
             monsters.add(preparedMonsters.get(i));
+
+            Monster monster = preparedMonsters.get(i);
+//            System.out.print(monsters.get(monsters.size-1).getHealth() + " " + monsters.get(monsters.size-1).getSpeed() + "\n");
         }
     }
 
@@ -91,7 +98,7 @@ public class PrepareMonsters {
             monster.setTypeTarget(-1);
             monster.setExist(false);
             timeSummon.set(i, randomTimer(timeStartSpawn, timeFinishSpawn));
-            System.out.println("prepare monster " + i + " " + timeSummon.get(i));
+//            System.out.println("prepare monster " + i + " " + timeSummon.get(i));
         }
         for(int i = 0; i < totalMonsterRequired; i++) {
             for(int j = i + 1; j < totalMonsterRequired; j++) {

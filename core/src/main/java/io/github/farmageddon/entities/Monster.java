@@ -45,7 +45,6 @@ public class Monster extends Entity {
 
     public Monster(float x, float y, float speed, int maxHealth) {
         super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
-        this.speed = speed;
         animation = new Animator();
         typeTarget = -1;
         maxTimeForPlayer = 5f;
@@ -323,12 +322,14 @@ public class Monster extends Entity {
             currentNode = path.get(currentPathIndex); // Update target node
             direction = new Vector2(currentNode.X, currentNode.Y).sub(position); // Recalculate direction
         }
+//        System.out.println("Speed : " + (speed));
 
-        direction.nor().scl(speed * delta); // Normalize and scale by speed and delta time
+        direction.nor().scl(getSpeed() * delta); // Normalize and scale by speed and delta time
 
         // Simulate next position to check for collisions
         Vector2 newPosition = position.cpy().add(direction);
         updateMovementAnimation(direction);
+//        System.out.println("Move a direction " + (direction.x + " " + direction.y));
         position.add(direction);
     }
 

@@ -17,6 +17,7 @@ public class Entity {
         return health;
     }
     public void setSpeed(float speed){
+        System.out.println("Set speed to " + speed);
         this.speed = speed;
     }
     public Entity(float x, float y, float speed, boolean hasHealthBar, float maxHealth) {

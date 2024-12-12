@@ -19,6 +19,7 @@ public class LogicalEntities {
     private float timePerDay, timeStartSpawn, timeFinishSpawn, secondSinceStart;
     private int curNumMonsterReleased, numMonsterNeedRelease;
     private boolean hasChangedDay;
+    private Monster baseTargetMonster;
 //    private GameDifficulty gameDifficulty;
     private PrepareMonsters spawner;
 //    private float amountThisDaySpawn, numMonsterSpawned;
@@ -47,6 +48,7 @@ public class LogicalEntities {
         hasChangedDay = false;
         curNumMonsterReleased = 1;
         numMonsterNeedRelease = 1;
+        baseTargetMonster = new Monster(0, 0, 0, 0);
     }
     public void increaseTimerLogic (float delta) {this.timerLogic += delta;}
 
@@ -89,6 +91,9 @@ public class LogicalEntities {
 
                     spawner.prepareMonsters(numMonsterNeedRelease, timeStartSpawn, timeFinishSpawn);
                     spawner.addMonstersToMonsters(numMonsterNeedRelease, monsters);
+                    for(Monster monster : monsters) {
+                        System.out.println("monster not release: " + monster.getSpeed());
+                    }
                 }
 
                 break;
@@ -100,21 +105,29 @@ public class LogicalEntities {
                     while (spawner.timeGreaterSummon(timeThisDay, curNumMonsterReleased) && curNumMonsterReleased < numMonsterNeedRelease) {
 //                        spawner.releaseOrderMonster(curNumMonsterReleased);
                         monsters.get(curNumMonsterReleased).setExist(true);
+                        System.out.println(monsters.get(curNumMonsterReleased).getSpeed());
                         System.out.println("RELEASE!!!!!!!!!!!!!!\n\n\n\n\n\n\n\n\n\n\n");
                         curNumMonsterReleased++;
                     }
                 }
 
             case "Update" :
-                System.out.println(monsters.size);
+//                System.out.println(monsters.size);
                 for (int i = monsters.size - 1; i >= 0; i--) {
                     Monster monster = monsters.get(i);
+                    System.out.println("speed in update : " +monster.getSpeed());
                     if(!monster.isExist())continue;
                     if (monster.getHealth() <= 0) {
                         monster.die();
                     }
                     if (monster.isDead() && monster.isMarkedForRemoval()) {
                         monsters.removeIndex(i);
+                        continue;
+                    }
+                    if(timerLogic <= 0.5) {
+                        monster.update(delta);
+                        System.out.println(monster.getPosition().x + " " + monster.getPosition().y);
+                        continue;
                     }
                     if (monster.isNullTarget()) {
                         monster.setTypeTarget(-1);
@@ -154,7 +167,30 @@ public class LogicalEntities {
             // Shooting logic
             if (plant.getIsShooting()) {
                 plant.shooted();
-                Monster target = findNearestMonster(plant, monsters, plant.getRange());
+                float range = plant.getRange();
+                float minDis = range + 1, dis = 0;
+                Monster target = baseTargetMonster;
+                for (Monster monster : monsters) {
+                    if(!monster.isExist())continue;
+                    dis = (monster.getPosition().x - plant.getPosition().x) * (monster.getPosition().x - plant.getPosition().x) +
+                        (monster.getPosition().y - plant.getPosition().y) * (monster.getPosition().y - plant.getPosition().y);
+                    dis = (float)Math.sqrt(dis);
+                    if(dis > minDis)continue;
+                    target = monster;
+                    minDis = dis;
+                }
+                if(minDis == range + 1){
+                    plant.setFromLastShoot(plant.getCooldown() - delta);
+                    continue;
+                }
+                projectiles.add(new Projectile(plant.getPosition().x, plant.getPosition().y, 100, 100, target));
+                switch (plant.getTypePlant()) {
+                    case 0:
+                        break;
+                    case 1:
+                        projectiles.get(projectiles.size - 1).setSlowPoint(plant.getAdditionState());
+                }
+//                Monster target = findNearestMonster(plant, monsters, plant.getRange());
 
                 if (target != null) {
                     Projectile projectile = projectilePool.obtain();

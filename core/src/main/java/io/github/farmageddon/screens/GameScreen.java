@@ -1069,6 +1069,40 @@ public class GameScreen implements Screen, InputProcessor {
         for (HouseEntity entity : house1.getEntitiesOnBorder()) {
             entities.add(entity);
         }
+//        monsters.add(new Monster(0, 0, 50, 3000));
+//        monsters.add(new Monster(626, 176, 50, 3000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//
+//        monsters.add(new Monster(0, 0, 50, 3000));
+//        monsters.add(new Monster(626, 176, 50, 3000));
+//        monsters.add(new Monster(761, 650, 50, 2000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        monsters.add(new Monster(149, 680, 50, 3000));
+//        for(int i = 1; i <= 50; i++){
+//            monsters.add(new Monster(0, 0, 50, 3000));
+//        }
+        plants.add(new ProtectPlant(500, 500, 100000000));
     }
 
 }
