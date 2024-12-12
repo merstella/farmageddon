@@ -44,6 +44,9 @@ public class Entity {
         // Update any entity-specific logic (like movement, behavior, etc.)
     }
 
+    public float getSpeed () {return speed;}
+    public void setHealth (float health) {this.health = health;}
+
     public Vector2 getPosition() {
         return position;
     }

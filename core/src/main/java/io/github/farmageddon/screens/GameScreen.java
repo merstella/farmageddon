@@ -135,6 +135,7 @@ public class GameScreen implements Screen, InputProcessor {
     private Array<HouseEntity> entities;
     private Array<Projectile> projectiles;
     private LogicalEntities logic;
+    private PrepareMonsters spawner;
     private PathFinder pathFinder;
     public static float stateTime;
 
@@ -145,6 +146,9 @@ public class GameScreen implements Screen, InputProcessor {
         this.game = game;
         stateTime = 0f;
         logic = new LogicalEntities();
+        spawner = new PrepareMonsters();
+        logic.setSpawner(spawner);
+
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
@@ -159,7 +163,7 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer = new InputMultiplexer();
         selectedCell = new Vector2();
         timer = new Timer_();
-        timer.setTimeRatio(20000);
+        timer.setTimeRatio(24 * 6);
         timer.StartNew(120, true, true);
         timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
@@ -387,7 +391,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         CollisionHandling.renderCollision();
         isNewDay = false;
-
+        logic.increaseTimerLogic(delta);
         logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         logic.renderEntities(monsters, plants, projectiles, entities, game.batch);
         game.batch.begin();
@@ -398,6 +402,9 @@ public class GameScreen implements Screen, InputProcessor {
         game.batch.end();
         renderAmbientLighting();
 
+        handleKeyDown(delta);
+        updateProtectPlant(delta);
+        renderProtectPlant();
         CollisionHandling.renderCollision();
         ui.render();
         isOptionScreen(delta);
@@ -423,7 +430,7 @@ public class GameScreen implements Screen, InputProcessor {
         if (ui.isOptionVisible){
             optionScreen.render(delta);
         }
-        }
+    }
     private void updateProtectPlant(float delta) {
         for (ProtectPlant plant : plants) {
             plant.update(delta);

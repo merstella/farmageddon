@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.GridNode;
+import sun.security.mscapi.CPublicKey;
 
 import java.util.Optional;
 
@@ -16,6 +17,8 @@ public class Monster extends Entity {
 
     private final Animator animation;
     private Animator.MonsterActivity currentActivity;
+
+    private boolean isExist;
 
     private boolean isDead;
     private boolean isDying;
@@ -49,6 +52,7 @@ public class Monster extends Entity {
         damagePoint = 1;
         timeSinceTargetPlayer = 0f;
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
+        isExist = false;
         // Adjust based on sprite size
         this.path = null;
         this.range = 1;
@@ -60,6 +64,12 @@ public class Monster extends Entity {
         this.deathTimer = 0;
         this.markedForRemoval = false;
     }
+
+    public void setExist (boolean isExist) {this.isExist = isExist;}
+    public boolean isExist () {return this.isExist;}
+
+    public float getDamagePoint () {return this.damagePoint;}
+    public void setDamagePoint (float damagePoint) {this.damagePoint = damagePoint;}
     public ProtectPlant getTargetPlant() {
         return targetPlant;
     }
@@ -228,6 +238,7 @@ public class Monster extends Entity {
     }
 
     public boolean isNearEnough () {
+        if(getTypeTarget() == -1)return false;
         if(position.dst(getTargetPosition()) <= attackRange) return true;
         return false;
     }
