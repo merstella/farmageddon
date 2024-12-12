@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.UI;
+import io.github.farmageddon.entities.Player;
 
 public class OptionScreen implements Screen {
     private UI ui;
@@ -40,8 +41,9 @@ public class OptionScreen implements Screen {
     private BitmapFont font;
     private float volume;
 
-
-    public OptionScreen() {
+    private Player player;
+    public OptionScreen(Player player) {
+        this.player = player;
         this.game = new Main();
         this.gameScreen = new GameScreen(game);
 //        ui = new UI();
@@ -97,7 +99,7 @@ public class OptionScreen implements Screen {
                     volume = Math.max(volume - 1, 0);
                     gameScreen.music.setVolume(volume/10);
                 } else if (action.equals("exit")) {
-                    ui = new UI();
+                    ui = new UI(player);
                     ui.isOptionVisible = false;
                     System.out.println("exit");
                 }

@@ -8,8 +8,6 @@ import com.badlogic.gdx.utils.Array;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.CollisionHandling;
 import io.github.farmageddon.ultilites.GridNode;
-import sun.security.mscapi.CPublicKey;
-
 import java.util.Optional;
 
 public class Monster extends Entity {
@@ -419,7 +417,7 @@ public class Monster extends Entity {
         super.render(batch);
         batch.begin();
         if (isBeingAttacked()) {
-            System.out.println(currentActivity);
+//            System.out.println(currentActivity);
             animation.render(batch, position.x, position.y, getHitAnimation(currentActivity), GameScreen.stateTime);
         } else {
             animation.render(batch, position.x, position.y, currentActivity, GameScreen.stateTime);

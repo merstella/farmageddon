@@ -2,7 +2,6 @@ package io.github.farmageddon.ultilites;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.sun.org.apache.bcel.internal.generic.SWAP;
 import io.github.farmageddon.entities.Monster;
 
 import java.util.Arrays;
@@ -93,6 +92,7 @@ public class PrepareMonsters {
             Monster monster = preparedMonsters.get(i);
             monster.setDamagePoint(baseMonster.getDamagePoint() * curDiffMulti);
             monster.setHealth(baseMonster.getHealth() * curDiffMulti);
+            monster.setMaxHealth(baseMonster.getHealth() * curDiffMulti);
             monster.setSpeed(baseMonster.getSpeed() * curDiffMulti);
             monster.setPosition(randomPosition());
             monster.setTypeTarget(-1);

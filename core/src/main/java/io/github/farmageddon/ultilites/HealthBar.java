@@ -32,12 +32,12 @@ public class HealthBar {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(backgroundColor);
-        shapeRenderer.rect(x + width, y + 25, width, height);
+        shapeRenderer.rect(x + 10, y + 25, width, height);
 
         // Draw foreground (filled health bar)
         shapeRenderer.setColor(foregroundColor);
         float healthWidth = (currentHealth / maxHealth) * width;
-        shapeRenderer.rect(x + width, y + 25, healthWidth, height);
+        shapeRenderer.rect(x + 10, y + 25, healthWidth, height);
         shapeRenderer.end();
 
         batch.begin(); // Resume SpriteBatch
@@ -133,10 +133,9 @@ public class HealthBar {
 
         @Override
         public void draw(Batch batch, float parentAlpha) {
-            // Position the health bar above the target actor
-            float x = target.getX() + target.getWidth()/2;
-            float y = target.getY() + target.getHeight();
-            healthBar.draw((SpriteBatch) batch, shapeRenderer, x, y);
+            float x = target.getX() + target.getWidth() / 4 - 2;
+            float y = target.getY() + target.getHeight() + 5;
+            healthBar.draw((SpriteBatch) batch, shapeRenderer, x-10, y-25);
         }
 
         public void setHealth(float health) {

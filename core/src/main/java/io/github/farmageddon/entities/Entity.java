@@ -91,4 +91,8 @@ public class Entity {
     public void dispose() {
         // Dispose of resources when done (e.g., textures, animations)
     }
+
+    public void setMaxHealth(float v) {
+        maxHealth = v;
+    }
 }

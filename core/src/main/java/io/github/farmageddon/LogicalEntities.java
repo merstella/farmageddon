@@ -75,16 +75,16 @@ public class LogicalEntities {
         String whatToDo = checkTimeType(timeThisDay);
 //        System.out.println(whatToDo);
         switch (whatToDo) {
-            case "Farming time" :
+            case "Farming time":
                 // this time will split time for spawn zombie
                 // spawn and add to monsters but not release
-                if(spawner.isArrayNull())spawner.prepareArrays();
-                if(monsters.size > 0 && hasChangedDay) {
+                if (spawner.isArrayNull()) spawner.prepareArrays();
+                if (monsters.size > 0 && hasChangedDay) {
                     monsters.removeIndex(0);
                     hasChangedDay = false;
                     break;
                 }
-                if(curNumMonsterReleased != 0) {
+                if (curNumMonsterReleased != 0) {
                     curNumMonsterReleased = 0;
 
                     numMonsterNeedRelease = 10;
@@ -92,30 +92,30 @@ public class LogicalEntities {
                     spawner.prepareMonsters(numMonsterNeedRelease, timeStartSpawn, timeFinishSpawn);
                     spawner.addMonstersToMonsters(numMonsterNeedRelease, monsters);
                     for(Monster monster : monsters) {
-                        System.out.println("monster not release: " + monster.getSpeed());
+//                        System.out.println("monster not release: " + monster.getSpeed());
                     }
                 }
 
                 break;
-            case "Spawn and update" :
+            case "Spawn and update":
                 hasChangedDay = true;
                 // spawn and fall through to update
                 // spawn but only need release monster prepared
-                if(curNumMonsterReleased < numMonsterNeedRelease) {
+                if (curNumMonsterReleased < numMonsterNeedRelease) {
                     while (spawner.timeGreaterSummon(timeThisDay, curNumMonsterReleased) && curNumMonsterReleased < numMonsterNeedRelease) {
 //                        spawner.releaseOrderMonster(curNumMonsterReleased);
                         monsters.get(curNumMonsterReleased).setExist(true);
-                        System.out.println(monsters.get(curNumMonsterReleased).getSpeed());
-                        System.out.println("RELEASE!!!!!!!!!!!!!!\n\n\n\n\n\n\n\n\n\n\n");
+//                        System.out.println(monsters.get(curNumMonsterReleased).getSpeed());
+//                        System.out.println("RELEASE!!!!!!!!!!!!!!\n\n\n\n\n\n\n\n\n\n\n");
                         curNumMonsterReleased++;
                     }
                 }
 
-            case "Update" :
+            case "Update":
 //                System.out.println(monsters.size);
                 for (int i = monsters.size - 1; i >= 0; i--) {
                     Monster monster = monsters.get(i);
-                    System.out.println("speed in update : " +monster.getSpeed());
+//                    System.out.println("speed in update : " +monster.getSpeed());
                     if(!monster.isExist())continue;
                     if (monster.getHealth() <= 0) {
                         monster.die();
@@ -126,7 +126,7 @@ public class LogicalEntities {
                     }
                     if(timerLogic <= 0.5) {
                         monster.update(delta);
-                        System.out.println(monster.getPosition().x + " " + monster.getPosition().y);
+//                        System.out.println(monster.getPosition().x + " " + monster.getPosition().y);
                         continue;
                     }
                     if (monster.isNullTarget()) {
@@ -139,7 +139,7 @@ public class LogicalEntities {
                         assignPathToMonster(monster, pathFinder);
 
                     }
-                    System.out.println(monster.getTypeTarget());
+//                    System.out.println(monster.getTypeTarget());
                     // Update monster logic
                     monster.update(delta);
                 }

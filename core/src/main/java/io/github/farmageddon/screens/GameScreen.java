@@ -5,9 +5,7 @@ import box2dLight.RayHandler;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -29,6 +27,7 @@ import io.github.farmageddon.Crops.Crop;
 import io.github.farmageddon.Crops.Land;
 import io.github.farmageddon.Crops.LandManager;
 //import io.github.farmageddon.markets.Market;
+import io.github.farmageddon.animals.*;
 import io.github.farmageddon.Crops.Seeds;
 import io.github.farmageddon.animals.Animal;
 import io.github.farmageddon.entities.*;
@@ -39,6 +38,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
 import static com.badlogic.gdx.graphics.Color.WHITE;
 import static java.lang.Math.clamp;
 import static java.lang.ref.Cleaner.create;
@@ -92,7 +92,7 @@ public class GameScreen implements Screen, InputProcessor {
     private ArrayList<Animal> animals;
     public final Stage stage;
     private Vector2 selectedCell;
-    int currentDays;
+    public static int currentDays;
 
     Array<Entity> houses;
     House house1;
@@ -112,6 +112,8 @@ public class GameScreen implements Screen, InputProcessor {
     private boolean isPlacing;
     private Array<ProtectPlant> plants;
     private final Vector2 invalidPlacementCell = new Vector2(-1, -1);
+
+    private ZoneManager zoneManager;
     public GameScreen(Main game) {
         this.game = game;
         itemList = new ItemList();
@@ -123,7 +125,7 @@ public class GameScreen implements Screen, InputProcessor {
         camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
-        camera.zoom = 0.75f;
+        camera.zoom = .25f;
         camera.update();
         map = new TmxMapLoader().load("mapok.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map);
@@ -134,7 +136,7 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer = new InputMultiplexer();
         selectedCell = new Vector2();
         timer = new Timer_();
-        timer.setTimeRatio(24 * 6);
+        timer.setTimeRatio(20000);
         timer.StartNew(120, true, true);
         timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
@@ -167,6 +169,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         initProtectedPlant();
         slotCursorHandler = new SlotCursorHandler(player, droppedItems, monsters);
+        zoneManager = new ZoneManager();
     }
 
     private void initProtectedPlant() {
@@ -194,16 +197,15 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void initAnimal() {
-//        animal = new Animal(680, 230, "Chicken", stage);
-//        animal.setBound(620, 690, 160, 260);
         animals = new ArrayList<>();
-        Animal chicken1 = new Animal(650, 180, stage);
-        chicken1.setBound(620, 690, 160, 260);
-
-        Animal chicken2 = new Animal(670, 200, stage);
-        chicken2.setBound(620, 690, 160, 260);
-        animals.add(chicken1);
-        animals.add(chicken2);
+        animals.add(new Chicken(580, 570, stage));
+        animals.add(new Chicken(605, 580, stage));
+        animals.add(new Pig(658, 190, stage));
+        animals.add(new Pig(672, 170, stage));
+        animals.add(new Cow(820, 538, stage));
+        animals.add(new Cow(800, 530, stage));
+        animals.add(new Sheep(430, 480, stage));
+        animals.add(new Sheep(400, 500, stage));
     }
 
     private void initHouses() {
@@ -231,10 +233,12 @@ public class GameScreen implements Screen, InputProcessor {
         player.setItem(itemList.Tomato,1);
         player.setItem(itemList.Rice,2);
         player.setItem(itemList.Carrot,3);
+        player.setItem(itemList.OneGunIcon,4);
         market.addMarketItem(itemList.CornSeed);
         market.addMarketItem(itemList.RiceSeed);
         market.addMarketItem(itemList.CarrotSeed);
         market.addMarketItem(itemList.TomatoSeed);
+        market.addMarketItem(itemList.OneGunIcon);
         //money
         player.addMoney(200);
     }
@@ -254,8 +258,8 @@ public class GameScreen implements Screen, InputProcessor {
         inventoryUI = new InventoryUI(titleSize);
         marketScreen = new MarketScreen(titleSize,market, player);
         inventoryScreen = new InventoryScreen(titleSize, player);
-        optionScreen = new OptionScreen();
-        ui = new UI();
+        optionScreen = new OptionScreen(player);
+        ui = new UI(player);
         minigame = new FishingMinigame(player);
         minigame.create();
         boolean isHoldingTorch = false;
@@ -297,8 +301,8 @@ public class GameScreen implements Screen, InputProcessor {
         mapRenderer.render();
 
         handleDayPassed();
-        logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         clock.act(delta);
+
 
 
         checkBreeding();
@@ -309,12 +313,19 @@ public class GameScreen implements Screen, InputProcessor {
 
 
         slotCursorHandler.update();
-        renderGridDebug();
+//        renderGridDebug();
 
         renderLand(delta);
+
         renderPlayer();
         stage.act(delta);
         stage.draw();
+        for (int i = animals.size() - 1; i >= 0; --i) {
+            if (animals.get(i).isDead()) {
+                animals.remove(i);
+            }
+        }
+
         handleKeyDown(delta);
 
         renderSelectedCell();
@@ -332,14 +343,16 @@ public class GameScreen implements Screen, InputProcessor {
         logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         logic.renderEntities(monsters, plants, projectiles, entities, game.batch);
         game.batch.begin();
+//        zoneManager.render(game.batch);
+        System.out.println("Drop size" + droppedItems.size);
         for (DroppedItem item : droppedItems) {
-            System.out.println(item.getItemType());
+//            System.out.println(item.getItemType());
             item.render(game.batch);
         }
         game.batch.end();
         renderAmbientLighting();
 
-        handleKeyDown(delta);
+//        handleKeyDown(delta);
         updateProtectPlant(delta);
         renderProtectPlant();
         CollisionHandling.renderCollision();
@@ -765,9 +778,7 @@ public class GameScreen implements Screen, InputProcessor {
         return timer;
     }
 
-    public int getCurrentDays() {
-        return currentDays;
-    }
+
     public OrthographicCamera getCamera() {
         return camera;
     }
@@ -779,7 +790,7 @@ public class GameScreen implements Screen, InputProcessor {
                 System.out.println("Picked up: " + item.getItemType());
 //                player.setItem(item.getItemType()); // Add to player's inventory
                 droppedItems.removeIndex(i); // Remove the item from the list
-                player.setItem(Fish, 10);
+                player.setItem(ItemList.Fish, 10);
                 item.dispose(); // Dispose the item's texture
                 break;
             }
@@ -806,18 +817,7 @@ public class GameScreen implements Screen, InputProcessor {
         mapRenderer.dispose();
     }
 
-    public void printAnimalDebugInfo() {
-        game.batch.begin();
-        String debugInfo = "Animal: " + animals.get(0).getType() +
-            ",\n Hunger: " + animals.get(0).getHunger() +
-            "\n, Health: " + animals.get(0).getHealth() + "\n, State: " + animals.get(0).getState()
-            + "\n, can be produce?: " + animals.get(0).canBeProduced();
-
-        font.draw(game.batch, debugInfo, player.getPosition().x, player.getPosition().y);
-        font.draw(game.batch, player.getPosition().x +  " " + player.getPosition().y, player.getPosition().x + 100, player.getPosition().y + 100);
-        game.batch.end();
-    }
-    private SlotCursorHandler slotCursorHandler;
+    public static SlotCursorHandler slotCursorHandler;
     @Override
     public boolean keyDown(int keycode) {
         return false;
@@ -867,30 +867,39 @@ public class GameScreen implements Screen, InputProcessor {
             int cellY = (int) touchPosition.y / 16;
             selectedCell.set(cellX, cellY);
             highlightTimer = HIGHLIGHT_DURATION;
-            Land land = landManager.getLand(cellY, cellX);
+
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             System.out.println(touchPosition2D);
             System.out.println(cellX + ";"+ cellY);
-            if (!land.isEmpty()) {
-                DroppedItem droppedItem = land.harvestCrop();
-                if (droppedItem != null) {
-                    droppedItems.add(droppedItem);
+            Land land = landManager.getLand(cellY, cellX);
+            if (zoneManager.isValidFarmingPosition(touchPosition2D)) {
+                if (!land.isEmpty()) {
+                    DroppedItem droppedItem = land.harvestCrop();
+                    if (droppedItem != null) {
+                        droppedItems.add(droppedItem);
+
+                    }
 
                 }
-
-            }
-            if (slotCursorHandler.getSeed() != null) {
-                if (land.isEmpty()) {
-                    System.out.println("flag2");
-                    System.out.println(slotCursorHandler.getSeed());
-                    Crop crop = new Crop(slotCursorHandler.getSeed(), cellX * 16, cellY * 16); // Example crop
-                    land.plantCrop(crop);
+                if (slotCursorHandler.getSeed() != null) {
+                    if (land.isEmpty()) {
+                        System.out.println("flag2");
+                        System.out.println(slotCursorHandler.getSeed());
+                        Crop crop = new Crop(slotCursorHandler.getSeed(), cellX * 16, cellY * 16); // Example crop
+                        land.plantCrop(crop);
+                    }
                 }
             }
-            else if (slotCursorHandler.getAction() != null) {
+            if (slotCursorHandler.getAction() != null) {
+                if (Objects.equals(slotCursorHandler.getAction(), "hoe") || Objects.equals(slotCursorHandler.getAction(), "bucket")) {
+                    if (!zoneManager.isValidFarmingPosition(touchPosition2D)) {
+                        return true;
+                    }
+                }
                 player.updateActivityAnimation(slotCursorHandler.getAction(), touchPosition2D);
                 slotCursorHandler.startAction(land);
-            } else if (slotCursorHandler.getMutatedPlant() != null) {
+            }
+            if (slotCursorHandler.getMutatedPlant() != null) {
                 isPlacing = true;
                 GridNode gridNode = pathFinder.getGridNodeForEntity(touchPosition2D);
                 if (gridNode != null && gridNode.getGridType() != GridNode.GridType.UNPASSABLE) {
@@ -900,7 +909,6 @@ public class GameScreen implements Screen, InputProcessor {
                     invalidPlacementCell.set(cellX, cellY);
                 }
             }
-
             return true;
         }
         return false;

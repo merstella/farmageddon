@@ -51,7 +51,7 @@ public final class UI {
     private BitmapFont font;
     private int[][] checkRanges;
 
-    public UI() {
+    public UI(Player player) {
         this.batch = new SpriteBatch();
         this.stage = new Stage(new ScreenViewport());
         this.UI_sheet = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
@@ -75,8 +75,8 @@ public final class UI {
         optionButton.setPosition(Gdx.graphics.getWidth()-(UI_sheet.getWidth() / 39) - 30, Gdx.graphics.getHeight()-(UI_sheet.getHeight() / 19) - 30);
         stage.addActor(optionButton);
         Gdx.input.setInputProcessor(stage);
-        optionScreen = new OptionScreen();
-
+        this.player = player;
+        optionScreen = new OptionScreen(player);
         this.avatar = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\ui_player_icon.png"));
         this.healthSheet = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\ui_player_heathBar.png"));
         this.dayBar = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\moneyBar.png"));
@@ -105,10 +105,11 @@ public final class UI {
     }
 
     public void render() {
-        System.out.println("heckRanges.length"+ checkRanges.length);
+//        System.out.println("heckRanges.length"+ checkRanges.length);
         batch.begin();
         font.getCache().clear(); // Xóa bộ đệm trước khi vẽ
-        CheckHealth((int) Player.currentHealth,checkRanges);
+
+        CheckHealth(player.getHealth(), checkRanges);
         batch.draw(avatar,20,Gdx.graphics.getHeight()-95,avatar.getWidth() * 4,avatar.getHeight() * 4);
         batch.draw(dayBar,20,Gdx.graphics.getHeight() - 140,dayBar.getWidth() * 4,dayBar.getHeight() * 4);
         font.draw(batch,"Day: " + String.valueOf(GameScreen.currentDays),43,Gdx.graphics.getHeight() - 98);
@@ -124,11 +125,13 @@ public final class UI {
 
     }
 
-    public void CheckHealth(int currentHealth, int[][] checkRanges){
+    public void CheckHealth(float currentHealth, int[][] checkRanges){
         for (int index = 0; index < checkRanges.length; index++) {
             int start = checkRanges[index][0];
             int end = checkRanges[index][1];
+//            System.out.println(player.getHealth());
             if (currentHealth >= start && currentHealth <= end) {
+//                System.out.println("1234567");
                 batch.draw(healthBar[index],83, Gdx.graphics.getHeight() - 50, healthBar[0].getRegionWidth()*7,healthBar[0].getRegionHeight()*4);
                 return;
             }

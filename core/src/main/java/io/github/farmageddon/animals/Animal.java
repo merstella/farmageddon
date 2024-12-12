@@ -1,23 +1,25 @@
-package io.github.farmageddon.entities;
+package io.github.farmageddon.animals;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
+import io.github.farmageddon.entities.Player;
 import io.github.farmageddon.ultilites.DroppedItem;
 import io.github.farmageddon.ultilites.HealthBar;
 import io.github.farmageddon.ultilites.Items;
+import io.github.farmageddon.ultilites.ZoneManager;
 
-import static io.github.farmageddon.screens.GameScreen.droppedItems;
-import static io.github.farmageddon.screens.GameScreen.shapeRenderer;
+import static io.github.farmageddon.screens.GameScreen.*;
 
-public class Animal extends Actor {
+public abstract class Animal extends Actor {
     private Vector2 position;
 
-    private String type;
     private float hunger;
     private boolean canProduce;
     private int state;
@@ -29,21 +31,31 @@ public class Animal extends Actor {
 
     private float speed = 100f; // Units per second
 
-    private Texture animalSheet; // The spritesheet
-    private Animation<TextureRegion>[] animations; // Array of animations for each activity
-    private float stateTime;
-    private final int frameWidth = 32;
-    private final int frameHeight = 32;
-    private float minX, maxX, minY, maxY;
+    protected Texture animalSheet; // The spritesheet
+    protected Animation<TextureRegion>[] animations; // Array of animations for each activity
+    protected float stateTime;
+    protected final int frameWidth = 32;
+    protected final int frameHeight = 32;
+    protected float minX, maxX, minY, maxY;
     private float activityChangeTimer = 0;
     private float ACTIVITY_CHANGE_DELAY;
-
+    DroppedItem droppedFood;
     public boolean canBeProduced() {
         return canProduce;
     }
 
+    public void checkAndDropFoodIfDead() {
+        if (isDead && state == 3) {
+            droppedItems.add(droppedFood);
+        }
+    }
+
+    public abstract void initAnimation();
+
+    public abstract void setBound();
+
     public enum Activity {
-        WALK_LEFT, WALK_RIGHT, SLEEP, IDLE_LEFT, IDLE_RIGHT
+        WALK_LEFT, WALK_RIGHT, SLEEP, IDLE_LEFT, IDLE_RIGHT, HIT_LEFT, HIT_RIGHT
     }
 
     private Activity currentActivity;
@@ -59,18 +71,26 @@ public class Animal extends Actor {
 
     private HealthBar.HealthBarActor healthBar;
     public boolean isHighlighted;
+    protected ZoneManager zoneManager;
+    boolean typeCanLay;
+    boolean typeCanBreed;
 
+    private boolean isHitAnimationActive = false;
+    private float hitAnimationDuration = 0.5f; // Duration of the hit animation
+    private float hitAnimationTimer = 0;
 
-
-    public Animal(float x, float y, String type, Stage stage) {
-
+    public boolean isDead() {
+        return isDead;
+    }
+    protected Items.Item favFood;
+    public Animal(float x, float y, Stage stage) {
         this.state = 1;
         setBounds(x, y, frameWidth * 0.333f, frameHeight * 0.333f);
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
+
         this.age = 0;
         position = new Vector2(getX(), getY());
-        this.type = type;
         this.hunger = 0;
         this.canProduce = false;
 
@@ -86,7 +106,7 @@ public class Animal extends Actor {
         this.stage = stage;
         stage.addActor(healthBar);
         stage.addActor(this);
-
+        zoneManager = new ZoneManager();
         this.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
@@ -98,13 +118,20 @@ public class Animal extends Actor {
             public void exit(InputEvent event, float x, float y, int pointer, Actor fromActor) {
 
 
-                    setHighlighted(false);
+                setHighlighted(false);
 
             }
+
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Actor touched at: " + x + ", " + y);
-                feed();
+                if (button == Input.Buttons.LEFT) {
+                    if (slotCursorHandler.getFood() == favFood) {
+                        feed();
+                    } else if (slotCursorHandler.getAction() == "sword") {
+                        takeDamage(Player.attackDamage);
+                    }
+                }
                 return true;
             }
 
@@ -114,9 +141,43 @@ public class Animal extends Actor {
             }
         });
     }
+    // New method to handle taking damage
+    public void takeDamage(float damage) {
+        if (!isDead) {
+            currentHealth -= damage;
+            if (currentHealth <= 0) {
+                currentHealth = 0;
+                die(); // Trigger death if health reaches 0
+            }
+            playHitAnimation();
+        }
+    }
+
+    // Trigger the hit animation depending on the direction
+    private void playHitAnimation() {
+        if (!isHitAnimationActive) { // Play hit animation only if it's not already active
+            if (currentActivity == Activity.WALK_LEFT || currentActivity == Activity.IDLE_LEFT) {
+                currentActivity = Activity.HIT_LEFT;
+            } else if (currentActivity == Activity.WALK_RIGHT || currentActivity == Activity.IDLE_RIGHT) {
+                currentActivity = Activity.HIT_RIGHT;
+            }
+            stateTime = 0; // Reset animation timer to play hit animation immediately
+            isHitAnimationActive = true; // Activate hit animation flag
+            hitAnimationTimer = 0; // Reset hit animation timer
+        }
+    }
+
+    // Method to handle the death of the animal
+    private void die() {
+        isDead = true;
+        healthBar.remove();
+        this.remove();
+        checkAndDropFoodIfDead();
+    }
     public void setHighlighted(boolean highlighted) {
         isHighlighted = highlighted;
     }
+
     public void incrementAge() {
         this.age++;
     }
@@ -127,33 +188,16 @@ public class Animal extends Actor {
 
     private void randomizeActivityChangeDelay() {
         // Random delay between 1 and 5 seconds
-        this.ACTIVITY_CHANGE_DELAY = 1f + (float)(Math.random() * 4f);
-    }
-    private void initAnimation() {
-        animalSheet = new Texture(Gdx.files.internal("Animals\\Chicken\\Chicken_01.png"));
-        TextureRegion[][] tmpFrames = TextureRegion.split(animalSheet, frameWidth, frameHeight);
-        animations = new Animation[10];
-
-        // Walk Left animation (original frames)
-        animations[Activity.WALK_LEFT.ordinal()] = createAnimation(tmpFrames[1], 0, 6, 0.1f);
-
-        // Walk Right animation (flipped frames)
-        animations[Activity.WALK_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[1], 0, 6, 0.1f);
-
-        animations[Activity.SLEEP.ordinal()] = createAnimation(tmpFrames[3], 0, 3, 0.1f);
-        animations[Activity.IDLE_LEFT.ordinal()] = createAnimation(tmpFrames[0], 0, 2, 0.3f);
-        animations[Activity.IDLE_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames[0], 0, 2, 0.3f);
-
-        stateTime = 0f;
+        this.ACTIVITY_CHANGE_DELAY = 1f + (float) (Math.random() * 4f);
     }
 
-    private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
+    Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
         System.arraycopy(frames, startFrame, directionFrames, 0, frameCount);
         return new Animation<>(frameDuration, directionFrames);
     }
 
-    private Animation<TextureRegion> createFlippedAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
+    Animation<TextureRegion> createFlippedAnimation(TextureRegion[] frames, int startFrame, int frameCount, float frameDuration) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
         for (int i = 0; i < frameCount; i++) {
             directionFrames[i] = new TextureRegion(frames[startFrame + i]);
@@ -161,6 +205,7 @@ public class Animal extends Actor {
         }
         return new Animation<>(frameDuration, directionFrames);
     }
+
     public void update(float delta) {
         // Existing cooldown and production logic
         layCooldown += delta;
@@ -176,13 +221,15 @@ public class Animal extends Actor {
         // Hunger and health logic
         hunger += delta * 5;
         if (hunger > 100) hunger = 100;
-        if (currentHealth == 0) isDead = true;
         if (hunger > 80) {
             currentHealth -= delta * 2;
         }
 
         // Clamp current health between 0 and maxHealth
         currentHealth = Math.max(0, Math.min(maxHealth, currentHealth));
+        if (currentHealth == 0) {
+            die();
+        }
     }
 
     private void moveTowardsDestination(float delta) {
@@ -214,7 +261,6 @@ public class Animal extends Actor {
     }
 
 
-
     private void chooseNewDestination() {
         // Choose a random destination within bounds
         float rangeX = maxX - minX;
@@ -224,8 +270,8 @@ public class Animal extends Actor {
         float maxDistance = Math.min(rangeX, rangeY) * 0.3f; // 30% of range
 
         destination = new Vector2(
-            position.x + (float)(Math.random() * 2 * maxDistance - maxDistance),
-            position.y + (float)(Math.random() * 2 * maxDistance - maxDistance)
+            position.x + (float) (Math.random() * 2 * maxDistance - maxDistance),
+            position.y + (float) (Math.random() * 2 * maxDistance - maxDistance)
         );
 
         // Clamp destination within bounds
@@ -235,10 +281,11 @@ public class Animal extends Actor {
 
     public boolean isEligibleForBreeding(Animal other) {
 //        System.out.println(this.canBreed +";"+ other.canBreed);
-        return this.type.equals(other.type) // Same type
+        return this.getClass() == other.getClass() // Same type
             && this.currentHealth > 80 && this.hunger < 20 // Health and hunger conditions
             && this.canBreed && other.canBreed && this.state == 3 && other.state == 3;// Both animals can breed
     }
+
     public Animal breed(Animal other, Stage stage) {
         if (!isEligibleForBreeding(other)) {
             return null; // Breeding not possible
@@ -257,13 +304,17 @@ public class Animal extends Actor {
         float offspringY = (this.getY() + other.getY()) / 2 + (float) (Math.random() * 20 - 10);
 
         // Create offspring with inherited traits
-        Animal offspring = new Animal(offspringX, offspringY, this.type, stage);
-        offspring.setBound(
-            Math.min(this.getMinX(), other.getMinX()),
-            Math.max(this.getMaxX(), other.getMaxX()),
-            Math.min(this.getMinY(), other.getMinY()),
-            Math.max(this.getMaxY(), other.getMaxY())
-        );
+        Animal offspring = null;
+        if (this instanceof Chicken) {
+            offspring = new Chicken(offspringX, offspringY, stage);  // Creates a Chicken offspring
+        } else if (this instanceof Pig) {
+            offspring = new Pig(offspringX, offspringY, stage);  // Creates a Pig offspring
+        } else if (this instanceof Cow) {
+            offspring = new Cow(offspringX, offspringY, stage);  // Base case for Animal
+        } else if (this instanceof Sheep) {
+            offspring = new Sheep(offspringX, offspringY, stage);
+        }
+        offspring.setBound();
         return offspring;
     }
 
@@ -276,7 +327,7 @@ public class Animal extends Actor {
     public void act(float delta) {
         super.act(delta);
         update(delta);
-        healthBar.setHealth(currentHealth);
+        if (healthBar != null) healthBar.setHealth(currentHealth);
         if (!canBreed) {
             breedCooldownTimer -= delta;
             if (breedCooldownTimer <= 0) {
@@ -288,7 +339,7 @@ public class Animal extends Actor {
         activityChangeTimer += delta;
 
         // Cycle through activities in a specific order
-        if (activityChangeTimer >= ACTIVITY_CHANGE_DELAY) {
+        if (activityChangeTimer >= ACTIVITY_CHANGE_DELAY && !isHitAnimationActive) {
             switch (currentActivity) {
                 case IDLE_LEFT:
                     chooseNewDestination();
@@ -327,21 +378,32 @@ public class Animal extends Actor {
         }
         // Egg-laying logic
         if (canProduce) {
-            DroppedItem egg = layEgg();
-            if (egg != null) {
-                // Add the egg to a global list or stage
-                droppedItems.add(egg);
+            DroppedItem drop = droppedItem();
+            if (drop != null) {
+                droppedItems.add(drop);
             }
         }
 
-
+        // Handle hit animation timeout
+        if (isHitAnimationActive) {
+            hitAnimationTimer += delta;
+            if (hitAnimationTimer >= hitAnimationDuration) {
+                isHitAnimationActive = false; // Reset hit animation state
+                // After the hit animation, return to previous state (Idle or Walking)
+                if (currentActivity == Activity.HIT_LEFT) {
+                    currentActivity = Activity.IDLE_LEFT;
+                } else if (currentActivity == Activity.HIT_RIGHT) {
+                    currentActivity = Activity.IDLE_RIGHT;
+                }
+            }
+        }
     }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
-
         // Ensure correct projection matrix for the batch
-        batch.setProjectionMatrix(getStage().getCamera().combined);
         batch.end();
+        batch.setProjectionMatrix(getStage().getCamera().combined);
         // First, draw the actor's texture
         Animation<TextureRegion> currentAnimation = animations[currentActivity.ordinal()];
         TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
@@ -369,12 +431,11 @@ public class Animal extends Actor {
 //        float offsetX =  // Center the texture within the bounds
 //        float offsetY = (height - frameHeight) / 2f;
         batch.begin();
-        // Draw the actor's current frame with tight bounds
+
         batch.draw(currentFrame, getX(), getY(), getWidth(), getHeight());
-        batch.setColor(Color.WHITE); // Reset to default
+        batch.setColor(Color.WHITE);
         batch.end();
 
-        // Now draw the actor bounds for debugging using ShapeRenderer
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());  // Use batch's projection matrix
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Use ShapeType.Line for the bounds
         shapeRenderer.setColor(Color.RED);  // Set the color to red for bounds
@@ -412,33 +473,18 @@ public class Animal extends Actor {
         return state;
     }
 
-
-    public String getType() {
-        return type;
-    }
-
     public void produce() {
         System.out.println("Has produced!");
     }
-    public DroppedItem layEgg() {
+
+    public DroppedItem droppedItem() {
         if (canProduce) {
-            // Create a DroppedItem at the animal's position
             DroppedItem egg = new DroppedItem(position.x, position.y, Items.Item.EGG, Items.ItemType.FOOD);
-            canProduce = false; // Reset production capability
+            canProduce = false;
             System.out.println("Animal laid an egg at: " + position);
             return egg;
         }
-        return null; // No egg produced
+        return null;
     }
 
-    public void setBound(float minX, float maxX, float minY, float maxY) {
-        this.minX = minX;
-        this.maxX = maxX;
-        this.minY = minY;
-        this.maxY = maxY;
-    }
-    public float getMinX() { return minX; }
-    public float getMaxX() { return maxX; }
-    public float getMinY() { return minY; }
-    public float getMaxY() { return maxY; }
 }
