@@ -8,19 +8,18 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import io.github.farmageddon.Main;
 import io.github.farmageddon.screens.GameScreen;
-import io.github.farmageddon.ultilites.CollisionHandling;
-import io.github.farmageddon.ultilites.FishingMinigame;
-import io.github.farmageddon.ultilites.Items;
+import io.github.farmageddon.ultilites.*;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class Player extends Entity {
-
     public static final int WIDTH = 32;
     public static final int HEIGHT = 32;
     private Main game;
     private GameScreen gameScreen;
+    private ItemList itemList;
+    public HealthBar health;
     public static Animator animation;
     public Animator.Direction currentDirection;
     public Animator.Activity currentActivity;
@@ -51,6 +50,7 @@ public class Player extends Entity {
             attackStateTimer = 0.2f;
         }
     }
+
     public Player(float x, float y, float speed) {
         super(x, y, speed, true, 100000);
         animation = new Animator(); // Initialize animation instance
@@ -77,7 +77,7 @@ public class Player extends Entity {
     }
 
     public void removeItem(Items item) {
-        inventory.set(inventoryCursor,gameScreen.Default);
+        inventory.set(inventoryCursor,ItemList.Default);
     }
 
     public void addMoney(int amount) {

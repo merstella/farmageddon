@@ -22,6 +22,7 @@ import io.github.farmageddon.entities.Monster;
 import io.github.farmageddon.entities.Player;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.DroppedItem;
+import io.github.farmageddon.ultilites.ItemList;
 import io.github.farmageddon.ultilites.Items;
 
 import java.util.ArrayList;
@@ -76,8 +77,8 @@ public class InventoryScreen implements Screen, InputProcessor {
         buttonStyle.down = new TextureRegionDrawable(ButtonInactive); // Trạng thái nhấn
         buttonStyle.fontColor = Color.BLACK;
         skin.add("default", buttonStyle);
-        none1 = GameScreen.Default;
-        none2 = GameScreen.Default;
+        none1 = ItemList.Default;
+        none2 = ItemList.Default;
         createButtons(buttonStyle);
     }
 
@@ -93,8 +94,8 @@ public class InventoryScreen implements Screen, InputProcessor {
                 none2 = player.eqipInventory.get(player.slotCursor);
                 player.setItem(none2,player.inventoryCursor);
                 player.setEquipItem(none1,player.slotCursor);
-                none1 = GameScreen.Default;
-                none2 = GameScreen.Default;
+                none1 = ItemList.Default;
+                none2 = ItemList.Default;
             }
             return true;
         });

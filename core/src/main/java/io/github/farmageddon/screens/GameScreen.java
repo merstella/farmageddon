@@ -30,6 +30,7 @@ import io.github.farmageddon.Crops.Land;
 import io.github.farmageddon.Crops.LandManager;
 //import io.github.farmageddon.markets.Market;
 import io.github.farmageddon.Crops.Seeds;
+import io.github.farmageddon.animals.Animal;
 import io.github.farmageddon.entities.*;
 import io.github.farmageddon.Market;
 import io.github.farmageddon.ultilites.*;
@@ -77,38 +78,7 @@ public class GameScreen implements Screen, InputProcessor {
     public static boolean cursorLeft = false;
     private UI ui;
     private OptionScreen optionScreen;
-
-    // Items Texture
-    public Texture CoinTexture;
-    public Texture FishTexture;
-    public Texture defaultTexture;
-    public Texture bucketTexture;
-    public Texture SwordTexture;
-    public Texture FishingRodTexture;
-    public Texture HoeTexture;
-    public Texture TorchTexture;
-    public Texture CornTexture;
-    public Texture CornSeedTexture;
-    public Texture CarrotTexture;
-    public Texture CarrotSeedTexture;
-    public Texture RiceTexture;
-    public Texture RiceSeedTexture;
-    public Texture TomatoTexture;
-    public Texture TomatoSeedTexture;
-    public static Items Tomato;
-    public static Items TomatoSeed;
-    public static Items Carrot;
-    public static Items CarrotSeed;
-    public static Items Rice;
-    public static Items RiceSeed;
-    public static Items Coin;
-    public static Items Fish;
-    public static Items Default;
-    public static Items Bucket;
-    public static Items Sword;
-    public static Items Hoe;
-    public static Items Torch;
-    public static Items FishingRod;
+    private ItemList itemList;
 
     public FishingMinigame minigame;
     //    public TorchLightHandler torchLightHandler;
@@ -144,6 +114,7 @@ public class GameScreen implements Screen, InputProcessor {
     private final Vector2 invalidPlacementCell = new Vector2(-1, -1);
     public GameScreen(Main game) {
         this.game = game;
+        itemList = new ItemList();
         stateTime = 0f;
         logic = new LogicalEntities();
         spawner = new PrepareMonsters();
@@ -214,13 +185,11 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     public void initMarket() {
-        defaultTexture = new Texture(Gdx.files.internal("default.png"));
-        Default = new Items(defaultTexture,Items.ItemType.DEFAULT,Items.Item.DEFAULT, 0, 0);
         while (player.eqipInventory.size() <= player.maxEqipInventorySize) {
-            player.eqipInventory.add(Default);
+            player.eqipInventory.add(itemList.Default);
         }
         while (player.inventory.size() <= player.maxInventorySize) {
-            player.inventory.add(Default);
+            player.inventory.add(itemList.Default);
         }
     }
 
@@ -228,10 +197,10 @@ public class GameScreen implements Screen, InputProcessor {
 //        animal = new Animal(680, 230, "Chicken", stage);
 //        animal.setBound(620, 690, 160, 260);
         animals = new ArrayList<>();
-        Animal chicken1 = new Animal(650, 180, "Chicken", stage);
+        Animal chicken1 = new Animal(650, 180, stage);
         chicken1.setBound(620, 690, 160, 260);
 
-        Animal chicken2 = new Animal(670, 200, "Chicken", stage);
+        Animal chicken2 = new Animal(670, 200, stage);
         chicken2.setBound(620, 690, 160, 260);
         animals.add(chicken1);
         animals.add(chicken2);
@@ -252,48 +221,20 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     public void initPlayerInv() {
-        FishTexture = new Texture(Gdx.files.internal("Animals\\Bee\\Bee_Hive.png"));// Fish item
-        Fish = new Items(FishTexture, Items.ItemType.FOOD, Items.Item.FISH,10,1);
-        CoinTexture = new Texture(Gdx.files.internal("Coin_Icon.png"));
-        Coin = new Items(CoinTexture, Items.ItemType.OTHER, Items.Item.COIN, 10,1);// Coin
-        bucketTexture = new Texture(Gdx.files.internal("toolcutted/bucket.png"));
-        Bucket = new Items(bucketTexture, Items.ItemType.TOOL, Items.Item.BUCKET, 10,1);
-        SwordTexture = new Texture(Gdx.files.internal("toolcutted/Sword.png"));
-        Sword = new Items(SwordTexture,Items.ItemType.TOOL, Items.Item.SWORD, 0,1);
-        HoeTexture = new Texture(Gdx.files.internal("toolcutted/Hoe.png"));
-        Hoe = new Items(HoeTexture,Items.ItemType.TOOL, Items.Item.HOE, 0,1);
-        TorchTexture = new Texture(Gdx.files.internal("toolcutted/Torch.png"));
-        Torch = new Items(TorchTexture,Items.ItemType.TOOL, Items.Item.TORCH, 0,1);
-        FishingRodTexture = new Texture(Gdx.files.internal("toolcutted/FishingRod.png"));
-        FishingRod = new Items(FishingRodTexture,Items.ItemType.TOOL, Items.Item.FISHINGROD, 0,1);
-
-        TomatoTexture = new Texture(Gdx.files.internal("foodicon/Tomato.png"));
-        Tomato = new Items(TomatoTexture,Items.ItemType.FOOD, Items.Item.TOMATO, 10,1);
-        TomatoSeedTexture = new Texture(Gdx.files.internal("foodicon/TomatoSeed.png"));
-        TomatoSeed = new Items(TomatoSeedTexture,Items.ItemType.SEED, Items.Item.TOMATO, 10,1);
-        RiceTexture = new Texture(Gdx.files.internal("foodicon/Rice.png"));
-        Rice = new Items(RiceTexture,Items.ItemType.FOOD, Items.Item.RICE, 10,1);
-        RiceSeedTexture = new Texture(Gdx.files.internal("foodicon/RiceSeed.png"));
-        RiceSeed = new Items(RiceSeedTexture,Items.ItemType.SEED, Items.Item.RICE, 10,1);
-        CarrotTexture = new Texture(Gdx.files.internal("foodicon/Carrot.png"));
-        Carrot = new Items(CarrotTexture,Items.ItemType.FOOD, Items.Item.CARROT, 10,1);
-        CarrotSeedTexture = new Texture(Gdx.files.internal("foodicon/CarrotSeed.png"));
-        CarrotSeed = new Items(CarrotSeedTexture,Items.ItemType.SEED, Items.Item.CARROT, 10,1);
-
-        // set Item
-        player.setEquipItem(Sword,0);
-        player.setEquipItem(Bucket,1);
-        player.setEquipItem(Hoe,2);
-        player.setEquipItem(Torch,3);
-        player.setEquipItem(FishingRod,4);
-
-        player.setItem(Tomato,1);
-        player.setItem(Rice,2);
-        player.setItem(Carrot,3);
-
-        market.addMarketItem(RiceSeed);
-        market.addMarketItem(CarrotSeed);
-        market.addMarketItem(TomatoSeed);
+//        // set Item
+        player.setEquipItem(itemList.Sword,0);
+        player.setEquipItem(itemList.Bucket,1);
+        player.setEquipItem(itemList.Hoe,2);
+        player.setEquipItem(itemList.Torch,3);
+        player.setEquipItem(itemList.FishingRod,4);
+        player.setItem(itemList.Corn,0);
+        player.setItem(itemList.Tomato,1);
+        player.setItem(itemList.Rice,2);
+        player.setItem(itemList.Carrot,3);
+        market.addMarketItem(itemList.CornSeed);
+        market.addMarketItem(itemList.RiceSeed);
+        market.addMarketItem(itemList.CarrotSeed);
+        market.addMarketItem(itemList.TomatoSeed);
         //money
         player.addMoney(200);
     }
@@ -325,10 +266,6 @@ public class GameScreen implements Screen, InputProcessor {
         }
 
         inputMultiplexer.addProcessor(ui.stage);
-//        inputMultiplexer.addProcessor(marketScreen.stage);
-//        inputMultiplexer.addProcessor(marketScreen);
-//        inputMultiplexer.addProcessor(inventoryScreen.stage);
-//        inputMultiplexer.addProcessor(inventoryScreen);
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(this);
         Gdx.input.setInputProcessor(inputMultiplexer);
@@ -818,9 +755,9 @@ public class GameScreen implements Screen, InputProcessor {
         game.batch.begin();
         font.draw(game.batch, String.format("Time: %s", timer.getFormattedTimeofDay()), player.getPosition().x, player.getPosition().y);
         font.draw(game.batch, String.format("Day passed: %s", timer.getDaysPassed()), player.getBounds().x, player.getPosition().y - 30);
-        font.draw(game.batch, String.format("CurrentDay : %s", currentDays), 10, 390);
+        font.draw(game.batch, String.format("Day: %s", currentDays),43,Gdx.graphics.getHeight() - 98);
         Color ambient = clock.getAmbientLighting();
-        font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
+//        font.draw(game.batch, String.format("Ambient: R%.2f G%.2f B%.2f A%.2f", ambient.r, ambient.g, ambient.b, ambient.a), 10, 430);
         game.batch.end();
     }
 
@@ -926,7 +863,6 @@ public class GameScreen implements Screen, InputProcessor {
             // Convert screen coordinates to world coordinates
             touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPosition);
-
             int cellX = (int) touchPosition.x / 16;
             int cellY = (int) touchPosition.y / 16;
             selectedCell.set(cellX, cellY);

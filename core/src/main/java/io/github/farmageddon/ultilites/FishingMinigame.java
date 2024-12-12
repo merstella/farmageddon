@@ -48,13 +48,14 @@ public class FishingMinigame extends ApplicationAdapter {
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-//                System.out.println(droppedItems.size);
-                System.out.print(player.getPosition());
-                DroppedItem item = new DroppedItem(player.getPosition().x , player.getPosition().y + 30, Items.Item.FISH, Items.ItemType.FOOD);
-                droppedItems.add(item);
-                cursorGameOver = true;
-//                System.out.println(droppedItems.size);
-
+                for (int i = 0; i < 25; i++) {
+                    if (player.inventory.get(i).getItem() == Items.Item.DEFAULT) {
+                        System.out.println("Fish Added!");
+                        player.setItem(ItemList.Fish, i);
+                        cursorGameOver = true;
+                        break;
+                    }
+                }
             }
             gameOver = true;
             level = 1;
