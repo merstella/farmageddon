@@ -12,6 +12,8 @@ import io.github.farmageddon.ultilites.GridNode;
 import java.util.Optional;
 
 public class Monster extends Entity {
+
+
     private final Animator animation;
     private Animator.MonsterActivity currentActivity;
 
@@ -49,7 +51,7 @@ public class Monster extends Entity {
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
         // Adjust based on sprite size
         this.path = null;
-        this.range = 50;
+        this.range = 1;
         this.attackRange = 15;
         this.currentPathIndex = 0; // Start at the first node in the path
         this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
@@ -238,7 +240,7 @@ public class Monster extends Entity {
                 targetPlant.takeDamage(damagePoint);
                 break;
             case 1:
-
+                targetEntity.takeDamage(damagePoint);
                 break;
             case 2:
                 targetPlayer.takeDamage(damagePoint);

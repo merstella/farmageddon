@@ -307,33 +307,33 @@ public class Player extends Entity {
         if (angle >= 45 && angle < 135) {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_UP;
-            } else if (Objects.equals(type, "water")){
+            } else if (Objects.equals(type, "bucket")){
                 return Animator.Activity.WATER_UP;
-            } else if (Objects.equals(type, "attack")){
+            } else if (Objects.equals(type, "sword")){
                 return Animator.Activity.ATTACK_UP;
             }
         } else if (angle >= 135 && angle < 225) {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_LEFT;
-            } else if (Objects.equals(type, "water")){
+            } else if (Objects.equals(type, "bucket")){
                 return Animator.Activity.WATER_LEFT;
-            } else if (Objects.equals(type, "attack")){
+            } else if (Objects.equals(type, "sword")){
                 return Animator.Activity.ATTACK_LEFT;
             }
         } else if (angle >= 225 && angle < 315) {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_DOWN;
-            } else if (Objects.equals(type, "water")){
+            } else if (Objects.equals(type, "bucket")){
                 return Animator.Activity.WATER_DOWN;
-            } else if (Objects.equals(type, "attack")){
+            } else if (Objects.equals(type, "sword")){
                 return Animator.Activity.ATTACK_DOWN;
             }
         } else {
             if (Objects.equals(type, "hoe")) {
                 return Animator.Activity.HOE_RIGHT;
-            } else if (Objects.equals(type, "water")){
+            } else if (Objects.equals(type, "bucket")){
                 return Animator.Activity.WATER_RIGHT;
-            } else if (Objects.equals(type, "attack")){
+            } else if (Objects.equals(type, "sword")){
                 return Animator.Activity.ATTACK_RIGHT;
             }
         }
@@ -358,7 +358,7 @@ public class Player extends Entity {
         super.render(batch);
         batch.begin();
         if (isBeingAttacked()) {
-            System.out.println(currentDirection);
+//            System.out.println(currentDirection);
             animation.renderActivity(batch, position.x, position.y, getHitAnimation(currentDirection), GameScreen.stateTime);
         } else if (currentActivity == Animator.Activity.NONE) {
             animation.render(batch, position.x, position.y, currentDirection, GameScreen.stateTime);

@@ -9,6 +9,8 @@ import io.github.farmageddon.ultilites.GridNode;
 import io.github.farmageddon.ultilites.PathFinder;
 
 public class LogicalEntities {
+
+
     private PathFinder pathFinder;
     private float timerLogic;
     private Pool<Projectile> projectilePool;
@@ -27,7 +29,7 @@ public class LogicalEntities {
             }
         };
     }
-    public void updateEntities(Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<Entity> entities, Player player, float delta) {
+    public void updateEntities(Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<HouseEntity> entities, Player player, float delta) {
         timerLogic += delta;
 
         for (int i = projectiles.size - 1; i >= 0; i--) {
@@ -60,9 +62,10 @@ public class LogicalEntities {
                 assignPathToMonster(monster, pathFinder);
 
             }
-
+            System.out.println(monster.getTypeTarget());
             // Update monster logic
             monster.update(delta);
+
         }
 
         // Reset timer for pathfinding frequency
@@ -98,7 +101,17 @@ public class LogicalEntities {
                 }
             }
         }
+        for (int i = entities.size - 1; i >= 0; i--) {
+
+            HouseEntity houseEntity = (HouseEntity) entities.get(i);
+            if (houseEntity.getHouse().getCurrentHealth() <= 0) {
+//                System.out.println("CACC");
+                entities.removeIndex(i);
+            }
+        }
+//        System.out.println(entities.size);
     }
+
 
     private Monster findNearestMonster(ProtectPlant plant, Array<Monster> monsters, float range) {
         Monster nearestMonster = null;
@@ -116,10 +129,11 @@ public class LogicalEntities {
     }
 
 
-    public void renderEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, SpriteBatch batch) {
+    public void renderEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<HouseEntity> entities, SpriteBatch batch) {
         for (Monster monster : monsters) monster.render(batch);
         for (ProtectPlant plant : plants) plant.render(batch);
         for (Projectile projectile : projectiles) projectile.render(batch);
+        for (HouseEntity entity : entities) entity.render(batch);
     }
 
     public ProtectPlant findNearestPlant(Monster monster, Array<ProtectPlant> plants) {
@@ -157,7 +171,7 @@ public class LogicalEntities {
 
     }
 
-    public boolean isUpdateMonsterTarget (Monster monster, Array<ProtectPlant> plants, Array<Entity> entities, Player player) {
+    public boolean isUpdateMonsterTarget (Monster monster, Array<ProtectPlant> plants, Array<HouseEntity> entities, Player player) {
         int typeTarget = -1;
         Entity targetEntity = null;
         ProtectPlant targetPlant = null;
@@ -220,3 +234,4 @@ public class LogicalEntities {
     }
 
 }
+

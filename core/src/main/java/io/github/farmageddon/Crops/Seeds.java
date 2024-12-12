@@ -14,8 +14,7 @@ public class Seeds {
 
 
     public Seeds(String string, Rectangle rectangle){
-        this.texture = new Texture("seeds/" + string + "s.png");
-        this.boundingRect = new Rectangle(rectangle.x, rectangle.y, texture.getWidth(), texture.getHeight());
+        this.texture = new Texture("foodicons/" + string + "s.png");
         setSeedPrice(string);
 
     }

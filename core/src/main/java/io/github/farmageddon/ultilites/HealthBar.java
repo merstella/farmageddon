@@ -43,6 +43,8 @@ public class HealthBar {
         batch.begin(); // Resume SpriteBatch
     }
 
+
+
     public static class HealthBarEntity {
         private float maxHealth;
         private float currentHealth;
@@ -83,6 +85,24 @@ public class HealthBar {
             batch.begin(); // Resume SpriteBatch
         }
 
+        public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer, float x, float y, float width, float height) {
+            shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+
+            batch.end(); // Must end SpriteBatch before using ShapeRenderer
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(backgroundColor);
+            shapeRenderer.rect(x + width, y + 25, width, height);
+
+            // Draw foreground (filled health bar)
+            shapeRenderer.setColor(foregroundColor);
+            float healthWidth = (currentHealth / maxHealth) * width;
+            shapeRenderer.rect(x + width, y + 25, healthWidth, height);
+            shapeRenderer.end();
+
+            batch.begin(); // Resume SpriteBatch
+        }
+
         // Optionally, you can add getter methods if needed
         public float getMaxHealth() {
             return maxHealth;
@@ -90,6 +110,10 @@ public class HealthBar {
 
         public float getCurrentHealth() {
             return currentHealth;
+        }
+
+        public void setMaxHealth(float maxHealth) {
+            this.maxHealth = maxHealth;
         }
     }
 

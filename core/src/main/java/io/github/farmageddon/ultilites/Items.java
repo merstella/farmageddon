@@ -15,13 +15,18 @@ public class Items {
     private int cost;
 
 
+    public ItemType getItemType() {
+        return null;
+    }
+
+
     public enum ItemType{
         NULL,
         DEFAULT,
         SEED,
         TOOL,
         FOOD,
-        OTHER
+        OTHER, MUTATED_PLANT,
     }
 
     public enum Item{
@@ -34,7 +39,7 @@ public class Items {
         BUCKET,
         HOE,SWORD,TORCH,FISHINGROD,
         EGG,
-        FISH, COIN,
+        FISH, COIN, RADISH,
 
     }
 

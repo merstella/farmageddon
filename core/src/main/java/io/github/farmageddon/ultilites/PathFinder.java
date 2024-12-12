@@ -486,9 +486,18 @@ public class PathFinder {
         // Mark each overlapping grid cell as unpassable
         for (int y = startY; y <= endY; y++) {
             for (int x = startX; x <= endX; x++) {
-                setGridNode(x, y, GridNode.GridType.UNPASSABLE);
+                    setGridNode(x, y, GridNode.GridType.UNPASSABLE);
             }
         }
+        setGridNode(35, 25, GridNode.GridType.PASSABLE);
+        setGridNode(39, 24, GridNode.GridType.PASSABLE);
+        setGridNode(35,24, GridNode.GridType.PASSABLE);
+        setGridNode(37,29, GridNode.GridType.PASSABLE);
+        setGridNode(40,28 , GridNode.GridType.PASSABLE);
+        setGridNode(35,27, GridNode.GridType.PASSABLE);
+        setGridNode(36,28, GridNode.GridType.PASSABLE);
+        setGridNode(38,29, GridNode.GridType.PASSABLE);
+        setGridNode(42,28, GridNode.GridType.PASSABLE);
 
 //        System.out.println("Added collision object covering grid cells from (" + startX + ", " + startY + ") to (" + endX + ", " + endY + ")");
     }
@@ -496,6 +505,7 @@ public class PathFinder {
     // Assuming entity's position is given by a Vector2 (x, y)
     public GridNode getGridNodeForEntity(Vector2 position) {
         // Convert the entity's position to grid coordinates
+        if (position == null) return null;
         int gridX = (int) (position.x / gridSizeX);
         int gridY = (int) (position.y / gridSizeY);
 

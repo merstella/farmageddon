@@ -21,10 +21,6 @@ public class DroppedItem {
         // Determine texture based on the item type
         String texturePath = getTexturePathForItem(item,type);
         this.texture = new Texture(Gdx.files.internal(texturePath));
-        if (type == Items.ItemType.FOOD) {
-            tileWidth = 8;
-            tileHeight = 8;
-        }
         this.bounds = new Rectangle(x, y, 16, 16);
     }
 
@@ -39,6 +35,7 @@ public class DroppedItem {
     }
 
     public void render(SpriteBatch batch) {
+        System.out.println("hehe");
         batch.draw(texture, position.x, position.y, tileWidth, tileHeight);
     }
 
@@ -49,7 +46,6 @@ public class DroppedItem {
     public Items.Item getItemType() {
         return itemType;
     }
-
     public void dispose() {
         texture.dispose();
     }

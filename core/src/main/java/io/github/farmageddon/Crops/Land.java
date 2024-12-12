@@ -44,6 +44,7 @@ public class Land {
     }
     public DroppedItem harvestCrop() {
         if (crop != null && crop.getGrowthStage() == 3) {
+            System.out.println(crop.getItemType());
             DroppedItem droppedItem = new DroppedItem(crop.getFrameSprite().getX(), crop.getFrameSprite().getY(), crop.getItemType(), Items.ItemType.SEED);
             removeCrop();
             return droppedItem;

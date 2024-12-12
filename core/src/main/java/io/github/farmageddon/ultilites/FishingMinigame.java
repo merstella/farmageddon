@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.entities.Player;
+
+import static io.github.farmageddon.screens.GameScreen.droppedItems;
 //import static io.github.farmageddon.entities.Player.inventory;
 
 public class FishingMinigame extends ApplicationAdapter {
@@ -29,7 +31,7 @@ public class FishingMinigame extends ApplicationAdapter {
 
     public FishingMinigame(Player player) {
         shapeRenderer = new ShapeRenderer();
-        this.player = new Player(640, 300, 100f);
+        this.player = player;
     }
 
     @Override
@@ -46,14 +48,13 @@ public class FishingMinigame extends ApplicationAdapter {
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-                for (int i = 0; i < 25; i++) {
-                    if (player.inventory.get(i).getItem() == Items.Item.DEFAULT) {
-                        System.out.println("Fish Added!");
-//                        player.setItem(GameScreen.Fish, i);
-                        cursorGameOver = true;
-                        break;
-                    }
-                }
+//                System.out.println(droppedItems.size);
+                System.out.print(player.getPosition());
+                DroppedItem item = new DroppedItem(player.getPosition().x , player.getPosition().y + 30, Items.Item.FISH, Items.ItemType.FOOD);
+                droppedItems.add(item);
+                cursorGameOver = true;
+//                System.out.println(droppedItems.size);
+
             }
             gameOver = true;
             level = 1;
