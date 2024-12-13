@@ -149,110 +149,112 @@ public class Player extends Entity {
     }
 
     private void updateDirectionAnimation(float delta) {
-        Vector2 movement = new Vector2(0, 0);
+        if (!GameScreen.isPaused) {
+            Vector2 movement = new Vector2(0, 0);
 
-        boolean up = Gdx.input.isKeyPressed(Input.Keys.W);
-        boolean down = Gdx.input.isKeyPressed(Input.Keys.S);
-        boolean left = Gdx.input.isKeyPressed(Input.Keys.A);
-        boolean right = Gdx.input.isKeyPressed(Input.Keys.D);
+            boolean up = Gdx.input.isKeyPressed(Input.Keys.W);
+            boolean down = Gdx.input.isKeyPressed(Input.Keys.S);
+            boolean left = Gdx.input.isKeyPressed(Input.Keys.A);
+            boolean right = Gdx.input.isKeyPressed(Input.Keys.D);
 
-        if (up) movement.y += 1;
-        if (down) movement.y -= 1;
-        if (right) movement.x += 1;
-        if (left) movement.x -= 1;
+            if (up) movement.y += 1;
+            if (down) movement.y -= 1;
+            if (right) movement.x += 1;
+            if (left) movement.x -= 1;
 
-        // Normalize movement to ensure consistent speed in all directions
-        if (!movement.isZero()) {
-            movement.nor().scl(speed * delta); // Scale by speed and delta time
+            // Normalize movement to ensure consistent speed in all directions
+            if (!movement.isZero()) {
+                movement.nor().scl(speed * delta); // Scale by speed and delta time
 
-            // Create test bounds to simulate the next position
-            Rectangle testBounds = new Rectangle(playerBounds);
-            testBounds.setPosition(playerBounds.x + movement.x, playerBounds.y + movement.y);
+                // Create test bounds to simulate the next position
+                Rectangle testBounds = new Rectangle(playerBounds);
+                testBounds.setPosition(playerBounds.x + movement.x, playerBounds.y + movement.y);
 
-            // Check for collision only at the new position
-            if (!CollisionHandling.isColliding(testBounds)) {
-                position.add(movement); // Update position if no collision
-                playerBounds.setPosition(position.x + 7, position.y + 9);// Update bounds position
+                // Check for collision only at the new position
+                if (!CollisionHandling.isColliding(testBounds)) {
+                    position.add(movement); // Update position if no collision
+                    playerBounds.setPosition(position.x + 7, position.y + 9);// Update bounds position
+                }
+
+                // Set direction for animation
+                if (up && right) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.UP_RIGHT;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_UP_RIGHT;
+                            break;
+                    }
+
+                } else if (up && left) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.UP_LEFT;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_UP_LEFT;
+                            break;
+                    }
+                } else if (down && right) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.DOWN_RIGHT;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_DOWN_RIGHT;
+                            break;
+                    }
+                } else if (down && left) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.DOWN_LEFT;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_DOWN_LEFT;
+                            break;
+                    }
+                } else if (up) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.UP;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_UP;
+                            break;
+                    }
+                } else if (down) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.DOWN;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_DOWN;
+                            break;
+                    }
+                } else if (right) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.RIGHT;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_RIGHT;
+                            break;
+                    }
+                } else if (left) {
+                    switch (itemHolding) {
+                        case "none":
+                            currentDirection = Animator.Direction.LEFT;
+                            break;
+                        default:
+                            currentDirection = Animator.Direction.TORCH_LEFT;
+                            break;
+                    }
+                }
+            } else {
+                // Idle animations based on last movement direction
+                currentDirection = getIdleDirection(currentDirection);
             }
-
-            // Set direction for animation
-            if (up && right) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.UP_RIGHT;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_UP_RIGHT;
-                        break;
-                }
-
-            } else if (up && left) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.UP_LEFT;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_UP_LEFT;
-                        break;
-                }
-            } else if (down && right) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.DOWN_RIGHT;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_DOWN_RIGHT;
-                        break;
-                }
-            } else if (down && left) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.DOWN_LEFT;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_DOWN_LEFT;
-                        break;
-                }
-            } else if (up) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.UP;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_UP;
-                        break;
-                }
-            } else if (down) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.DOWN;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_DOWN;
-                        break;
-                }
-            } else if (right) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.RIGHT;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_RIGHT;
-                        break;
-                }
-            } else if (left) {
-                switch (itemHolding){
-                    case "none":
-                        currentDirection = Animator.Direction.LEFT;
-                        break;
-                    default:
-                        currentDirection = Animator.Direction.TORCH_LEFT;
-                        break;
-                }
-            }
-        } else {
-            // Idle animations based on last movement direction
-            currentDirection = getIdleDirection(currentDirection);
         }
     }
 
@@ -305,35 +307,35 @@ public class Player extends Entity {
 
         // Determine direction based on angle (adjusted to a 360-degree circle)
         if (angle >= 45 && angle < 135) {
-            if (Objects.equals(type, "hoe")) {
+            if (eqipInventory.get(slotCursor).getItem() == Items.Item.HOE) {
                 return Animator.Activity.HOE_UP;
-            } else if (Objects.equals(type, "bucket")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_UP;
-            } else if (Objects.equals(type, "sword")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
                 return Animator.Activity.ATTACK_UP;
             }
         } else if (angle >= 135 && angle < 225) {
-            if (Objects.equals(type, "hoe")) {
+            if (eqipInventory.get(slotCursor).getItem() == Items.Item.HOE) {
                 return Animator.Activity.HOE_LEFT;
-            } else if (Objects.equals(type, "bucket")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_LEFT;
-            } else if (Objects.equals(type, "sword")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
                 return Animator.Activity.ATTACK_LEFT;
             }
         } else if (angle >= 225 && angle < 315) {
-            if (Objects.equals(type, "hoe")) {
+            if (eqipInventory.get(slotCursor).getItem() == Items.Item.HOE) {
                 return Animator.Activity.HOE_DOWN;
-            } else if (Objects.equals(type, "bucket")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_DOWN;
-            } else if (Objects.equals(type, "sword")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
                 return Animator.Activity.ATTACK_DOWN;
             }
         } else {
-            if (Objects.equals(type, "hoe")) {
+            if (eqipInventory.get(slotCursor).getItem() == Items.Item.HOE) {
                 return Animator.Activity.HOE_RIGHT;
-            } else if (Objects.equals(type, "bucket")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_RIGHT;
-            } else if (Objects.equals(type, "sword")){
+            } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
                 return Animator.Activity.ATTACK_RIGHT;
             }
         }

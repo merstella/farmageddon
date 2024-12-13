@@ -151,6 +151,7 @@ public final class MarketScreen implements Screen, InputProcessor {
 
         // slot Inventory
         float slotSize = (textureWidth * 2)/ 5 - 12  ;
+        float SizeOfSlot= textureWidth / 5;
         float slotXstartInventory = ((screenWidth-textureWidth*2)/4) + 39 ;
         float slotYstartInventory = (3*(screenHeight-textureHeight*2)/4) + 204;
         float slotXInventory = slotXstartInventory;
@@ -158,7 +159,7 @@ public final class MarketScreen implements Screen, InputProcessor {
 
         for (int i = 0; i < player.inventory.size(); i++) {
             Texture itemTexture = player.inventory.get(i).getTextureRegion().getTexture();
-            batch.draw(itemTexture, slotXInventory, slotYInventory, itemTexture.getWidth()*2, itemTexture.getHeight()*2);
+            batch.draw(itemTexture, slotXInventory, slotYInventory, SizeOfSlot, SizeOfSlot);
             slotXInventory += slotSize;
             if ((i == 4 || i == 9 || i== 14 || i == 19) && i < 26 ){
                 slotXInventory = slotXstartInventory;
@@ -173,7 +174,7 @@ public final class MarketScreen implements Screen, InputProcessor {
         float slotYMarket = slotYstartMarket;
         for (int i = 0; i < market.marketItems.size(); i++) {
             Texture itemTexture = market.marketItems.get(i).getTextureRegion().getTexture();
-            batch.draw(itemTexture, slotXMarket, slotYMarket, itemTexture.getWidth()*2, itemTexture.getHeight()*2);
+            batch.draw(itemTexture, slotXMarket, slotYMarket, SizeOfSlot, SizeOfSlot);
             slotXMarket += slotSize;
             if ((i == 4 || i == 9 || i== 14 || i == 19) && i < 26 ){
                 slotXMarket = slotXstartMarket;

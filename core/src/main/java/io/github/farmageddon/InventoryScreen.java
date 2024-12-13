@@ -117,6 +117,7 @@ public class InventoryScreen implements Screen, InputProcessor {
         float textureHeight = inventoryTexture.getHeight();
         // slot
         float slotSize = (textureWidth * 2)/ 5 - 12  ;
+        float SizeOfSlot = textureWidth / 5;
         float slotXstart = ((screenWidth-textureWidth*2)/2) + 39 ;
         float slotYstart = ((screenHeight-textureHeight*2)/2) + 204;
         float slotX = slotXstart;
@@ -128,7 +129,7 @@ public class InventoryScreen implements Screen, InputProcessor {
         batch.draw(inventoryTexture,(screenWidth-textureWidth*2)/2,(screenHeight-textureHeight*2)/2, textureWidth*2, textureHeight*2);
         for (int i = 0; i < player.inventory.size(); i++) {
             Texture itemTexture = player.inventory.get(i).getTextureRegion().getTexture();
-            batch.draw(itemTexture, slotX, slotY, itemTexture.getWidth()*2, itemTexture.getHeight()*2);
+                batch.draw(itemTexture, slotX, slotY, SizeOfSlot, SizeOfSlot);
             slotX += slotSize;
             if (i == 4 || i == 9 || i== 14 ||i == 19){
                 slotX = slotXstart;

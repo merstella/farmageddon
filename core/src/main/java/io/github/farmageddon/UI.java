@@ -93,7 +93,8 @@ public final class UI {
                 healthBar[index++] = regions[i][j];
             }
         }
-        checkRanges = new int[][]{{90, 99}, {80, 89}, {70, 79}, {60, 69}, {50, 59}, {40, 49}, {30, 39}, {20, 29}, {10, 19}, {0, 9}};
+        int healthCursor =(int) player.getHealth();
+        checkRanges = new int[][]{{healthCursor/10*9, healthCursor}, {healthCursor/10*8, healthCursor/10*9}, {healthCursor/10*7, healthCursor/10*8}, {healthCursor/10*6, healthCursor/10*7}, {healthCursor/10*5, healthCursor/10*6}, {healthCursor/10*4, healthCursor/10*5}, {healthCursor/10*3, healthCursor/10*4}, {healthCursor/10*2, healthCursor/10*3}, {healthCursor/10, healthCursor/10*2}, {0, healthCursor/10}};
     }
 
     public void create() {

@@ -10,7 +10,7 @@ import java.util.List;
 public class House {
     private List<HouseEntity> entitiesOnBorder;  // List of entities on the border
     // Total health of the house (sum of health of entities)
-    private float currentHealth;  // Current health of the house
+    public static float currentHealth;  // Current health of the house
     float x, y;
     private HealthBar.HealthBarEntity healthBar;
     public House(float x, float y) {
@@ -42,7 +42,7 @@ public class House {
 //        System.out.println("House destroyed!");
     }
 
-    public float getCurrentHealth() {
+    public static float getCurrentHealth() {
         return currentHealth;
     }
 

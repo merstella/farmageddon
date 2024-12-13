@@ -5,7 +5,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 // PHẢI SỬA CLASS NÀY
+// kh sua
 public class ItemList {
+    public Texture OneGunSheet = new Texture(Gdx.files.internal("mutatedplants/onegun.png"));
 
     public static final Items Tomato = new Items(new Texture(Gdx.files.internal("foodicon/Tomato.png")),Items.ItemType.FOOD, Items.Item.TOMATO, 10,1);
     public static final  Items TomatoSeed = new Items(new Texture(Gdx.files.internal("foodicon/TomatoSeed.png")),Items.ItemType.SEED, Items.Item.TOMATO, 10,1);
@@ -24,5 +26,5 @@ public class ItemList {
     public static final Items FishingRod = new Items(new Texture(Gdx.files.internal("toolcutted/FishingRod.png")),Items.ItemType.TOOL, Items.Item.FISHINGROD, 0,1);
     public static final Items OneGunIcon = new Items(new Texture(Gdx.files.internal("mutatedplants/onegun_icon.png")),Items.ItemType.MUTATED_PLANT, Items.Item.ONE_GUN, 0,1);
 
-    public static final Items Seed = new Items(new Texture(Gdx.files.internal("mutatedplants/onegun_icon.png")),Items.ItemType.MUTATED_PLANT, Items.Item.ONE_GUN, 0,1);
+//    public static final Items Seed = new Items(new Texture(Gdx.files.internal("mutatedplants/onegun_icon.png")),Items.ItemType.MUTATED_PLANT, Items.Item.ONE_GUN, 0,1);
 }

@@ -92,7 +92,7 @@ public class MainMenuScreen implements Screen {
         instructionsButton.addListener(event -> {
             if (instructionsButton.isPressed()) {
                 System.out.println("Instructions button clicked");
-//                game.setScreen(new InstructionsScreen(game));
+                game.setScreen(new IntroductionScreen(game));
             }
             return true;
         });
