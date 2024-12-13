@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.badlogic.gdx.graphics.Color.WHITE;
+import static io.github.farmageddon.ultilites.GameTimeClock.DARKCOLOR;
+import static io.github.farmageddon.ultilites.GameTimeClock.LIGHTCOLOR;
 import static java.lang.Math.clamp;
 import static java.lang.ref.Cleaner.create;
 //import static io.github.farmageddon.Player.maxEqipInventorySize;
@@ -60,6 +62,7 @@ public class GameScreen implements Screen, InputProcessor {
     private final Vector3 touchPosition = new Vector3();
     private final BitmapFont font;
     public static ShapeRenderer shapeRenderer;
+    public static ShapeRenderer shapeRenderer1;
     private InputMultiplexer inputMultiplexer;
     private final GameTimeClock clock;
     private final Timer_ timer;
@@ -84,6 +87,7 @@ public class GameScreen implements Screen, InputProcessor {
     private UI ui;
     private OptionScreen optionScreen;
     private ItemList itemList;
+    public static boolean nightTime;
 
     public FishingMinigame minigame;
     //    public TorchLightHandler torchLightHandler;
@@ -93,7 +97,10 @@ public class GameScreen implements Screen, InputProcessor {
 
     private float playerX;
     private float playerY;
-    public Music music;
+    public static Music music1;
+    public static Music music2;
+    public static Music CowSound;
+    public static Music NoodSound;
     private ArrayList<Animal> animals;
     public final Stage stage;
     private Vector2 selectedCell;
@@ -153,10 +160,6 @@ public class GameScreen implements Screen, InputProcessor {
         currentDays = 0;
         daysLeft = 30;
 
-        music = Gdx.audio.newMusic(Gdx.files.internal("Sound\\music.mp3"));
-        music.setLooping(true);
-        music.setVolume(0.2f);
-        music.play();
         initHouses();
         landManager = new LandManager(Main.GAME_HEIGHT/16,Main.GAME_WIDTH/16);
         player = new Player(640, 300, 100f);
@@ -282,11 +285,36 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(this);
         Gdx.input.setInputProcessor(inputMultiplexer);
+        music1 = Gdx.audio.newMusic(Gdx.files.internal("Sound\\music.mp3"));
+        music1.setLooping(true);
+        music1.setVolume(0.2f);
+        music2 = Gdx.audio.newMusic(Gdx.files.internal("Sound\\nhac nen ban dem - Copy.mp3"));
+        music2.setLooping(true);
+        music2.setVolume(0.1f);
+        CowSound = Gdx.audio.newMusic(Gdx.files.internal("Sound\\bo.mp3"));
+        CowSound.setLooping(false);
+        CowSound.setVolume(0.2f);
+        NoodSound = Gdx.audio.newMusic(Gdx.files.internal("Sound\\ga.mp3"));
+        NoodSound.setLooping(false);
+        NoodSound.setVolume(0.2f);
     }
 
     boolean isNewDay;
     @Override
     public void render(float delta) {
+        checkZonePosition(zoneManager,player.getPosition().x,player.getPosition().y);
+        if (nightTime) {
+            if(!music1.isPlaying()) {
+                music2.stop();
+                music1.play();
+            }
+        } else {
+            if (!music2.isPlaying()) {
+                music1.stop();
+                music2.play();
+            }
+        }
+
         stateTime += delta;
         if (highlightTimer > 0) {
             highlightTimer -= delta;
@@ -311,19 +339,14 @@ public class GameScreen implements Screen, InputProcessor {
 
         handleDayPassed();
         clock.act(delta);
-
-
-
         checkBreeding();
 
         time = timer.getFormattedTimeofDay();
         timeLabel.setText(time);
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-
         slotCursorHandler.update();
 //        renderGridDebug();
-
         renderLand(delta);
 
         renderPlayer();
@@ -335,15 +358,12 @@ public class GameScreen implements Screen, InputProcessor {
             }
         }
 
-        handleKeyDown(delta);
-
         renderSelectedCell();
         house1.render(game.batch);
 
         updateProtectPlant(delta);
         renderProtectPlant();
         renderInvalidCell();
-
         renderDebugInfo();
 
         CollisionHandling.renderCollision();
@@ -359,17 +379,14 @@ public class GameScreen implements Screen, InputProcessor {
             item.render(game.batch);
         }
         game.batch.end();
-        renderAmbientLighting();
 
-//        handleKeyDown(delta);
         updateProtectPlant(delta);
         renderProtectPlant();
         CollisionHandling.renderCollision();
+        renderAmbientLighting();
+        handleKeyDown(delta);
         ui.render();
         isOptionScreen(delta);
-        if (ui.isOptionVisible == true){
-//            System.out.println("ui");
-        }
 
         if (player.getHealth() == 0 || House.getCurrentHealth() == 0){
             Texture UI_Buttons = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
@@ -388,7 +405,6 @@ public class GameScreen implements Screen, InputProcessor {
             stage1.addActor(menuButton);
             Gdx.input.setInputProcessor(stage1);
             inputMultiplexer.addProcessor(stage1);
-
         }
         stage1.act(delta);
         stage1.draw();
@@ -399,6 +415,18 @@ public class GameScreen implements Screen, InputProcessor {
             shapeRenderer.setColor(1, 0, 0, 1); // Red color
             shapeRenderer.rect(invalidPlacementCell.x * 16, invalidPlacementCell.y * 16, 16, 16);
             shapeRenderer.end();
+        }
+    }
+
+    public void checkZonePosition(ZoneManager zoneManager,float playerX, float playerY) {
+        if (zoneManager.chickenZone.contains(playerX, playerY)) {
+            NoodSound.play();
+        } else if (zoneManager.pigZone.contains(playerX, playerY)) {
+
+        } else if (zoneManager.cowZone.contains(playerX, playerY)) {
+            CowSound.play();
+        } else if (zoneManager.sheepZone.contains(playerX, playerY)) {
+
         }
     }
 
@@ -413,6 +441,7 @@ public class GameScreen implements Screen, InputProcessor {
                 if (action.equals("Menu")) {
                     game.setScreen(new MainMenuScreen(game));
                 }
+                UI.buttonMusic.play();
             }
         });
         return button;
@@ -607,7 +636,7 @@ public class GameScreen implements Screen, InputProcessor {
                 if ((player.getPosition().x < 896f && player.getPosition().x > 887f && player.getPosition().y < 500f && player.getPosition().y > 480f) ||
                     (player.getPosition().x < 881f && player.getPosition().x > 872f && player.getPosition().y < 556f && player.getPosition().y > 518f) ||
                     (player.getPosition().x < 898f && player.getPosition().x > 892f && player.getPosition().y < 570f && player.getPosition().y > 562f)) {
-                    if (FishingVisible == false) {
+                    if (!FishingVisible) {
                         if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
                             cursorRight = !cursorRight;
                             float time = Gdx.graphics.getDeltaTime();
@@ -619,7 +648,7 @@ public class GameScreen implements Screen, InputProcessor {
                     (player.getPosition().x < 1064f && player.getPosition().x > 1060f && player.getPosition().y < 549f && player.getPosition().y > 516f) ||
                     (player.getPosition().x < 1041f && player.getPosition().x > 1039f && player.getPosition().y < 514f && player.getPosition().y > 480f) ||
                     (player.getPosition().x < 1049f && player.getPosition().x > 1044f && player.getPosition().y < 498f && player.getPosition().y > 465f)) {
-                    if (FishingVisible == false) {
+                    if (!FishingVisible) {
                         if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
                             cursorLeft = !cursorLeft;
                             float time = Gdx.graphics.getDeltaTime();
@@ -728,9 +757,11 @@ public class GameScreen implements Screen, InputProcessor {
     }
     private void renderAmbientLighting() {
         if (player.eqipInventory.get(player.slotCursor).getItem() == Items.Item.TORCH) {
+            shapeRenderer.setProjectionMatrix(camera.combined);
             float circleCenterX = playerX + 16; // Tọa độ X trung tâm của player
             float circleCenterY = playerY + 16; // Tọa độ Y trung tâm của player
             float circleRadius = 50;            // Bán kính hình tròn
+
             // Bật stencil buffer
             Gdx.gl.glEnable(GL20.GL_STENCIL_TEST);
             Gdx.gl.glClear(GL20.GL_STENCIL_BUFFER_BIT);
@@ -754,6 +785,7 @@ public class GameScreen implements Screen, InputProcessor {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             if (clock.worldTime.getElapsedInHours() >= (clock.NIGHT_TIME - 0.8) || clock.worldTime.getElapsedInHours() <= (clock.DAY_TIME - 1.0) ) {
                 // Vẽ hình tròn lớn màu xám
+                nightTime = false;
                 shapeRenderer.setColor(0f, 0f, 0f, 0f); // Màu xám
                 shapeRenderer.circle(circleCenterX, circleCenterY, 55);
                 if (clock.worldTime.getElapsedInHours() >= (clock.NIGHT_TIME - 0.7) || clock.worldTime.getElapsedInHours() <= (clock.DAY_TIME - 1.2) ) {
@@ -772,6 +804,7 @@ public class GameScreen implements Screen, InputProcessor {
                                     shapeRenderer.setColor(0f, 0f, 0f, 0.5f);
                                     shapeRenderer.circle(circleCenterX, circleCenterY, 80);
                                     System.out.println("torch");
+                                    nightTime = true;
                                 }
                             }
                         }
@@ -781,10 +814,8 @@ public class GameScreen implements Screen, InputProcessor {
             shapeRenderer.setColor(clock.getAmbientLighting()); // Màu ánh sáng nền
             shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             shapeRenderer.end();
-
             Gdx.gl20.glDisable(GL20.GL_BLEND);
             Gdx.gl.glDisable(GL20.GL_STENCIL_TEST);
-
         }
         else {
             Gdx.gl20.glEnable(GL20.GL_BLEND);
@@ -795,21 +826,18 @@ public class GameScreen implements Screen, InputProcessor {
             shapeRenderer.setProjectionMatrix(mat);
             mat.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             shapeRenderer.rect(camera.position.x - viewport.getWorldWidth() / 2,
-                camera.position.y - viewport.getWorldHeight() / 2,
-                Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+            camera.position.y - viewport.getWorldHeight() / 2,
+            Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             shapeRenderer.end();
             Gdx.gl20.glDisable(GL20.GL_BLEND);
         }
     }
     private void renderPlayer() {
         player.render(game.batch);
-
     }
 
     private void renderDebugInfo() {
         if (!showDebugInfo) return;
-
         game.batch.begin();
         font.draw(game.batch, String.format("Time: %s", timer.getFormattedTimeofDay()), player.getPosition().x, player.getPosition().y);
         font.draw(game.batch, String.format("Day passed: %s", timer.getDaysPassed()), player.getBounds().x, player.getPosition().y - 30);
@@ -839,6 +867,7 @@ public class GameScreen implements Screen, InputProcessor {
                 item.dispose(); // Dispose the item's texture
                 break;
             }
+
         }
     }
     @Override

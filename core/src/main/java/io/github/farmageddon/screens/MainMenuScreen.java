@@ -1,9 +1,12 @@
 package io.github.farmageddon.screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -16,12 +19,16 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.farmageddon.Main;
+import io.github.farmageddon.UI;
 import io.github.farmageddon.ultilites.Items;
 
 
 public class MainMenuScreen implements Screen {
     final private Main game;
+    private SpriteBatch batch;
+    private GameScreen gameScreen;
     private Texture UI_sheet;
+    private Texture background;
     TextureRegion ButtonActive;
     TextureRegion ButtonInactive;
     Stage stage;
@@ -29,9 +36,12 @@ public class MainMenuScreen implements Screen {
     private Viewport viewport;
     private Camera camera;
     private Skin skin;
+    public static Music buttonSound;
 
     public MainMenuScreen(Main game) {
         this.game = game;
+        this.batch = new SpriteBatch();
+        this.background = new Texture(Gdx.files.internal("intro\\IMG_5052.JPG"));
         // test phần nút bâm
         UI_sheet = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
         skin = new Skin();
@@ -52,6 +62,10 @@ public class MainMenuScreen implements Screen {
         skin.add("default", buttonStyle);
 
         createMenuButtons(buttonStyle);
+        buttonSound = Gdx.audio.newMusic(Gdx.files.internal("Sound/button.mp3"));
+        buttonSound.setLooping(false);
+        buttonSound.setVolume(1f);
+
     }
 
     private void createMenuButtons(TextButton.TextButtonStyle buttonStyle) {
@@ -66,6 +80,8 @@ public class MainMenuScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Play button clicked");
                 game.setScreen(new GameScreen(game));
+                GameScreen.isPaused = false;
+                UI.buttonMusic.play();
             }
         });
 
@@ -77,6 +93,7 @@ public class MainMenuScreen implements Screen {
         exitButton.setPosition(2*(Gdx.graphics.getWidth()-250)/3 +100, (Gdx.graphics.getHeight()-120)/4);
         exitButton.addListener(event -> {
             if (exitButton.isPressed()) {
+                buttonSound.play();
                 System.out.println("Exit button clicked");
                 Gdx.app.exit();
             }
@@ -91,6 +108,7 @@ public class MainMenuScreen implements Screen {
         instructionsButton.setPosition((Gdx.graphics.getWidth()-250)/3 - 100, (Gdx.graphics.getHeight()-120)/4);
         instructionsButton.addListener(event -> {
             if (instructionsButton.isPressed()) {
+                buttonSound.play();
                 System.out.println("Instructions button clicked");
                 game.setScreen(new IntroductionScreen(game));
             }
@@ -115,6 +133,9 @@ public class MainMenuScreen implements Screen {
         // Clear the screen with black color
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.begin();
+        batch.draw(background,0,0,Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
+        batch.end();
         stage.act(delta);
         stage.draw();
     }
@@ -138,5 +159,8 @@ public class MainMenuScreen implements Screen {
     public void dispose() {
         UI_sheet.dispose();
         stage.dispose();
+        batch.dispose();
+        skin.dispose();
+        background.dispose();
     }
 }

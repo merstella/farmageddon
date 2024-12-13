@@ -10,10 +10,10 @@ public class ZoneManager {
     // Define activity zones as rectangles (you can adjust the size and position as needed)
     private Rectangle farmingZone1;
     private Rectangle farmingZone2;
-    private Rectangle chickenZone;
-    private Rectangle pigZone;
-    private Rectangle cowZone;
-    private Rectangle sheepZone;
+    public Rectangle chickenZone;
+    public Rectangle pigZone;
+    public Rectangle cowZone;
+    public Rectangle sheepZone;
 
     public ZoneManager() {
         // Define the zones for each activity (this can be expanded as needed)

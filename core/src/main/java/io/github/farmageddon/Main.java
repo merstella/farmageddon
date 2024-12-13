@@ -21,9 +21,6 @@ public class Main extends Game {
     public void create() {
         batch = new SpriteBatch();
         blank = new Texture(Gdx.files.internal("farm.png"));
-        manager = new AssetManager();
-        manager.load("Sound/music.mp3", Music.class);
-        manager.finishLoading();
         this.setScreen(new MainMenuScreen(this));
 
     }

@@ -48,12 +48,22 @@ public class FishingMinigame extends ApplicationAdapter {
             System.out.println("Game Over!"); // In thông báo kết thúc trò chơi
             GameScreen.isFishingVisible = false;
             if (success == 3){
-                for (int i = 0; i < 25; i++) {
-                    if (player.inventory.get(i).getItem() == Items.Item.DEFAULT) {
-                        System.out.println("Fish Added!");
-                        player.setItem(ItemList.Fish, i);
+                boolean hadFish = false;
+                for (int i = 0; i < 25; i++){
+                    if (player.inventory.get(i).getItem() == Items.Item.FISH){
+                        player.inventory.get(i).add(player.inventory.get(i));
+                        hadFish=true ;
                         cursorGameOver = true;
                         break;
+                    }
+                }
+                if (!hadFish){
+                    for (int i = 0; i < 25; i++) {
+                        if (player.inventory.get(i).getItem() == Items.Item.DEFAULT) {
+                            player.setItem(ItemList.Fish, i);
+                            cursorGameOver = true;
+                            break;
+                        }
                     }
                 }
             }

@@ -1,9 +1,12 @@
 package io.github.farmageddon.ultilites;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import io.github.farmageddon.screens.GameScreen;
 
 public class GameTimeClock extends Actor {
     // modify the duration between times of the day
@@ -15,6 +18,7 @@ public class GameTimeClock extends Actor {
     private final static float LIGHTTODUSKTIME = .75f; // hours of transition from light to dusk
     public final static float DUSK_TIME = 18.0f; // 6:00 pm
     private final static float DUSKTODARKTIME = 1; // hours of transition from dusk to dark
+    public static Music music;
 
     // init the time
     public Timer_ worldTime = null;
@@ -103,7 +107,6 @@ public class GameTimeClock extends Actor {
 
         //here we set the amibients start color
         ambient.set(current);
-        // blend the start color with the lerp color if its set
         if (lerp != null) {
             ambient.lerp(lerp, (float) amt);
         }

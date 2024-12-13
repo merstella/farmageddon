@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -50,6 +51,7 @@ public final class UI {
     private Texture dayBar;
     private BitmapFont font;
     private int[][] checkRanges;
+    public static Music buttonMusic;
 
     public UI(Player player) {
         this.batch = new SpriteBatch();
@@ -85,6 +87,10 @@ public final class UI {
         this.font = new BitmapFont();
         font.getData().setScale(1.5f);
         font.setColor(Color.BLACK);
+
+        buttonMusic = Gdx.audio.newMusic(Gdx.files.internal("Sound/button.mp3"));
+        buttonMusic.setLooping(false);
+        buttonMusic.setVolume(1f);
 
 // Dùng vòng lặp để khởi tạo healthBar
         int index = 0;
@@ -150,6 +156,7 @@ public final class UI {
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("action");
                 isOptionVisible = true;
+                buttonMusic.play();
             }
         });
         return button;

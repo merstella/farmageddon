@@ -2,6 +2,7 @@ package io.github.farmageddon.entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -41,6 +42,8 @@ public class Player extends Entity {
     public static float attackCooldown = 0.5f;  // Time between attacks (cooldown)
     public static float timeSinceLastAttack = 0f;  // Timer to track time since last attack
     public static String itemHolding;
+    public Music walkMusic;
+    public static Music slashMusic;
 
     private float attackStateTimer;
     @Override
@@ -61,6 +64,12 @@ public class Player extends Entity {
         this.eqipInventory = new ArrayList<>();
         itemHolding = "none";
         playerBounds = new Rectangle(x + 7, y + 9, 14, 9);
+        walkMusic = Gdx.audio.newMusic(Gdx.files.internal("Sound/walking - Copy.mp3"));
+        walkMusic.setLooping(true);
+        walkMusic.setVolume(10.0f);
+        slashMusic = Gdx.audio.newMusic(Gdx.files.internal("Sound/sword-sound.mp3"));
+        slashMusic.setLooping(false);
+        walkMusic.setVolume(1.0f);
     }
 
     // inventory contact
@@ -178,6 +187,9 @@ public class Player extends Entity {
 
                 // Set direction for animation
                 if (up && right) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.UP_RIGHT;
@@ -188,6 +200,9 @@ public class Player extends Entity {
                     }
 
                 } else if (up && left) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.UP_LEFT;
@@ -197,6 +212,9 @@ public class Player extends Entity {
                             break;
                     }
                 } else if (down && right) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.DOWN_RIGHT;
@@ -206,6 +224,9 @@ public class Player extends Entity {
                             break;
                     }
                 } else if (down && left) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.DOWN_LEFT;
@@ -215,6 +236,9 @@ public class Player extends Entity {
                             break;
                     }
                 } else if (up) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.UP;
@@ -224,6 +248,9 @@ public class Player extends Entity {
                             break;
                     }
                 } else if (down) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.DOWN;
@@ -233,6 +260,9 @@ public class Player extends Entity {
                             break;
                     }
                 } else if (right) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.RIGHT;
@@ -242,6 +272,9 @@ public class Player extends Entity {
                             break;
                     }
                 } else if (left) {
+                    if (!walkMusic.isPlaying()) {
+                        walkMusic.play();
+                    }
                     switch (itemHolding) {
                         case "none":
                             currentDirection = Animator.Direction.LEFT;
@@ -254,6 +287,7 @@ public class Player extends Entity {
             } else {
                 // Idle animations based on last movement direction
                 currentDirection = getIdleDirection(currentDirection);
+                walkMusic.stop();
             }
         }
     }
@@ -312,6 +346,7 @@ public class Player extends Entity {
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_UP;
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
+                slashMusic.play();
                 return Animator.Activity.ATTACK_UP;
             }
         } else if (angle >= 135 && angle < 225) {
@@ -320,6 +355,7 @@ public class Player extends Entity {
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_LEFT;
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
+                slashMusic.play();
                 return Animator.Activity.ATTACK_LEFT;
             }
         } else if (angle >= 225 && angle < 315) {
@@ -328,6 +364,7 @@ public class Player extends Entity {
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_DOWN;
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
+                slashMusic.play();
                 return Animator.Activity.ATTACK_DOWN;
             }
         } else {
@@ -336,11 +373,13 @@ public class Player extends Entity {
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.BUCKET){
                 return Animator.Activity.WATER_RIGHT;
             } else if (eqipInventory.get(slotCursor).getItem() == Items.Item.SWORD){
+                slashMusic.play();
                 return Animator.Activity.ATTACK_RIGHT;
             }
         }
         return Animator.Activity.NONE;
     }
+
 
     public Animator.Activity getFishingDirection() {
         if (!hasStartedFishing) {
@@ -364,9 +403,9 @@ public class Player extends Entity {
             animation.renderActivity(batch, position.x, position.y, getHitAnimation(currentDirection), GameScreen.stateTime);
         } else if (currentActivity == Animator.Activity.NONE) {
             animation.render(batch, position.x, position.y, currentDirection, GameScreen.stateTime);
-        } else {
+        }
+        else {
             animation.renderActivity(batch, position.x, position.y, currentActivity, GameScreen.stateTime);
-//            System.out.println(currentActivity);
         }
         batch.end();
     }

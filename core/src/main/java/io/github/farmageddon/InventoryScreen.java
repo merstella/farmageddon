@@ -47,12 +47,14 @@ public class InventoryScreen implements Screen, InputProcessor {
     private TextureRegion ButtonActive;
     private TextureRegion ButtonInactive;
     private Skin skin;
+    private BitmapFont fontNum;
     private Items none1;
     private Items none2;
 
     // Player Inventory
     public InventoryScreen(int titleSize, Player player) {
         this.titleSize = titleSize;
+        this.fontNum = new BitmapFont();
         this.inventoryTexture = new Texture(Gdx.files.internal("inventoryBox.png"));
         this.batch = new SpriteBatch();
         this.stage = new Stage();
@@ -65,6 +67,8 @@ public class InventoryScreen implements Screen, InputProcessor {
         BitmapFont font = new BitmapFont();
         font.getData().setScale(1.8f);
         skin.add("default", font);
+        fontNum.getData().setScale(0.8f);
+        skin.add("default", fontNum);
 
         ButtonActive = new TextureRegion(UI_sheet,0,(UI_sheet.getHeight() / 19),32 ,14);
         ButtonInactive = new TextureRegion(UI_sheet,33, (UI_sheet.getHeight() / 19),32 ,14);
@@ -97,6 +101,7 @@ public class InventoryScreen implements Screen, InputProcessor {
                 none1 = ItemList.Default;
                 none2 = ItemList.Default;
             }
+            UI.buttonMusic.play();
             return true;
         });
         stage.addActor(swapButton);
@@ -116,20 +121,23 @@ public class InventoryScreen implements Screen, InputProcessor {
         float textureWidth = inventoryTexture.getWidth();
         float textureHeight = inventoryTexture.getHeight();
         // slot
-        float slotSize = (textureWidth * 2)/ 5 - 12  ;
-        float SizeOfSlot = textureWidth / 5;
-        float slotXstart = ((screenWidth-textureWidth*2)/2) + 39 ;
-        float slotYstart = ((screenHeight-textureHeight*2)/2) + 204;
+        float slotSize = (textureWidth * 3)/ 5 - 18;
+        float SizeOfSlot = textureWidth*2 / 5 - 10;
+        float slotXstart = ((screenWidth-textureWidth*3)/2) + 58 ;
+        float slotYstart = ((screenHeight-textureHeight*3)/2) + 303;
         float slotX = slotXstart;
         float slotY = slotYstart;
         // cursor
         float cursorX = slotXstart + (slotSize * slotCol);
         float cursorY = slotYstart - (slotSize * slotRow);
 
-        batch.draw(inventoryTexture,(screenWidth-textureWidth*2)/2,(screenHeight-textureHeight*2)/2, textureWidth*2, textureHeight*2);
+        batch.draw(inventoryTexture,(screenWidth-textureWidth*3)/2,(screenHeight-textureHeight*3)/2, textureWidth*3, textureHeight*3);
         for (int i = 0; i < player.inventory.size(); i++) {
             Texture itemTexture = player.inventory.get(i).getTextureRegion().getTexture();
                 batch.draw(itemTexture, slotX, slotY, SizeOfSlot, SizeOfSlot);
+            if(player.inventory.get(i).getNum() > 1){
+                fontNum.draw(batch,"x" + (player.inventory.get(i).getNum()),slotX + 10,slotY + 5);
+            }
             slotX += slotSize;
             if (i == 4 || i == 9 || i== 14 ||i == 19){
                 slotX = slotXstart;
@@ -152,7 +160,7 @@ public class InventoryScreen implements Screen, InputProcessor {
             }
         }
 
-        batch.draw(cursorTexture, cursorX - 20, cursorY - 20,cursorTexture.getRegionWidth() * 1.5f, cursorTexture.getRegionHeight() * 1.5f );
+        batch.draw(cursorTexture, cursorX - 32, cursorY - 30,cursorTexture.getRegionWidth() * 2.3f, cursorTexture.getRegionHeight() * 2.3f );
         int slotColUnreal = 0;
         int slotRowUnreal = 0;
         for (int i = 0; i < player.maxInventorySize ; i++){
@@ -183,41 +191,33 @@ public class InventoryScreen implements Screen, InputProcessor {
     @Override
     public void resize(int i, int i1) {
     }
-
     @Override
     public void pause() {
     }
-
     @Override
     public void resume() {
     }
-
     @Override
     public void hide() {
     }
-
     @Override
     public void dispose() {
         if (inventoryTexture != null) inventoryTexture.dispose();
         if (batch != null) batch.dispose();
         stage.dispose();
     }
-
     @Override
     public boolean keyDown(int i) {
         return false;
     }
-
     @Override
     public boolean keyUp(int i) {
         return false;
     }
-
     @Override
     public boolean keyTyped(char c) {
         return false;
     }
-
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (button == Input.Buttons.LEFT) { // Chỉ xử lý nếu nhấn nút trái chuột
@@ -235,32 +235,26 @@ public class InventoryScreen implements Screen, InputProcessor {
         }
         return false;
     }
-
     private void handleSlotTouch(int slotIndex) {
         player.inventoryCursor = slotIndex;
         System.out.println("cursor = " + player.inventoryCursor);
     }
-
     @Override
     public boolean touchUp(int i, int i1, int i2, int i3) {
         return false;
     }
-
     @Override
     public boolean touchCancelled(int i, int i1, int i2, int i3) {
         return false;
     }
-
     @Override
     public boolean touchDragged(int i, int i1, int i2) {
         return false;
     }
-
     @Override
     public boolean mouseMoved(int i, int i1) {
         return false;
     }
-
     @Override
     public boolean scrolled(float v, float v1) {
         return false;

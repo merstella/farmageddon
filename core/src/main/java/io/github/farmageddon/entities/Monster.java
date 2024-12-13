@@ -1,5 +1,7 @@
 package io.github.farmageddon.entities;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -40,6 +42,7 @@ public class Monster extends Entity {
     private float timeSinceTargetPlayer;
     private float damagePoint;
     private float cooldown, timePassed;
+    public static Music zombiesSound;
 
     public Monster(float x, float y, float speed, int maxHealth) {
         super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
@@ -60,6 +63,9 @@ public class Monster extends Entity {
         this.isDying = false;
         this.deathTimer = 0;
         this.markedForRemoval = false;
+        zombiesSound = Gdx.audio.newMusic(Gdx.files.internal("Sound\\zombie.mp3"));
+        zombiesSound.setLooping(false);
+        zombiesSound.setVolume(1f);
     }
 
     public void setExist (boolean isExist) {this.isExist = isExist;}
@@ -274,6 +280,7 @@ public class Monster extends Entity {
         }
         if (isDying) {
             deathTimer += delta;
+            zombiesSound.play();
             if (deathTimer >= DEATH_ANIMATION_DURATION) {
                 isDying = false;
                 markForRemoval();
@@ -283,6 +290,8 @@ public class Monster extends Entity {
         if (isNearEnough() && timePassed >= cooldown) {
             timePassed = 0;
             currentActivity = getAttackAnimation(currentActivity);
+            Player.slashMusic.stop();
+            Player.slashMusic.play();
             applyDamageToTarget();
         }
 //        if(typeTarget == -1 || typeTarget == 2)return;

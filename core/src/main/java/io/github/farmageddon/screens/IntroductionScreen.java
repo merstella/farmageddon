@@ -2,52 +2,50 @@ package io.github.farmageddon.screens;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import io.github.farmageddon.Main;
 
+
 public class IntroductionScreen implements Screen {
     private Stage stage;
     private Main game;
-    private SpriteBatch batch;
     private Texture[] images;
     private int currentIndex;
     private Image displayImage;
     private Texture UI_Buttons;
-    private Texture background;
+    public static Music buttonSound;
 
     public IntroductionScreen(Main game) {
         this.game = game;
-        batch = new SpriteBatch();
         stage = new Stage(new ScreenViewport());
-        this.background = new Texture(Gdx.files.internal("lenday.png"));
         this.UI_Buttons = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
         Gdx.input.setInputProcessor(stage);
 
         // Load images
         images = new Texture[]{
-            new Texture(Gdx.files.internal("moneyBar.png")),
-            new Texture(Gdx.files.internal("inventory.png")),
-            new Texture(Gdx.files.internal("healthBar.png"))
+            new Texture(Gdx.files.internal("intro\\intro1.png")),
+            new Texture(Gdx.files.internal("intro\\intro2.png")),
+            new Texture(Gdx.files.internal("intro\\intro3.png")),
+            new Texture(Gdx.files.internal("intro\\intro4.png")),
+            new Texture(Gdx.files.internal("intro\\intro5.png")),
+            new Texture(Gdx.files.internal("intro\\intro6.png"))
         };
         currentIndex = 0;
 
         // Display image setup
         displayImage = new Image(images[currentIndex]);
-        displayImage.setSize(400, 300);
-        displayImage.setPosition((Gdx.graphics.getWidth() - displayImage.getWidth()) / 2,
-            (Gdx.graphics.getHeight() - displayImage.getHeight()) / 2);
+        displayImage.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        displayImage.setPosition(0, 0);
         stage.addActor(displayImage);
 
         Button leftButton = createButton(new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 35, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19))
@@ -62,6 +60,9 @@ public class IntroductionScreen implements Screen {
             (UI_Buttons.getWidth() / 39) * 28, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),"exit");
         exitButton.setSize(70, 70);
         exitButton.setPosition(Gdx.graphics.getWidth() - 90, Gdx.graphics.getHeight()- 90);
+        buttonSound = Gdx.audio.newMusic(Gdx.files.internal("Sound/button.mp3"));
+        buttonSound.setLooping(false);
+        buttonSound.setVolume(1f);
 
         stage.addActor(leftButton);
         stage.addActor(rightButton);
@@ -109,7 +110,8 @@ public class IntroductionScreen implements Screen {
                         showNextImage();
                     }
                 }
-
+                buttonSound.stop();
+                buttonSound.play();
             }
         });
         return button;
@@ -121,10 +123,7 @@ public class IntroductionScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        batch.begin();
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.draw(background,0, 0,Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.end();
         stage.act(delta);
         stage.draw();
 
@@ -150,7 +149,6 @@ public class IntroductionScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        batch.dispose();
         for (Texture texture : images) {
             texture.dispose();
         }

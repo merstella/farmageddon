@@ -80,9 +80,7 @@ public class OptionScreen implements Screen {
         stage1.addActor(upButton);
         stage1.addActor(downButton);
         stage1.addActor(exitButton);
-        System.out.println(volume);
     }
-
     private Button createButton(TextureRegion active, TextureRegion inactive, String action) {
         Button.ButtonStyle buttonStyle = new Button.ButtonStyle();
         buttonStyle.up = new TextureRegionDrawable(inactive); // Trạng thái không được nhấn
@@ -93,16 +91,18 @@ public class OptionScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 if (action.equals("volume quite")) {
                     volume = Math.min(volume + 1, 10);
-                    gameScreen.music.setVolume(volume/10);
-
+                    GameScreen.music1.setVolume(volume/10);
+                    GameScreen.music2.setVolume(volume/10);
                 } else if (action.equals("volume louder")) {
                     volume = Math.max(volume - 1, 0);
-                    gameScreen.music.setVolume(volume/10);
+                    gameScreen.music1.setVolume(volume/10);
+                    gameScreen.music2.setVolume(volume/10);
                 } else if (action.equals("exit")) {
                     ui = new UI(player);
                     ui.isOptionVisible = false;
                     System.out.println("exit");
                 }
+                UI.buttonMusic.play();
             }
         });
         return button;
