@@ -1,5 +1,6 @@
 package io.github.farmageddon.animals;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -8,12 +9,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.*;
 import io.github.farmageddon.entities.Player;
+import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.DroppedItem;
 import io.github.farmageddon.ultilites.HealthBar;
 import io.github.farmageddon.ultilites.Items;
 import io.github.farmageddon.ultilites.ZoneManager;
+
+import java.util.Objects;
 
 import static io.github.farmageddon.screens.GameScreen.*;
 
@@ -83,7 +88,11 @@ public abstract class Animal extends Actor {
         return isDead;
     }
     protected Items.Item favFood;
-    public Animal(float x, float y, Stage stage) {
+    protected GameScreen gameScreen;
+    public boolean getTypeCanBreed() {
+        return typeCanBreed;
+    }
+    public Animal(float x, float y, Stage stage, GameScreen gameScreen) {
         this.state = 1;
         setBounds(x, y, frameWidth * 0.333f, frameHeight * 0.333f);
         shapeRenderer = new ShapeRenderer();
@@ -93,7 +102,7 @@ public abstract class Animal extends Actor {
         position = new Vector2(getX(), getY());
         this.hunger = 0;
         this.canProduce = false;
-
+        this.gameScreen = gameScreen;
         this.isDead = false;
         this.currentHealth = 100;
         setHighlighted(false);
@@ -124,11 +133,24 @@ public abstract class Animal extends Actor {
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Actor touched at: " + x + ", " + y);
+                Vector3 touchPosition = new Vector3(x, y, 0);
+                camera.unproject(touchPosition);
+                Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
                 if (button == Input.Buttons.LEFT) {
-                    if (slotCursorHandler.getFood() == favFood) {
+                    System.out.println(gameScreen.getSlotCursorHandler().getAction());
+                    if (Animal.this instanceof Chicken) {
+                        if (gameScreen.getSlotCursorHandler().getSeed() != null) {
+                            System.out.println("Seed: " + gameScreen.getSlotCursorHandler().getSeed());
+                            feed();
+                        }
+                    }
+                    System.out.println("FavFood: " + favFood);
+                    System.out.println("need: " + gameScreen.getSlotCursorHandler().getFood());
+                    System.out.println("action: " + gameScreen.getSlotCursorHandler().getAction());
+                    if (favFood != null && gameScreen.getSlotCursorHandler().getFood() == favFood) {
                         feed();
-                    } else if (slotCursorHandler.getAction() == "sword") {
+                    } else if (player.getPosition().dst(Animal.this.getPosition()) <= 20f && Objects.equals(gameScreen.getSlotCursorHandler().getAction(), "sword")) {
+                        player.updateActivityAnimation(gameScreen.getSlotCursorHandler().getAction(), touchPosition2D);
                         takeDamage(Player.attackDamage);
                     }
                 }
@@ -137,7 +159,7 @@ public abstract class Animal extends Actor {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("Touch released on actor.");
+                player.stopActivity();
             }
         });
     }
@@ -306,13 +328,13 @@ public abstract class Animal extends Actor {
         // Create offspring with inherited traits
         Animal offspring = null;
         if (this instanceof Chicken) {
-            offspring = new Chicken(offspringX, offspringY, stage);  // Creates a Chicken offspring
+            offspring = new Chicken(offspringX, offspringY, stage, gameScreen);  // Creates a Chicken offspring
         } else if (this instanceof Pig) {
-            offspring = new Pig(offspringX, offspringY, stage);  // Creates a Pig offspring
+            offspring = new Pig(offspringX, offspringY, stage, gameScreen);  // Creates a Pig offspring
         } else if (this instanceof Cow) {
-            offspring = new Cow(offspringX, offspringY, stage);  // Base case for Animal
+            offspring = new Cow(offspringX, offspringY, stage, gameScreen);  // Base case for Animal
         } else if (this instanceof Sheep) {
-            offspring = new Sheep(offspringX, offspringY, stage);
+            offspring = new Sheep(offspringX, offspringY, stage, gameScreen);
         }
         offspring.setBound();
         return offspring;
@@ -328,13 +350,14 @@ public abstract class Animal extends Actor {
         super.act(delta);
         update(delta);
         if (healthBar != null) healthBar.setHealth(currentHealth);
-        if (!canBreed) {
-            breedCooldownTimer -= delta;
-            if (breedCooldownTimer <= 0) {
-                canBreed = true; // Reset breeding ability
+        if (typeCanBreed) {
+            if (!canBreed) {
+                breedCooldownTimer -= delta;
+                if (breedCooldownTimer <= 0) {
+                    canBreed = true; // Reset breeding ability
+                }
             }
         }
-
         stateTime += delta;
         activityChangeTimer += delta;
 
@@ -377,8 +400,8 @@ public abstract class Animal extends Actor {
             moveTowardsDestination(delta);
         }
         // Egg-laying logic
-        if (canProduce) {
-            DroppedItem drop = droppedItem();
+        if (typeCanLay && canProduce) {
+            DroppedItem drop = drop();
             if (drop != null) {
                 droppedItems.add(drop);
             }
@@ -436,11 +459,6 @@ public abstract class Animal extends Actor {
         batch.setColor(Color.WHITE);
         batch.end();
 
-        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());  // Use batch's projection matrix
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Use ShapeType.Line for the bounds
-        shapeRenderer.setColor(Color.RED);  // Set the color to red for bounds
-        shapeRenderer.rect(getX(), getY(), getWidth(), getHeight());
-        shapeRenderer.end();
 
         batch.begin();
     }
@@ -473,11 +491,7 @@ public abstract class Animal extends Actor {
         return state;
     }
 
-    public void produce() {
-        System.out.println("Has produced!");
-    }
-
-    public DroppedItem droppedItem() {
+    public DroppedItem drop() {
         if (canProduce) {
             DroppedItem egg = new DroppedItem(position.x, position.y, Items.Item.EGG, Items.ItemType.FOOD);
             canProduce = false;

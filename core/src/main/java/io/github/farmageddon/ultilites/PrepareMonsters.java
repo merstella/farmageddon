@@ -24,14 +24,14 @@ public class PrepareMonsters {
         rand = new Random();
         posMax = new Vector2(400, 400);
         posMin = new Vector2(0, 0);
-        baseMonster = new Monster(0, 0, 30, 1000);
+        baseMonster = new Monster(0, 0, 30, 100);
     }
     public boolean isArrayNull () {return preparedMonsters == null && timeSummon == null;}
     public void prepareArrays () {
         preparedMonsters = new Array<>();
         timeSummon = new Array<>();
         for(int i = 0; i < maxEnemies; i++){
-            preparedMonsters.add(new Monster(0, 0, 0, 1000));
+            preparedMonsters.add(new Monster(0, 0, 0, 100));
             timeSummon.add(0f);
         }
     }

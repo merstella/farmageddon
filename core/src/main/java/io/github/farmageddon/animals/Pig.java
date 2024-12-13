@@ -5,10 +5,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.farmageddon.screens.GameScreen;
+import io.github.farmageddon.ultilites.Items;
 
 public class Pig extends Animal{
-    public Pig(float x, float y, Stage stage) {
-        super(x, y, stage);
+    public Pig(float x, float y, Stage stage, GameScreen gameScreen) {
+        super(x, y, stage, gameScreen);
+        favFood = Items.Item.CARROT;
         typeCanLay = false;
         typeCanBreed = true;
         setBound();

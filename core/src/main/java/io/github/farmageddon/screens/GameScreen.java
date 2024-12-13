@@ -47,6 +47,7 @@ import java.util.Objects;
 import static com.badlogic.gdx.graphics.Color.WHITE;
 import static io.github.farmageddon.ultilites.GameTimeClock.DARKCOLOR;
 import static io.github.farmageddon.ultilites.GameTimeClock.LIGHTCOLOR;
+import static io.github.farmageddon.Crops.Land.deadPlantTexture;
 import static java.lang.Math.clamp;
 import static java.lang.ref.Cleaner.create;
 //import static io.github.farmageddon.Player.maxEqipInventorySize;
@@ -54,9 +55,9 @@ import static java.lang.ref.Cleaner.create;
 
 public class GameScreen implements Screen, InputProcessor {
     private final Main game;
-    private final OrthographicCamera camera;
+    public static final OrthographicCamera camera = new OrthographicCamera();
     private final Viewport viewport;
-    private final Player player; // Your player class
+    public static final Player player = new Player(640, 300, 100f); // Your player class
     public static TiledMap map; // Your game map
     private final OrthogonalTiledMapRenderer mapRenderer;
     private final Vector3 touchPosition = new Vector3();
@@ -138,7 +139,6 @@ public class GameScreen implements Screen, InputProcessor {
         spawner = new PrepareMonsters();
         logic.setSpawner(spawner);
 
-        camera = new OrthographicCamera();
         viewport = new FitViewport(Main.GAME_WIDTH, Main.GAME_HEIGHT, camera);
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
         camera.zoom = .25f;
@@ -162,9 +162,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         initHouses();
         landManager = new LandManager(Main.GAME_HEIGHT/16,Main.GAME_WIDTH/16);
-        player = new Player(640, 300, 100f);
         create();
-        plants.add(new ProtectPlant(400, 400, 1000));
 
         market = new Market(100, 100, 200);
         initMarket();
@@ -180,7 +178,7 @@ public class GameScreen implements Screen, InputProcessor {
         initDebug();
 
         initProtectedPlant();
-        slotCursorHandler = new SlotCursorHandler(player, droppedItems, monsters);
+        slotCursorHandler = new SlotCursorHandler(player, monsters);
         zoneManager = new ZoneManager();
     }
 
@@ -210,14 +208,14 @@ public class GameScreen implements Screen, InputProcessor {
 
     private void initAnimal() {
         animals = new ArrayList<>();
-        animals.add(new Chicken(580, 570, stage));
-        animals.add(new Chicken(605, 580, stage));
-        animals.add(new Pig(658, 190, stage));
-        animals.add(new Pig(672, 170, stage));
-        animals.add(new Cow(820, 538, stage));
-        animals.add(new Cow(800, 530, stage));
-        animals.add(new Sheep(430, 480, stage));
-        animals.add(new Sheep(400, 500, stage));
+        animals.add(new Chicken(580, 570, stage, this));
+        animals.add(new Chicken(605, 580, stage, this));
+        animals.add(new Pig(658, 190, stage, this));
+        animals.add(new Pig(672, 170, stage, this));
+        animals.add(new Cow(820, 538, stage, this));
+        animals.add(new Cow(800, 530, stage, this));
+        animals.add(new Sheep(430, 480, stage, this));
+        animals.add(new Sheep(400, 500, stage, this));
     }
 
     private void initHouses() {
@@ -236,21 +234,26 @@ public class GameScreen implements Screen, InputProcessor {
 
     public void initPlayerInv() {
 //        // set Item
-        player.setEquipItem(itemList.Sword,0);
-        player.setEquipItem(itemList.Bucket,1);
-        player.setEquipItem(itemList.Hoe,2);
-        player.setEquipItem(itemList.Torch,3);
-        player.setEquipItem(itemList.FishingRod,4);
-        player.setItem(itemList.Corn,0);
+        player.setEquipItem(itemList.Shovel,0);
+        player.setEquipItem(itemList.Hoe, 1);
+        player.setEquipItem(itemList.Bucket, 2);
+        player.setEquipItem(itemList.Torch, 3);
+        player.setEquipItem(itemList.Carrot, 4);
+//        player.setItem(itemList.OneGu,0);
         player.setItem(itemList.Tomato,1);
         player.setItem(itemList.Rice,2);
         player.setItem(itemList.Carrot,3);
         player.setItem(itemList.OneGunIcon,4);
-        market.addMarketItem(itemList.CornSeed);
+
+        market.addMarketItem(itemList.RadishSeed);
         market.addMarketItem(itemList.RiceSeed);
         market.addMarketItem(itemList.CarrotSeed);
         market.addMarketItem(itemList.TomatoSeed);
         market.addMarketItem(itemList.OneGunIcon);
+        market.addMarketItem(itemList.SmallChicken);
+        market.addMarketItem(itemList.SmallCow);
+        market.addMarketItem(itemList.SmallSheep);
+        market.addMarketItem(itemList.SmallPig);
         //money
         player.addMoney(200);
     }
@@ -298,8 +301,7 @@ public class GameScreen implements Screen, InputProcessor {
         NoodSound.setLooping(false);
         NoodSound.setVolume(0.2f);
     }
-
-    boolean isNewDay;
+    boolean isNewDay = false;
     @Override
     public void render(float delta) {
         checkZonePosition(zoneManager,player.getPosition().x,player.getPosition().y);
@@ -336,7 +338,7 @@ public class GameScreen implements Screen, InputProcessor {
         game.batch.setProjectionMatrix(camera.combined);
         mapRenderer.setView(camera);
         mapRenderer.render();
-
+        isNewDay = false;
         handleDayPassed();
         clock.act(delta);
         checkBreeding();
@@ -367,13 +369,12 @@ public class GameScreen implements Screen, InputProcessor {
         renderDebugInfo();
 
         CollisionHandling.renderCollision();
-        isNewDay = false;
         logic.increaseTimerLogic(delta);
         logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         logic.renderEntities(monsters, plants, projectiles, entities, game.batch);
         game.batch.begin();
 //        zoneManager.render(game.batch);
-        System.out.println("Drop size" + droppedItems.size);
+//        System.out.println("Drop size" + droppedItems.size);
         for (DroppedItem item : droppedItems) {
 //            System.out.println(item.getItemType());
             item.render(game.batch);
@@ -388,26 +389,27 @@ public class GameScreen implements Screen, InputProcessor {
         ui.render();
         isOptionScreen(delta);
 
-        if (player.getHealth() == 0 || House.getCurrentHealth() == 0){
-            Texture UI_Buttons = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
-            isPaused = true;
-            inputMultiplexer.clear();
-            ui.batch.begin();
-            font.getData().setScale(5f); // Phóng to gấp 2 lần
-            font.draw(ui.batch,"GAME OVER",(Gdx.graphics.getWidth() - 400)/2,(Gdx.graphics.getHeight())/2);
-            font.getData().setScale(3f); // Phóng to gấp 2 lần
-            font.draw(ui.batch,"Day passed: " + currentDays,(Gdx.graphics.getWidth()-220)/2,(Gdx.graphics.getHeight()-200)/2);
-            ui.batch.end();
-            Button menuButton = createButton(new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 29, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),
-                new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 28, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),"Menu");
-            menuButton.setSize(70,70);
-            menuButton.setPosition((Gdx.graphics.getWidth())/2,(Gdx.graphics.getHeight()-400)/2);
-            stage1.addActor(menuButton);
-            Gdx.input.setInputProcessor(stage1);
-            inputMultiplexer.addProcessor(stage1);
-        }
-        stage1.act(delta);
-        stage1.draw();
+//        if (player.getHealth() == 0 || House.getCurrentHealth() == 0){
+//            Texture UI_Buttons = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
+//            isPaused = true;
+//            inputMultiplexer.clear();
+//            ui.batch.begin();
+//            font.getData().setScale(5f); // Phóng to gấp 2 lần
+//            font.draw(ui.batch,"GAME OVER",(Gdx.graphics.getWidth() - 400)/2,(Gdx.graphics.getHeight())/2);
+//            font.getData().setScale(3f); // Phóng to gấp 2 lần
+//            font.draw(ui.batch,"Day passed: " + currentDays,(Gdx.graphics.getWidth()-220)/2,(Gdx.graphics.getHeight()-200)/2);
+//            ui.batch.end();
+//            Button menuButton = createButton(new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 29, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),
+//                new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 28, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),"Menu");
+//            menuButton.setSize(70,70);
+//            menuButton.setPosition((Gdx.graphics.getWidth())/2,(Gdx.graphics.getHeight()-400)/2);
+//            stage1.addActor(menuButton);
+//            Gdx.input.setInputProcessor(stage1);
+//            inputMultiplexer.addProcessor(stage1);
+//
+//        }
+//        stage1.act(delta);
+//        stage1.draw();
     }
     private void renderInvalidCell() {
         if (invalidPlacementCell.x != -1 && invalidPlacementCell.y != -1) {
@@ -489,10 +491,10 @@ public class GameScreen implements Screen, InputProcessor {
 
         for (int i = 0; i < stageAnimals.size(); i++) {
             Animal animalA = stageAnimals.get(i);
-
+            if (!animalA.getTypeCanBreed()) continue;
             for (int j = i + 1; j < stageAnimals.size(); j++) {
                 Animal animalB = stageAnimals.get(j);
-
+                if (!animalB.getTypeCanBreed()) continue;
                 float distance = animalA.getPosition().dst(animalB.getPosition());
 
                 if (animalA.isEligibleForBreeding(animalB) && distance < 50) {
@@ -513,6 +515,7 @@ public class GameScreen implements Screen, InputProcessor {
         }
     }
     private void renderLand(float delta) {
+
         landManager.update(delta);
         game.batch.begin();
         for (int i = 0; i < Main.GAME_HEIGHT/16; i++) {
@@ -521,19 +524,22 @@ public class GameScreen implements Screen, InputProcessor {
                 Land.LandState currentState = land.getCurrentState();
                 Crop crop = land.getCrop();
 
-
                 if (crop != null && isNewDay) {
                     crop.addDay();
-                    isNewDay = false;
                 }
 
                 if (currentState != Land.LandState.PLAIN) {
                     Texture texture = Land.getTextureForState(currentState);
                     game.batch.draw(texture,j*16 , i * 16, 16, 16);
                 }
+
+//                if (land.isHasDeadPlant()) {
+//                    game.batch.draw(deadPlantTexture, j * 16, i * 16);
+//                }
                 if (crop != null) {
                     game.batch.draw(crop.getCurrentFrame(), j * 16, i * 16); // Render crop at grid position
                 }
+
             }
         }
         game.batch.end();
@@ -548,7 +554,7 @@ public class GameScreen implements Screen, InputProcessor {
     private void handleDayPassed() {
         if(timer.getDaysPassed() != currentDays) {
             currentDays = timer.getDaysPassed();
-            isNewDay = true;
+            isNewDay =true;
             if (currentDays % 2 == 0) {
                 for (Animal animal : animals) {
                     animal.incrementAge();
@@ -577,8 +583,8 @@ public class GameScreen implements Screen, InputProcessor {
                     } else {
                         inputMultiplexer.clear();
                         inputMultiplexer.addProcessor(ui.stage);
-                        inputMultiplexer.addProcessor(this);
                         inputMultiplexer.addProcessor(stage);
+                        inputMultiplexer.addProcessor(this);
                         marketScreen.hide();
                     }
                 }
@@ -599,8 +605,8 @@ public class GameScreen implements Screen, InputProcessor {
                     } else {
                         inputMultiplexer.clear();
                         inputMultiplexer.addProcessor(ui.stage);
-                        inputMultiplexer.addProcessor(this);
                         inputMultiplexer.addProcessor(stage);
+                        inputMultiplexer.addProcessor(this);
                         inventoryScreen.hide();
                     }
                 }
@@ -861,10 +867,9 @@ public class GameScreen implements Screen, InputProcessor {
             DroppedItem item = droppedItems.get(i);
             if (player.getBounds().overlaps(item.getBounds())) { // Check collision
                 System.out.println("Picked up: " + item.getItemType());
-//                player.setItem(item.getItemType()); // Add to player's inventory
+                player.setItem(new Items(item.getTexture(), item.getType(), item.getItemType(), 10, 1),1); // Add to player's inventory
                 droppedItems.removeIndex(i); // Remove the item from the list
-                player.setItem(ItemList.Fish, 10);
-                item.dispose(); // Dispose the item's texture
+//                item.dispose(); // Dispose the item's texture
                 break;
             }
 
@@ -891,7 +896,10 @@ public class GameScreen implements Screen, InputProcessor {
         mapRenderer.dispose();
     }
 
-    public static SlotCursorHandler slotCursorHandler;
+    private SlotCursorHandler slotCursorHandler;
+    public SlotCursorHandler getSlotCursorHandler() {
+        return slotCursorHandler;
+    }
     @Override
     public boolean keyDown(int keycode) {
         return false;
@@ -933,9 +941,8 @@ public class GameScreen implements Screen, InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (button == Input.Buttons.LEFT) {
-
             // Convert screen coordinates to world coordinates
-            touchPosition.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            touchPosition.set(screenX, screenY, 0);
             camera.unproject(touchPosition);
             int cellX = (int) touchPosition.x / 16;
             int cellY = (int) touchPosition.y / 16;
@@ -944,17 +951,21 @@ public class GameScreen implements Screen, InputProcessor {
 
             Vector2 touchPosition2D = new Vector2(touchPosition.x, touchPosition.y);
             System.out.println(touchPosition2D);
-            System.out.println(cellX + ";"+ cellY);
+            System.out.println(cellX + ";" + cellY);
             Land land = landManager.getLand(cellY, cellX);
+//            System.out.prinln(land.isHasDeadPlant());
+            // Handle farming/planting actions if valid farming position
             if (zoneManager.isValidFarmingPosition(touchPosition2D)) {
+                System.out.println("CHECK");
                 if (!land.isEmpty()) {
+//                    if (land.setHasDeadPlant(false);
                     DroppedItem droppedItem = land.harvestCrop();
                     if (droppedItem != null) {
                         droppedItems.add(droppedItem);
-
                     }
-
                 }
+
+                // Plant a seed if the player has one selected
                 if (slotCursorHandler.getSeed() != null) {
                     if (land.isEmpty()) {
                         System.out.println("flag2");
@@ -965,28 +976,37 @@ public class GameScreen implements Screen, InputProcessor {
                 }
             }
             if (slotCursorHandler.getAction() != null) {
+                // Check if the action is a tool like "hoe" or "bucket"
                 if (Objects.equals(slotCursorHandler.getAction(), "hoe") || Objects.equals(slotCursorHandler.getAction(), "bucket")) {
                     if (!zoneManager.isValidFarmingPosition(touchPosition2D)) {
-                        return true;
+                        return true; // If not a valid farming position, do nothing
                     }
                 }
                 player.updateActivityAnimation(slotCursorHandler.getAction(), touchPosition2D);
                 slotCursorHandler.startAction(land);
+
             }
             if (slotCursorHandler.getMutatedPlant() != null) {
+                // Handle mutated plant placement
                 isPlacing = true;
                 GridNode gridNode = pathFinder.getGridNodeForEntity(touchPosition2D);
                 if (gridNode != null && gridNode.getGridType() != GridNode.GridType.UNPASSABLE) {
-                    ProtectPlant newPlant = new ProtectPlant(cellX * 16, cellY * 16, 100f);
+                    ProtectPlant newPlant = new ProtectPlant(1,cellX * 16, cellY * 16, 1000);
                     plants.add(newPlant);
                 } else {
                     invalidPlacementCell.set(cellX, cellY);
                 }
             }
+            if (slotCursorHandler.getAnimal() != null) {
+                Animal newAnimal = slotCursorHandler.getAnimal(cellX * 16, cellY * 16, stage, this);
+                animals.add(newAnimal);
+            }
+
             return true;
         }
         return false;
     }
+
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
@@ -1060,11 +1080,6 @@ public class GameScreen implements Screen, InputProcessor {
         projectiles = new Array<>();
         entities = new Array<>();
 
-        for(int i = 1; i <= 5; i++){
-            int x = MathUtils.random(1280);
-            int y = MathUtils.random(768);
-            monsters.add(new Monster(x, y, 20, 3000));
-        }
 
         house1 = new House(598, 446);
         HouseEntity houseentity1 = new HouseEntity(567, 405, 0, house1);
@@ -1087,40 +1102,6 @@ public class GameScreen implements Screen, InputProcessor {
         for (HouseEntity entity : house1.getEntitiesOnBorder()) {
             entities.add(entity);
         }
-//        monsters.add(new Monster(0, 0, 50, 3000));
-//        monsters.add(new Monster(626, 176, 50, 3000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//
-//        monsters.add(new Monster(0, 0, 50, 3000));
-//        monsters.add(new Monster(626, 176, 50, 3000));
-//        monsters.add(new Monster(761, 650, 50, 2000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        monsters.add(new Monster(149, 680, 50, 3000));
-//        for(int i = 1; i <= 50; i++){
-//            monsters.add(new Monster(0, 0, 50, 3000));
-//        }
-        plants.add(new ProtectPlant(500, 500, 100000000));
     }
 
 }

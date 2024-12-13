@@ -35,12 +35,12 @@ public class GameDifficulty {
         timeForSpawn = 10;     // time for monster spawn
 
         for (int i = 0; i < maxEnemies; i++) {
-            preparedMonsters.add(new Monster(0, 0, 30, 1000));
+            preparedMonsters.add(new Monster(0, 0, 30, 100));
             timeSummon.add(0f);
         }
 
         numEnemiesSpawnToday = 10;
-        baseMonster = new Monster(0, 0, 30, 1000);
+        baseMonster = new Monster(0, 0, 30, 100);
         minX = 0;
         minY = 0;
         maxX = 1000;

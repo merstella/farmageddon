@@ -5,14 +5,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.farmageddon.screens.GameScreen;
 import io.github.farmageddon.ultilites.DroppedItem;
 import io.github.farmageddon.ultilites.ItemList;
 import io.github.farmageddon.ultilites.Items;
 
 public class Chicken extends Animal{
 
-    public Chicken(float x, float y, Stage stage) {
-        super(x, y, stage);
+    public Chicken(float x, float y, Stage stage, GameScreen gameScreen) {
+        super(x, y, stage, gameScreen);
         droppedFood = new DroppedItem(x, y, Items.Item.CHICKEN_MEAT, Items.ItemType.FOOD);
         typeCanLay = true;
         typeCanBreed = false;

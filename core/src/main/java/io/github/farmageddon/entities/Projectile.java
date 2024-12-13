@@ -17,7 +17,9 @@ public class Projectile extends Entity implements Pool.Poolable {
     private Texture projTexture;
     private boolean slowable;
     private float slowPoint;
+    private ProtectPlant protectPlant;
     private static final Texture PROJ_TEXTURE = new Texture(Gdx.files.internal("SellButton.png"));
+
 
     public void setSlowPoint (float slowPoint) {this.slowable = true; this.slowPoint = slowPoint;}
     public float getSlowPoint () {return slowPoint;}
@@ -35,6 +37,7 @@ public class Projectile extends Entity implements Pool.Poolable {
     }
 
     public void initialize(float x, float y, float speed, float damagePoint, Monster targetMonster) {
+
         this.position.set(x, y);
         this.speed = speed;
         this.damagePoint = damagePoint;
@@ -51,8 +54,9 @@ public class Projectile extends Entity implements Pool.Poolable {
         this.typeTarget = 2;
         this.isHitTarget = false;
     }
-    public Projectile (float x, float y, float speed, float damagePoint, Entity targetEntity) {
+    public Projectile (float x, float y, float speed, ProtectPlant protectPlant) {
         super(x, y, speed, false, 1);
+        this.protectPlant = protectPlant;
         projTexture = PROJ_TEXTURE;
     }
     public boolean getIsHitTarget () {return isHitTarget;}
@@ -62,11 +66,11 @@ public class Projectile extends Entity implements Pool.Poolable {
     public Vector2 getTargetPosition() {
         switch (typeTarget) {
             case 0:
-                return tempVector.set(targetEntity.position).add(16, 16);
+                if (targetEntity != null) return tempVector.set(targetEntity.position).add(16, 16);
             case 1:
-                return tempVector.set(targetMonster.position).add(16, 16);
+                if (targetMonster != null)return tempVector.set(targetMonster.position).add(16, 16);
             case 2:
-                return tempVector.set(targetPlant.position).add(16, 16);
+                if (targetPlant != null)return tempVector.set(targetPlant.position).add(16, 16);
             default:
                 return tempVector.set(-1, -1);
         }
@@ -75,15 +79,15 @@ public class Projectile extends Entity implements Pool.Poolable {
     private void damageTarget () {
         switch (typeTarget) {
             case 0:
-                targetEntity.takeDamage(damagePoint);
+                if (targetEntity != null) targetEntity.takeDamage(damagePoint);
                 break;
 
             case 1:
-                targetMonster.takeDamage(damagePoint);
+                if (targetMonster != null)targetMonster.takeDamage(damagePoint);
                 break;
 
             case 2:
-                targetPlant.takeDamage(damagePoint);
+                if (targetPlant != null) targetPlant.takeDamage(damagePoint);
                 break;
         }
     }

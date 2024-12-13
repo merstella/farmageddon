@@ -26,7 +26,7 @@ public class Items {
         SEED,
         TOOL,
         FOOD,
-        OTHER, MUTATED_PLANT,
+        OTHER, MUTATED_PLANT, ANIMAL,
     }
 
     public enum Item{
@@ -40,7 +40,7 @@ public class Items {
         HOE,SWORD,TORCH,FISHINGROD,
         EGG,
         FISH, COIN, RADISH,
-        CHICKEN_MEAT, COW_MEAT, SHEEP_MEAT, ONE_GUN, PIG_MEAT
+        CHICKEN_MEAT, COW_MEAT, SHEEP_MEAT, ONE_GUN, COW, SHEEP, PIG, SHOVEL, PIG_MEAT
     }
 
     public Items(Texture texture, ItemType type, Item item, int cost, int num){

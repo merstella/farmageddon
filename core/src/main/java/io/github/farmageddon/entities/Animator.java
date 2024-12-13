@@ -14,9 +14,31 @@ public class Animator {
     private final Texture playerActionSheet;
     private final Texture playerFishingSheet;
     private final Texture monsterSheet;
+    private final Texture protectedPlant1Sheet;
     private final Animation<TextureRegion>[] animations;
     public static Animation<TextureRegion>[] actionAnimations;
     public Animation<TextureRegion>[] monsterAnimations;
+    public Animation<TextureRegion>[] protectedPlant1Animation;
+
+    public int getCurrentFrameIndex(PlantActivity currentActivity, float stateTime) {
+        // Get the animation corresponding to the current activity
+        Animation<TextureRegion> animation = protectedPlant1Animation[currentActivity.ordinal()];
+
+        // If no animation is found for the activity, return -1 (indicates an error)
+        if (animation == null) {
+            return -1;
+        }
+
+        // Get the duration of a single frame
+        float frameDuration = animation.getFrameDuration();
+
+        // Calculate the index of the current frame based on stateTime
+        int frameIndex = (int) (stateTime / frameDuration) % animation.getKeyFrames().length;
+
+        return frameIndex;
+    }
+
+
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
         IDLE_UP, IDLE_RIGHT, IDLE_DOWN, IDLE_LEFT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
@@ -41,6 +63,12 @@ public class Animator {
         ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP, ATTACK_UP_LEFT, ATTACK_UP_RIGHT, ATTACK_DOWN_RIGHT, ATTACK_DOWN_LEFT,
         HIT_UP, HIT_DOWN, HIT_LEFT, HIT_RIGHT, HIT_UP_LEFT, HIT_UP_RIGHT, HIT_DOWN_RIGHT, HIT_DOWN_LEFT
     }
+    public enum PlantActivity {
+        IDLE_LEFT, IDLE_RIGHT,
+        SHOOT_LEFT, SHOOT_RIGHT,
+        SWAP_LEFT, SWAP_RIGHT,
+    }
+
     public Animator() {
 
         // Load textures and initialize animations as before
@@ -49,6 +77,7 @@ public class Animator {
         playerActionSheet = new Texture(Gdx.files.internal("Player/Player_Actions.png"));
         playerFishingSheet = new Texture(Gdx.files.internal("Player\\Player_Fishing.png"));
         monsterSheet = new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Swordman.png"));
+        protectedPlant1Sheet = new Texture(Gdx.files.internal("mutatedplants/onegun.png"));
         // Define the frame dimensions and split frames (same as original)
         int frameWidth = 32, frameHeight = 32;
         int frameFishingWidth = playerFishingSheet.getWidth() / 9; int frameFishingHeight = playerFishingSheet.getHeight() / 8;
@@ -61,11 +90,12 @@ public class Animator {
         TextureRegion[][] tmpFrames4 = TextureRegion.split(monsterSheet, 32, 32);
         TextureRegion[][] tmpFrames5 = TextureRegion.split(new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Swordman_Attack.png")), 64, 64);
         TextureRegion[][] tmpFrames6 = TextureRegion.split(torchSheet, 32, 32);
+        TextureRegion[][] tmpFrames7 = TextureRegion.split(protectedPlant1Sheet, 32, 32);
 
         animations = new Animation[Direction.values().length];
         actionAnimations = new Animation[Activity.values().length];
         monsterAnimations = new Animation[MonsterActivity.values().length];
-
+        protectedPlant1Animation = new Animation[PlantActivity.values().length];
         // Create animations for each direction
         animations[Direction.UP.ordinal()] = createAnimation(tmpFrames[5], 0, 6); // Assuming 4 frames in the first row for UP
         animations[Direction.UP_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 6); // Adjust indices based on layout
@@ -165,6 +195,13 @@ public class Animator {
         monsterAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames4[14], 0, 4);
         monsterAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames4[14], 0, 4);
         monsterAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[14], 0, 4);
+
+        protectedPlant1Animation[PlantActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames7[0], 0, 8);
+        protectedPlant1Animation[PlantActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[0], 0, 8);
+        protectedPlant1Animation[PlantActivity.SHOOT_RIGHT.ordinal()] = createAnimation(tmpFrames7[1], 0, 8);
+        protectedPlant1Animation[PlantActivity.SHOOT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[1], 0, 8);
+        protectedPlant1Animation[PlantActivity.SWAP_LEFT.ordinal()] = createAnimation(tmpFrames7[2], 0, 8);
+        protectedPlant1Animation[PlantActivity.SWAP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames7[3], 0, 8);
     }
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
@@ -222,6 +259,18 @@ public class Animator {
             batch.draw(currentFrame, x, y, 32, 32);
         }
     }
+    public void render(SpriteBatch batch, int plantType, float x, float y, PlantActivity plantActivity,  float stateTime) {
+        // Get the current frame of the animation for the specified direction
+        TextureRegion currentFrame =null;
+        if (plantType == 1) {
+            currentFrame = protectedPlant1Animation[plantActivity.ordinal()].getKeyFrame(stateTime, true);
+        }
+//        if (monsterActivity == MonsterActivity.DEAD) {
+//            currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
+//        }
+        // Draw the current frame at the specified position
+        if (currentFrame!= null) batch.draw(currentFrame, x, y, 32, 32);
+    }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity,  float stateTime) {
         if (activity == Activity.NONE) return;
         Animation<TextureRegion> activityAnimation = actionAnimations[activity.ordinal()];
@@ -246,6 +295,7 @@ public class Animator {
             batch.draw(currentFrame, x - 8, y - 8, 48, 48);
         }
     }
+
 
     public void dispose() {
         playerSheet.dispose();
