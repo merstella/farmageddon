@@ -288,10 +288,10 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer.addProcessor(stage);
         inputMultiplexer.addProcessor(this);
         Gdx.input.setInputProcessor(inputMultiplexer);
-        music1 = Gdx.audio.newMusic(Gdx.files.internal("Sound\\music.mp3"));
+        music1 = Gdx.audio.newMusic(Gdx.files.internal("Sound\\nhac nen ban dem - Copy.mp3"));
         music1.setLooping(true);
         music1.setVolume(0.2f);
-        music2 = Gdx.audio.newMusic(Gdx.files.internal("Sound\\nhac nen ban dem - Copy.mp3"));
+        music2 = Gdx.audio.newMusic(Gdx.files.internal("Sound\\music.mp3"));
         music2.setLooping(true);
         music2.setVolume(0.1f);
         CowSound = Gdx.audio.newMusic(Gdx.files.internal("Sound\\bo.mp3"));
@@ -376,7 +376,6 @@ public class GameScreen implements Screen, InputProcessor {
 //        zoneManager.render(game.batch);
 //        System.out.println("Drop size" + droppedItems.size);
         for (DroppedItem item : droppedItems) {
-//            System.out.println(item.getItemType());
             item.render(game.batch);
         }
         game.batch.end();
@@ -389,27 +388,27 @@ public class GameScreen implements Screen, InputProcessor {
         ui.render();
         isOptionScreen(delta);
 
-//        if (player.getHealth() == 0 || House.getCurrentHealth() == 0){
-//            Texture UI_Buttons = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
-//            isPaused = true;
-//            inputMultiplexer.clear();
-//            ui.batch.begin();
-//            font.getData().setScale(5f); // Phóng to gấp 2 lần
-//            font.draw(ui.batch,"GAME OVER",(Gdx.graphics.getWidth() - 400)/2,(Gdx.graphics.getHeight())/2);
-//            font.getData().setScale(3f); // Phóng to gấp 2 lần
-//            font.draw(ui.batch,"Day passed: " + currentDays,(Gdx.graphics.getWidth()-220)/2,(Gdx.graphics.getHeight()-200)/2);
-//            ui.batch.end();
-//            Button menuButton = createButton(new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 29, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),
-//                new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 28, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),"Menu");
-//            menuButton.setSize(70,70);
-//            menuButton.setPosition((Gdx.graphics.getWidth())/2,(Gdx.graphics.getHeight()-400)/2);
-//            stage1.addActor(menuButton);
-//            Gdx.input.setInputProcessor(stage1);
-//            inputMultiplexer.addProcessor(stage1);
-//
-//        }
-//        stage1.act(delta);
-//        stage1.draw();
+        if (player.getHealth() == 0 || House.getCurrentHealth() == 0){
+            Texture UI_Buttons = new Texture(Gdx.files.internal("Cute_Fantasy_UI\\UI_Buttons.png"));
+            isPaused = true;
+            inputMultiplexer.clear();
+            ui.batch.begin();
+            font.getData().setScale(5f); // Phóng to gấp 2 lần
+            font.draw(ui.batch,"GAME OVER",(Gdx.graphics.getWidth() - 400)/2,(Gdx.graphics.getHeight())/2);
+            font.getData().setScale(3f); // Phóng to gấp 2 lần
+            font.draw(ui.batch,"Day passed: " + currentDays,(Gdx.graphics.getWidth()-220)/2,(Gdx.graphics.getHeight()-200)/2);
+            ui.batch.end();
+            Button menuButton = createButton(new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 29, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),
+                new TextureRegion(UI_Buttons, (UI_Buttons.getWidth() / 39) * 28, (UI_Buttons.getHeight() / 19), (UI_Buttons.getWidth() / 39), (UI_Buttons.getHeight() / 19)),"Menu");
+            menuButton.setSize(70,70);
+            menuButton.setPosition((Gdx.graphics.getWidth())/2,(Gdx.graphics.getHeight()-400)/2);
+            stage1.addActor(menuButton);
+            Gdx.input.setInputProcessor(stage1);
+            inputMultiplexer.addProcessor(stage1);
+
+        }
+        stage1.act(delta);
+        stage1.draw();
     }
     private void renderInvalidCell() {
         if (invalidPlacementCell.x != -1 && invalidPlacementCell.y != -1) {
@@ -956,7 +955,6 @@ public class GameScreen implements Screen, InputProcessor {
 //            System.out.prinln(land.isHasDeadPlant());
             // Handle farming/planting actions if valid farming position
             if (zoneManager.isValidFarmingPosition(touchPosition2D)) {
-                System.out.println("CHECK");
                 if (!land.isEmpty()) {
 //                    if (land.setHasDeadPlant(false);
                     DroppedItem droppedItem = land.harvestCrop();
@@ -968,10 +966,12 @@ public class GameScreen implements Screen, InputProcessor {
                 // Plant a seed if the player has one selected
                 if (slotCursorHandler.getSeed() != null) {
                     if (land.isEmpty()) {
-                        System.out.println("flag2");
-                        System.out.println(slotCursorHandler.getSeed());
                         Crop crop = new Crop(slotCursorHandler.getSeed(), cellX * 16, cellY * 16); // Example crop
                         land.plantCrop(crop);
+                        player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
+                        if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                            player.setEquipItem(ItemList.Default,player.slotCursor);
+                        }
                     }
                 }
             }
@@ -984,7 +984,6 @@ public class GameScreen implements Screen, InputProcessor {
                 }
                 player.updateActivityAnimation(slotCursorHandler.getAction(), touchPosition2D);
                 slotCursorHandler.startAction(land);
-
             }
             if (slotCursorHandler.getMutatedPlant() != null) {
                 // Handle mutated plant placement
@@ -993,6 +992,11 @@ public class GameScreen implements Screen, InputProcessor {
                 if (gridNode != null && gridNode.getGridType() != GridNode.GridType.UNPASSABLE) {
                     ProtectPlant newPlant = new ProtectPlant(1,cellX * 16, cellY * 16, 1000);
                     plants.add(newPlant);
+                    // nếu add thì giảm num
+                    player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
+                    if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                        player.setEquipItem(ItemList.Default,player.slotCursor);
+                    }
                 } else {
                     invalidPlacementCell.set(cellX, cellY);
                 }
@@ -1000,19 +1004,25 @@ public class GameScreen implements Screen, InputProcessor {
             if (slotCursorHandler.getAnimal() != null) {
                 Animal newAnimal = slotCursorHandler.getAnimal(cellX * 16, cellY * 16, stage, this);
                 animals.add(newAnimal);
+                player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
+                if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                    player.setEquipItem(ItemList.Default,player.slotCursor);
+                }
             }
-
             return true;
         } else {
             if (slotCursorHandler.getFood() != null) {
                 // chen am thanh an
                 player.heal(10);
                 // giam so luong do an dang cam
+                player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
+                if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                    player.setEquipItem(ItemList.Default,player.slotCursor);
+                }
             }
         }
         return false;
     }
-
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
@@ -1025,6 +1035,7 @@ public class GameScreen implements Screen, InputProcessor {
                     if (invalidPlacementCell.x == -1 && invalidPlacementCell.y == -1) {
                         plantToConfirm.setOpacity(1f);
                         plantToConfirm.setPlanted(true);
+//                        player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
                     } else {
                         plants.pop();
                     }

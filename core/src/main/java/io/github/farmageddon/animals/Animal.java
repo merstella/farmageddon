@@ -13,10 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.*;
 import io.github.farmageddon.entities.Player;
 import io.github.farmageddon.screens.GameScreen;
-import io.github.farmageddon.ultilites.DroppedItem;
-import io.github.farmageddon.ultilites.HealthBar;
-import io.github.farmageddon.ultilites.Items;
-import io.github.farmageddon.ultilites.ZoneManager;
+import io.github.farmageddon.ultilites.*;
 
 import java.util.Objects;
 
@@ -141,6 +138,10 @@ public abstract class Animal extends Actor {
                     if (Animal.this instanceof Chicken) {
                         if (gameScreen.getSlotCursorHandler().getSeed() != null) {
                             System.out.println("Seed: " + gameScreen.getSlotCursorHandler().getSeed());
+                            player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
+                            if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                                player.setEquipItem(ItemList.Default,player.slotCursor);
+                            }
                             feed();
                         }
                     }
@@ -148,6 +149,10 @@ public abstract class Animal extends Actor {
                     System.out.println("need: " + gameScreen.getSlotCursorHandler().getFood());
                     System.out.println("action: " + gameScreen.getSlotCursorHandler().getAction());
                     if (favFood != null && gameScreen.getSlotCursorHandler().getFood() == favFood) {
+                        player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
+                        if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                            player.setEquipItem(ItemList.Default,player.slotCursor);
+                        }
                         feed();
                     } else if (player.getPosition().dst(Animal.this.getPosition()) <= 20f && Objects.equals(gameScreen.getSlotCursorHandler().getAction(), "sword")) {
                         player.updateActivityAnimation(gameScreen.getSlotCursorHandler().getAction(), touchPosition2D);
