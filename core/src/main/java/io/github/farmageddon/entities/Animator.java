@@ -14,15 +14,34 @@ public class Animator {
     private final Texture playerActionSheet;
     private final Texture playerFishingSheet;
     private final Texture monsterSheet;
-    private final Texture bowmanSheet;
-    private final Texture bossSheet;
-    private final Texture mageSheet;
+    private final Texture protectedPlant1Sheet;
+
+    private final Texture bossSkeletonSheet, bossSwordmanSheet, bossMageSheet;
     private final Animation<TextureRegion>[] animations;
     public static Animation<TextureRegion>[] actionAnimations;
     public Animation<TextureRegion>[] monsterAnimations;
-    public Animation<TextureRegion>[] bowmanAnimations;
-    public Animation<TextureRegion>[] bossAnimations;
-    public Animation<TextureRegion>[] bossmageAnimations;
+    public Animation<TextureRegion>[] protectedPlant1Animation;
+    public Animation<TextureRegion>[] bossSkeletonAnimations, bossSwordmanAnimations, bossMageAnimations;
+
+    public int getCurrentFrameIndex(PlantActivity currentActivity, float stateTime) {
+        // Get the animation corresponding to the current activity
+        Animation<TextureRegion> animation = protectedPlant1Animation[currentActivity.ordinal()];
+
+        // If no animation is found for the activity, return -1 (indicates an error)
+        if (animation == null) {
+            return -1;
+        }
+
+        // Get the duration of a single frame
+        float frameDuration = animation.getFrameDuration();
+
+        // Calculate the index of the current frame based on stateTime
+        int frameIndex = (int) (stateTime / frameDuration) % animation.getKeyFrames().length;
+
+        return frameIndex;
+    }
+
+
     public enum Direction {
         UP, UP_RIGHT, RIGHT, DOWN_RIGHT, DOWN, DOWN_LEFT, LEFT, UP_LEFT,
         IDLE_UP, IDLE_RIGHT, IDLE_DOWN, IDLE_LEFT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
@@ -47,29 +66,10 @@ public class Animator {
         ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP, ATTACK_UP_LEFT, ATTACK_UP_RIGHT, ATTACK_DOWN_RIGHT, ATTACK_DOWN_LEFT,
         HIT_UP, HIT_DOWN, HIT_LEFT, HIT_RIGHT, HIT_UP_LEFT, HIT_UP_RIGHT, HIT_DOWN_RIGHT, HIT_DOWN_LEFT
     }
-
-    public enum BossMangeActivity {
-        IDLE_DOWN, IDLE_LEFT, IDLE_RIGHT, IDLE_UP, IDLE_UP_LEFT, IDLE_UP_RIGHT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
-        UP, LEFT, DOWN, RIGHT, UP_LEFT, UP_RIGHT, DOWN_RIGHT, DOWN_LEFT,
-        DEAD,
-        ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP, ATTACK_UP_LEFT, ATTACK_UP_RIGHT, ATTACK_DOWN_RIGHT, ATTACK_DOWN_LEFT,
-        HIT_UP, HIT_DOWN, HIT_LEFT, HIT_RIGHT, HIT_UP_LEFT, HIT_UP_RIGHT, HIT_DOWN_RIGHT, HIT_DOWN_LEFT
-    }
-
-    public enum BossActivity {
-        IDLE_DOWN, IDLE_LEFT, IDLE_RIGHT, IDLE_UP, IDLE_UP_LEFT, IDLE_UP_RIGHT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
-        UP, LEFT, DOWN, RIGHT, UP_LEFT, UP_RIGHT, DOWN_RIGHT, DOWN_LEFT,
-        DEAD,
-        ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP, ATTACK_UP_LEFT, ATTACK_UP_RIGHT, ATTACK_DOWN_RIGHT, ATTACK_DOWN_LEFT,
-        HIT_UP, HIT_DOWN, HIT_LEFT, HIT_RIGHT, HIT_UP_LEFT, HIT_UP_RIGHT, HIT_DOWN_RIGHT, HIT_DOWN_LEFT
-    }
-
-    public enum BowmanActivity {
-        IDLE_DOWN, IDLE_LEFT, IDLE_RIGHT, IDLE_UP, IDLE_UP_LEFT, IDLE_UP_RIGHT, IDLE_DOWN_RIGHT, IDLE_DOWN_LEFT,
-        UP, LEFT, DOWN, RIGHT, UP_LEFT, UP_RIGHT, DOWN_RIGHT, DOWN_LEFT,
-        DEAD,
-        ATTACK_DOWN, ATTACK_LEFT, ATTACK_RIGHT, ATTACK_UP, ATTACK_UP_LEFT, ATTACK_UP_RIGHT, ATTACK_DOWN_RIGHT, ATTACK_DOWN_LEFT,
-        HIT_UP, HIT_DOWN, HIT_LEFT, HIT_RIGHT, HIT_UP_LEFT, HIT_UP_RIGHT, HIT_DOWN_RIGHT, HIT_DOWN_LEFT
+    public enum PlantActivity {
+        IDLE_LEFT, IDLE_RIGHT,
+        SHOOT_LEFT, SHOOT_RIGHT,
+        SWAP_LEFT, SWAP_RIGHT,
     }
 
     public Animator() {
@@ -80,10 +80,11 @@ public class Animator {
         playerActionSheet = new Texture(Gdx.files.internal("Player/Player_Actions.png"));
         playerFishingSheet = new Texture(Gdx.files.internal("Player\\Player_Fishing.png"));
         monsterSheet = new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Swordman.png"));
-        bowmanSheet = new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Bowman.png"));
-        bossSheet = new Texture(Gdx.files.internal("Enemies/Skeleton/Boss_Swordman.png"));
-        mageSheet = new Texture(Gdx.files.internal("Enemies/Skeleton/Boss_Swordman.png"));
-        // Define the frame dimensions and split frames (same as original)
+        protectedPlant1Sheet = new Texture(Gdx.files.internal("mutatedplants/onegun.png"));
+        bossSkeletonSheet = new Texture(Gdx.files.internal("Enemies\\Skeleton\\Boss_Skeleton.png"));
+        bossSwordmanSheet = new Texture(Gdx.files.internal("Enemies\\Skeleton\\Boss_Swordman.png"));
+        bossMageSheet = new Texture(Gdx.files.internal("Enemies\\Skeleton\\Boss_Skeleton_Mage.png"));
+
         int frameWidth = 32, frameHeight = 32;
         int frameFishingWidth = playerFishingSheet.getWidth() / 9; int frameFishingHeight = playerFishingSheet.getHeight() / 8;
         int frameActionWidth = 48, frameActionHeight = 48;
@@ -93,20 +94,23 @@ public class Animator {
 
 
         TextureRegion[][] tmpFrames4 = TextureRegion.split(monsterSheet, 32, 32);
-        TextureRegion[][] tmpFrames7 = TextureRegion.split(bowmanSheet, 32, 32);
         TextureRegion[][] tmpFrames5 = TextureRegion.split(new Texture(Gdx.files.internal("Enemies/Skeleton/Skeleton_Swordman_Attack.png")), 64, 64);
         TextureRegion[][] tmpFrames6 = TextureRegion.split(torchSheet, 32, 32);
-        TextureRegion[][] tmpFrames8 = TextureRegion.split(bossSheet, 32, 32);
-        TextureRegion[][] tmpFrames9 = TextureRegion.split(new Texture(Gdx.files.internal("Enemies/Skeleton/Boss_Swordman_Attack.png")), 64, 64);
-        TextureRegion[][] tmpFrames10 = TextureRegion.split(mageSheet, 32, 32);
+        TextureRegion[][] tmpFrames7 = TextureRegion.split(protectedPlant1Sheet, 32, 32);
+
+        TextureRegion[][] tmpFrames8 = TextureRegion.split(bossSkeletonSheet, 32, 32);
+        TextureRegion[][] tmpFrames9 = TextureRegion.split(bossSkeletonSheet, 64, 64);
+        TextureRegion[][] tmpFrames10 = TextureRegion.split(bossSwordmanSheet, 32, 32);
+        TextureRegion[][] tmpFrames11 = TextureRegion.split(bossSwordmanSheet, 64, 64);
+        TextureRegion[][] tmpFrames12 = TextureRegion.split(bossMageSheet, 32, 32);
 
         animations = new Animation[Direction.values().length];
         actionAnimations = new Animation[Activity.values().length];
         monsterAnimations = new Animation[MonsterActivity.values().length];
-        bowmanAnimations = new Animation[BowmanActivity.values().length];
-        bossAnimations = new Animation[BossActivity.values().length];
-        bossmageAnimations = new Animation[BossMangeActivity.values().length];
-
+        protectedPlant1Animation = new Animation[PlantActivity.values().length];
+        bossSkeletonAnimations = new Animation[MonsterActivity.values().length];
+        bossSwordmanAnimations = new Animation[MonsterActivity.values().length];
+        bossMageAnimations = new Animation[MonsterActivity.values().length];
         // Create animations for each direction
         animations[Direction.UP.ordinal()] = createAnimation(tmpFrames[5], 0, 6); // Assuming 4 frames in the first row for UP
         animations[Direction.UP_RIGHT.ordinal()] = createAnimation(tmpFrames[4], 0, 6); // Adjust indices based on layout
@@ -172,6 +176,7 @@ public class Animator {
         actionAnimations[Activity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames[17], 0, 4);
         actionAnimations[Activity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames[17], 0, 4);
 
+
         monsterAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames4[0], 0, 6);
         monsterAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[1], 0, 6);
         monsterAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames4[1], 0, 6);
@@ -206,107 +211,106 @@ public class Animator {
         monsterAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames4[14], 0, 4);
         monsterAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames4[14], 0, 4);
 
-        bowmanAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames7[0], 0, 6);
-        bowmanAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[1], 0, 6);
-        bowmanAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames7[1], 0, 6);
-        bowmanAnimations[MonsterActivity.IDLE_UP.ordinal()] = createAnimation(tmpFrames7[2], 0, 6);
-        bowmanAnimations[MonsterActivity.IDLE_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[1], 0, 6);// IDLE_LEFT
-        bowmanAnimations[MonsterActivity.IDLE_UP_RIGHT.ordinal()] = createAnimation(tmpFrames7[1], 0, 6);//IDLE_RIGHT
-        bowmanAnimations[MonsterActivity.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames7[1], 0, 6);//IDLE_RIGHT
-        bowmanAnimations[MonsterActivity.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[1], 0, 6);//IDLE_LEFT
-        bowmanAnimations[MonsterActivity.UP.ordinal()] = createAnimation(tmpFrames7[5], 0, 6);
-        bowmanAnimations[MonsterActivity.LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[4], 0, 6);
-        bowmanAnimations[MonsterActivity.DOWN.ordinal()] = createAnimation(tmpFrames7[3], 0, 6);
-        bowmanAnimations[MonsterActivity.RIGHT.ordinal()] = createAnimation(tmpFrames7[4], 0, 6);
-        bowmanAnimations[MonsterActivity.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[4], 0, 6);
-        bowmanAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames7[4], 0, 6);
-        bowmanAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames7[4], 0, 6);
-        bowmanAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[4], 0, 6);
-        bowmanAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames7[9], 0, 5, 0.15f);
-        bowmanAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames7[6], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[7], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames7[7], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_UP.ordinal()] = createAnimation(tmpFrames7[8], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[7], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_UP_RIGHT.ordinal()] = createAnimation(tmpFrames7[7], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames7[7], 0, 6);
-        bowmanAnimations[MonsterActivity.ATTACK_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[7], 0, 6);
-        bowmanAnimations[MonsterActivity.HIT_UP.ordinal()] = createAnimation(tmpFrames7[12], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames7[10], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[11], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames7[11], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[11], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames7[11], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames7[11], 0, 4);
-        bowmanAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[11], 0, 4);
+        protectedPlant1Animation[PlantActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames7[0], 0, 8);
+        protectedPlant1Animation[PlantActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[0], 0, 8);
+        protectedPlant1Animation[PlantActivity.SHOOT_RIGHT.ordinal()] = createAnimation(tmpFrames7[1], 0, 8);
+        protectedPlant1Animation[PlantActivity.SHOOT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames7[1], 0, 8);
+        protectedPlant1Animation[PlantActivity.SWAP_LEFT.ordinal()] = createAnimation(tmpFrames7[2], 0, 8);
+        protectedPlant1Animation[PlantActivity.SWAP_RIGHT.ordinal()] = createFlippedAnimation(tmpFrames7[3], 0, 8);
 
-        bossAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames8[0], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[1], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames8[1], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_UP.ordinal()] = createAnimation(tmpFrames8[2], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[1], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_UP_RIGHT.ordinal()] = createAnimation(tmpFrames8[1], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames8[1], 0, 6);
-        bossAnimations[MonsterActivity.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[1], 0, 6);
-        bossAnimations[MonsterActivity.UP.ordinal()] = createAnimation(tmpFrames8[5], 0, 6);
-        bossAnimations[MonsterActivity.LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[4], 0, 6);
-        bossAnimations[MonsterActivity.DOWN.ordinal()] = createAnimation(tmpFrames8[3], 0, 6);
-        bossAnimations[MonsterActivity.RIGHT.ordinal()] = createAnimation(tmpFrames8[4], 0, 6);
-        bossAnimations[MonsterActivity.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[4], 0, 6);
-        bossAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames8[4], 0, 6);
-        bossAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames8[4], 0, 6);
-        bossAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[4], 0, 6);
-        bossAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames8[6], 0, 5, 0.15f);
-        bossAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames9[0], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames9[1], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames9[1], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_UP.ordinal()] = createAnimation(tmpFrames9[2], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames9[1], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_UP_RIGHT.ordinal()] = createAnimation(tmpFrames9[1], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames9[1], 0, 4);
-        bossAnimations[MonsterActivity.ATTACK_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames9[1], 0, 4);
-        bossAnimations[MonsterActivity.HIT_UP.ordinal()] = createAnimation(tmpFrames8[15], 0, 4);
-        bossAnimations[MonsterActivity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames8[13], 0, 4);
-        bossAnimations[MonsterActivity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[14], 0, 4);
-        bossAnimations[MonsterActivity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames8[14], 0, 4);
-        bossAnimations[MonsterActivity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[14], 0, 4);
-        bossAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames8[14], 0, 4);
-        bossAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames8[14], 0, 4);
-        bossAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[14], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames8[0], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[1], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames8[1], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_UP.ordinal()] = createAnimation(tmpFrames8[2], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[1], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_UP_RIGHT.ordinal()] = createAnimation(tmpFrames8[1], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames8[1], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[1], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.UP.ordinal()] = createAnimation(tmpFrames8[5], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[4], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.DOWN.ordinal()] = createAnimation(tmpFrames8[3], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.RIGHT.ordinal()] = createAnimation(tmpFrames8[4], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[4], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames8[4], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames8[4], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[4], 0, 6);
+        bossSkeletonAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames8[6], 0, 5, 0.15f);
+        bossSkeletonAnimations[MonsterActivity.HIT_UP.ordinal()] = createAnimation(tmpFrames8[9], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames8[7], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[8], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames8[8], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[8], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames8[8], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames8[8], 0, 4);
+        bossSkeletonAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames8[8], 0, 4);
 
-        bossmageAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames10[0], 0, 6);
-        bossmageAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[1], 0, 6);
-        bossmageAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames10[1], 0, 6);
-        bossmageAnimations[MonsterActivity.IDLE_UP.ordinal()] = createAnimation(tmpFrames10[2], 0, 6);
-        bossmageAnimations[MonsterActivity.IDLE_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[1], 0, 6);// IDLE_LEFT
-        bossmageAnimations[MonsterActivity.IDLE_UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[1], 0, 6);//IDLE_RIGHT
-        bossmageAnimations[MonsterActivity.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[1], 0, 6);//IDLE_RIGHT
-        bossmageAnimations[MonsterActivity.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[1], 0, 6);//IDLE_LEFT
-        bossmageAnimations[MonsterActivity.UP.ordinal()] = createAnimation(tmpFrames10[5], 0, 6);
-        bossmageAnimations[MonsterActivity.LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[4], 0, 6);
-        bossmageAnimations[MonsterActivity.DOWN.ordinal()] = createAnimation(tmpFrames10[3], 0, 6);
-        bossmageAnimations[MonsterActivity.RIGHT.ordinal()] = createAnimation(tmpFrames10[4], 0, 6);
-        bossmageAnimations[MonsterActivity.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[4], 0, 6);
-        bossmageAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[4], 0, 6);
-        bossmageAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[4], 0, 6);
-        bossmageAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[4], 0, 6);
-        bossmageAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames10[9], 0, 5, 0.15f);
-        bossmageAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames10[6], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[7], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames10[7], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_UP.ordinal()] = createAnimation(tmpFrames10[8], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[7], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[7], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[7], 0, 8);
-        bossmageAnimations[MonsterActivity.ATTACK_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[7], 0, 8);
-        bossmageAnimations[MonsterActivity.HIT_UP.ordinal()] = createAnimation(tmpFrames10[12], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames10[10], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[11], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames10[11], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[11], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[11], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[11], 0, 4);
-        bossmageAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[11], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames10[0], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[1], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames10[1], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_UP.ordinal()] = createAnimation(tmpFrames10[2], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[1], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[1], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[1], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[1], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.UP.ordinal()] = createAnimation(tmpFrames10[5], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[4], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.DOWN.ordinal()] = createAnimation(tmpFrames10[3], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.RIGHT.ordinal()] = createAnimation(tmpFrames10[4], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[4], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[4], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[4], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[4], 0, 6);
+        bossSwordmanAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames10[6], 0, 5, 0.15f);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames11[0], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames11[1], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames11[1], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_UP.ordinal()] = createAnimation(tmpFrames11[2], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames11[1], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_UP_RIGHT.ordinal()] = createAnimation(tmpFrames11[1], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames11[1], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.ATTACK_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames11[1], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_UP.ordinal()] = createAnimation(tmpFrames10[15], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames10[13], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[14], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames10[14], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[14], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames10[14], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames10[14], 0, 4);
+        bossSwordmanAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames10[14], 0, 4);
+
+        bossMageAnimations[MonsterActivity.IDLE_DOWN.ordinal()] = createAnimation(tmpFrames12[0], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[1], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_RIGHT.ordinal()] = createAnimation(tmpFrames12[1], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_UP.ordinal()] = createAnimation(tmpFrames12[2], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[1], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_UP_RIGHT.ordinal()] = createAnimation(tmpFrames12[1], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames12[1], 0, 6);
+        bossMageAnimations[MonsterActivity.IDLE_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[1], 0, 6);
+        bossMageAnimations[MonsterActivity.UP.ordinal()] = createAnimation(tmpFrames12[5], 0, 6);
+        bossMageAnimations[MonsterActivity.LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[4], 0, 6);
+        bossMageAnimations[MonsterActivity.DOWN.ordinal()] = createAnimation(tmpFrames12[3], 0, 6);
+        bossMageAnimations[MonsterActivity.RIGHT.ordinal()] = createAnimation(tmpFrames12[4], 0, 6);
+        bossMageAnimations[MonsterActivity.UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[4], 0, 6);
+        bossMageAnimations[MonsterActivity.UP_RIGHT.ordinal()] = createAnimation(tmpFrames12[4], 0, 6);
+        bossMageAnimations[MonsterActivity.DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames12[4], 0, 6);
+        bossMageAnimations[MonsterActivity.DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[4], 0, 6);
+        bossMageAnimations[MonsterActivity.DEAD.ordinal()] = createAnimation(tmpFrames12[9], 0, 5, 0.15f);
+        bossMageAnimations[MonsterActivity.ATTACK_DOWN.ordinal()] = createAnimation(tmpFrames12[6], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[7], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_RIGHT.ordinal()] = createAnimation(tmpFrames12[7], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_UP.ordinal()] = createAnimation(tmpFrames12[8], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[7], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_UP_RIGHT.ordinal()] = createAnimation(tmpFrames12[7], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames12[7], 0, 8);
+        bossMageAnimations[MonsterActivity.ATTACK_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[7], 0, 8);
+        bossMageAnimations[MonsterActivity.HIT_UP.ordinal()] = createAnimation(tmpFrames12[12], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_DOWN.ordinal()] = createAnimation(tmpFrames12[10], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[11], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_RIGHT.ordinal()] = createAnimation(tmpFrames12[11], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_UP_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[11], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_UP_RIGHT.ordinal()] = createAnimation(tmpFrames12[11], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_DOWN_RIGHT.ordinal()] = createAnimation(tmpFrames12[11], 0, 4);
+        bossMageAnimations[MonsterActivity.HIT_DOWN_LEFT.ordinal()] = createFlippedAnimation(tmpFrames12[11], 0, 4);
     }
     private Animation<TextureRegion> createAnimation(TextureRegion[] frames, int startFrame, int frameCount) {
         TextureRegion[] directionFrames = new TextureRegion[frameCount];
@@ -363,6 +367,18 @@ public class Animator {
         else {
             batch.draw(currentFrame, x, y, 32, 32);
         }
+    }
+    public void render(SpriteBatch batch, int plantType, float x, float y, PlantActivity plantActivity,  float stateTime) {
+        // Get the current frame of the animation for the specified direction
+        TextureRegion currentFrame =null;
+        if (plantType == 1) {
+            currentFrame = protectedPlant1Animation[plantActivity.ordinal()].getKeyFrame(stateTime, true);
+        }
+//        if (monsterActivity == MonsterActivity.DEAD) {
+//            currentFrame = monsterAnimations[monsterActivity.ordinal()].getKeyFrame(stateTime, true);
+//        }
+        // Draw the current frame at the specified position
+        if (currentFrame!= null) batch.draw(currentFrame, x, y, 32, 32);
     }
     public void renderActivity(SpriteBatch batch, float x, float y, Activity activity,  float stateTime) {
         if (activity == Activity.NONE) return;

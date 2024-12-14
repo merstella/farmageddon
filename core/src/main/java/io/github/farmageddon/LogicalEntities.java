@@ -37,7 +37,7 @@ public class LogicalEntities {
         projectilePool = new Pool<Projectile>() {
             @Override
             protected Projectile newObject() {
-                return new Projectile(0f, 0f, 0f, 0f, (Entity) null);
+                return new Projectile(0f, 0f, 0f, null);
             }
         };
         secondSinceStart = 0;
@@ -183,7 +183,7 @@ public class LogicalEntities {
                     plant.setFromLastShoot(plant.getCooldown() - delta);
                     continue;
                 }
-                projectiles.add(new Projectile(plant.getPosition().x, plant.getPosition().y, 100, 100, target));
+                projectiles.add(new Projectile(plant.getPosition().x, plant.getPosition().y, 100, plant));
                 switch (plant.getTypePlant()) {
                     case 0:
                         break;
@@ -192,10 +192,15 @@ public class LogicalEntities {
                 }
 //                Monster target = findNearestMonster(plant, monsters, plant.getRange());
 
+                plant.setTargetPosition(target.getPosition());
                 if (target != null) {
                     Projectile projectile = projectilePool.obtain();
                     projectile.reset();
-                    projectile.initialize(plant.getPosition().x, plant.getPosition().y, 100, 1, target);
+                    if (plant.getCurrentActivity() == Animator.PlantActivity.SHOOT_LEFT) {
+                        projectile.initialize(plant.getPosition().x + 7, plant.getPosition().y + 13, 100, 100, target);
+                    }
+                    if (plant.getCurrentActivity() == Animator.PlantActivity.SHOOT_RIGHT)
+                        projectile.initialize(plant.getPosition().x + 22, plant.getPosition().y + 13, 100, 1000, target);
                     projectiles.add(projectile);
                     if (plant.getTypePlant() == 1) {
                         projectile.setSlowPoint(plant.getAdditionState());
@@ -273,12 +278,14 @@ public class LogicalEntities {
 
     }
 
-    public boolean isUpdateMonsterTarget (Monster monster, Array<ProtectPlant> plants, Array<HouseEntity> entities, Player player) {
+    public boolean isUpdateMonsterTarget(Monster monster, Array<ProtectPlant> plants, Array<HouseEntity> entities, Player player) {
         int typeTarget = -1;
         Entity targetEntity = null;
         ProtectPlant targetPlant = null;
         Player targetPlayer = null;
         float minDis = Float.MAX_VALUE, dis;
+
+        // Find the nearest plant
         for (ProtectPlant plant : plants) {
             dis = monster.getPosition().dst(plant.getPosition());
             if (dis > minDis) continue;
@@ -286,18 +293,22 @@ public class LogicalEntities {
             targetPlant = plant;
             minDis = dis;
         }
+
+        // Find the nearest entity
         for (Entity entity : entities) {
             dis = monster.getPosition().dst(entity.getPosition());
             if (dis > minDis) continue;
             typeTarget = 1;
             targetEntity = entity;
         }
+
         dis = monster.getPosition().dst(player.getPosition());
         if (typeTarget == -1 || ((dis <= monster.getRange() || monster.isNowTargetPlayer()) && dis < minDis)) {
             typeTarget = 2;
-            if(dis <= monster.getRange()) monster.setTimeSinceTargetPlayer(0);
+            if (dis <= monster.getRange()) monster.setTimeSinceTargetPlayer(0);
             targetPlayer = player;
         }
+
         if (typeTarget != monster.getTypeTarget()) {
             monster.setTypeTarget(typeTarget);
             switch (typeTarget) {
@@ -305,6 +316,7 @@ public class LogicalEntities {
                     return false;
                 case 0:
                     monster.setTargetPlant(targetPlant);
+
                     break;
                 case 1:
                     monster.setTargetEntity(targetEntity);
@@ -315,16 +327,17 @@ public class LogicalEntities {
             }
             return true;
         }
+
         boolean onlyBoolean = false;
         switch (typeTarget) {
             case -1:
                 return false;
             case 0:
-                if(targetPlant != monster.getTargetPlant())onlyBoolean = true;
+                if (targetPlant != monster.getTargetPlant()) onlyBoolean = true;
                 monster.setTargetPlant(targetPlant);
                 break;
             case 1:
-                if(targetEntity != monster.getTargetEntity())onlyBoolean = true;
+                if (targetEntity != monster.getTargetEntity()) onlyBoolean = true;
                 monster.setTargetEntity(targetEntity);
                 break;
             case 2:
@@ -334,6 +347,7 @@ public class LogicalEntities {
         }
         return onlyBoolean;
     }
+
 
     public void updatePlaceMonsters (Array<Monster> monsters) {
 

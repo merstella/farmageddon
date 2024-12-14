@@ -157,7 +157,7 @@ public class Monster extends Entity {
     // Constants
     private static final float DEATH_ANIMATION_DURATION = 0.5f; // Seconds
     private Array<GridNode> path; // The path to follow
-    private int currentPathIndex = 0; // Index of the current node in the path
+    private int currentPathIndex;// Index of the current node in the path
     public Array<GridNode> getPath() {
         return path;  // Get the current path
     }

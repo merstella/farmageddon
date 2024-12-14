@@ -1,6 +1,7 @@
 package io.github.farmageddon.Crops;
 
 import com.badlogic.gdx.math.Rectangle;
+import io.github.farmageddon.screens.GameScreen;
 
 public class LandManager {
     private Land[][] landGrid;
