@@ -380,7 +380,6 @@ public class Player extends Entity {
         return Animator.Activity.NONE;
     }
 
-
     public Animator.Activity getFishingDirection() {
         if (!hasStartedFishing) {
             hasStartedFishing = true; // Đánh dấu rằng hành động đã bắt đầu
