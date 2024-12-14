@@ -20,7 +20,7 @@ public class Land {
 
     private LandState currentState;
     private float timeSinceHoed;
-    private static final float DRYING_TIME = 30f; // 5 seconds until hoed land dries
+    private static final float DRYING_TIME = 180f; // 5 seconds until hoed land dries
 
     private static Map<LandState, Texture> stateTextures;
 

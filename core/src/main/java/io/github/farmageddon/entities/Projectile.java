@@ -119,7 +119,7 @@ public class Projectile extends Entity implements Pool.Poolable {
                 return targetMonster.getHealth();
             case 2:
                 if(targetPlant == null)return 0;
-                return targetMonster.getHealth();
+                return targetPlant.getHealth();
             case 3:
                 if(targetPlayer == null)return 0;
                 return targetPlayer.getHealth();

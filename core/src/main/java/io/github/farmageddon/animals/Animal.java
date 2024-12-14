@@ -249,7 +249,7 @@ public abstract class Animal extends Actor {
         hunger += delta * 5;
         if (hunger > 100) hunger = 100;
         if (hunger > 80) {
-            currentHealth -= delta * 2;
+            currentHealth -= delta * 0.2f;
         }
 
         // Clamp current health between 0 and maxHealth
@@ -480,7 +480,7 @@ public abstract class Animal extends Actor {
 
     public void feed() {
         hunger = 0;
-        currentHealth += 10;
+        currentHealth += 30;
         if (currentHealth > 100) currentHealth = 100;
     }
 

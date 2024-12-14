@@ -152,7 +152,7 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer = new InputMultiplexer();
         selectedCell = new Vector2();
         timer = new Timer_();
-        timer.setTimeRatio(24*60/6);
+        timer.setTimeRatio(20000);
         timer.StartNew(120, true, true);
         timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
@@ -234,16 +234,15 @@ public class GameScreen implements Screen, InputProcessor {
 
     public void initPlayerInv() {
 //        // set Item
-        player.setEquipItem(itemList.Shovel,0);
+        player.setEquipItem(itemList.Sword,0);
         player.setEquipItem(itemList.Hoe, 1);
         player.setEquipItem(itemList.Bucket, 2);
         player.setEquipItem(itemList.Torch, 3);
         player.setEquipItem(itemList.Carrot, 4);
-//        player.setItem(itemList.OneGu,0);
+        player.setItem(itemList.Radish,0);
         player.setItem(itemList.Tomato,1);
         player.setItem(itemList.Rice,2);
         player.setItem(itemList.Carrot,3);
-        player.setItem(itemList.OneGunIcon,4);
 
         market.addMarketItem(itemList.RadishSeed);
         market.addMarketItem(itemList.RiceSeed);
@@ -366,9 +365,9 @@ public class GameScreen implements Screen, InputProcessor {
         updateProtectPlant(delta);
         renderProtectPlant();
         renderInvalidCell();
-        renderDebugInfo();
+//        renderDebugInfo();
 
-        CollisionHandling.renderCollision();
+//        CollisionHandling.renderCollision();
         logic.increaseTimerLogic(delta);
         logic.updateEntities(monsters, plants, projectiles, entities, player, delta);
         logic.renderEntities(monsters, plants, projectiles, entities, game.batch);
@@ -382,7 +381,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         updateProtectPlant(delta);
         renderProtectPlant();
-        CollisionHandling.renderCollision();
+//        CollisionHandling.renderCollision();
         renderAmbientLighting();
         handleKeyDown(delta);
         ui.render();
@@ -523,19 +522,15 @@ public class GameScreen implements Screen, InputProcessor {
                 Land.LandState currentState = land.getCurrentState();
                 Crop crop = land.getCrop();
 
-                if (crop != null && isNewDay) {
-                    crop.addDay();
-                }
-
                 if (currentState != Land.LandState.PLAIN) {
                     Texture texture = Land.getTextureForState(currentState);
                     game.batch.draw(texture,j*16 , i * 16, 16, 16);
                 }
-
 //                if (land.isHasDeadPlant()) {
 //                    game.batch.draw(deadPlantTexture, j * 16, i * 16);
 //                }
                 if (crop != null) {
+                    crop.update();
                     game.batch.draw(crop.getCurrentFrame(), j * 16, i * 16); // Render crop at grid position
                 }
 
@@ -866,7 +861,12 @@ public class GameScreen implements Screen, InputProcessor {
             DroppedItem item = droppedItems.get(i);
             if (player.getBounds().overlaps(item.getBounds())) { // Check collision
                 System.out.println("Picked up: " + item.getItemType());
-                player.setItem(new Items(item.getTexture(), item.getType(), item.getItemType(), 10, 1),1); // Add to player's inventory
+                for (int j= 0; j < 25; j++) {
+                    if (player.inventory.get(j).getItem() == Items.Item.DEFAULT) {
+                        player.setItem(new Items(item.getTexture(), item.getType(), item.getItemType(), 10, 1),j);
+                        break;
+                    }
+                }
                 droppedItems.removeIndex(i); // Remove the item from the list
 //                item.dispose(); // Dispose the item's texture
                 break;
@@ -960,13 +960,16 @@ public class GameScreen implements Screen, InputProcessor {
                     DroppedItem droppedItem = land.harvestCrop();
                     if (droppedItem != null) {
                         droppedItems.add(droppedItem);
+                        droppedItems.add(droppedItem);
+                        droppedItems.add(droppedItem);
+                        droppedItems.add(droppedItem);
                     }
                 }
 
                 // Plant a seed if the player has one selected
                 if (slotCursorHandler.getSeed() != null) {
                     if (land.isEmpty()) {
-                        Crop crop = new Crop(slotCursorHandler.getSeed(), cellX * 16, cellY * 16); // Example crop
+                        Crop crop = new Crop(slotCursorHandler.getSeed(), cellX * 16, cellY * 16, timer); // Example crop
                         land.plantCrop(crop);
                         player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
                         if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
