@@ -33,5 +33,5 @@ public class ItemList {
 
     public static final Items Shovel = new Items(new Texture(Gdx.files.internal("toolcutted/shovel.png")), Items.ItemType.TOOL, Items.Item.SHOVEL, 0, 1);
 
-//    public static final Items Seed = new Items(new Texture(Gdx.files.internal("mutatedplants/onegun_icon.png")),Items.ItemType.MUTATED_PLANT, Items.Item.ONE_GUN, 0,1);
+
 }

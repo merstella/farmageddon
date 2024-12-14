@@ -55,7 +55,7 @@ public class Player extends Entity {
     }
 
     public Player(float x, float y, float speed) {
-        super(x, y, speed, true, 100000);
+        super(x, y, speed, true, 100);
         animation = new Animator(); // Initialize animation instance
         currentDirection = Animator.Direction.IDLE_DOWN; // Default direction
         currentActivity = Animator.Activity.NONE; // Default activity
