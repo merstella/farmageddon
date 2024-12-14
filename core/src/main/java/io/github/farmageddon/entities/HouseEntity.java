@@ -6,7 +6,7 @@ public class HouseEntity extends Entity {
     private House house;  // The house this entity belongs to
 
     public HouseEntity(float x, float y, float speed, House house) {
-        super(x, y, speed, true, 1000000000);  // Houses don't have their own health, they have a health aggregate
+        super(x, y, speed, true, house.getCurrentHealth());  // Houses don't have their own health, they have a health aggregate
         this.house = house;
     }
 
@@ -30,6 +30,10 @@ public class HouseEntity extends Entity {
     }
     // In case you need to interact with the house, for example, damage it
     public void damageHouse(float damage) {
+//        super.takeDamage(damage);
         house.takeDamage(damage);
+    }
+    public float getHealth () {
+        return house.getCurrentHealth();
     }
 }

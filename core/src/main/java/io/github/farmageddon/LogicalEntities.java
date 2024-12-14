@@ -15,6 +15,8 @@ public class LogicalEntities {
 
     private PathFinder pathFinder;
     private float timerLogic;
+    private int dayLogical;
+    private int numDay;
     private Pool<Projectile> projectilePool;
     private float timePerDay, timeStartSpawn, timeFinishSpawn, secondSinceStart;
     private int curNumMonsterReleased, numMonsterNeedRelease;
@@ -40,11 +42,13 @@ public class LogicalEntities {
                 return new Projectile(0f, 0f, 0f, null);
             }
         };
+        dayLogical = 0;
         secondSinceStart = 0;
-        timePerDay = 300;
+        timePerDay = 360;
         hasChangedDay = true;
-        timeStartSpawn = 10;
-        timeFinishSpawn = 30;
+        numDay = 1;
+        timeStartSpawn = 180;
+        timeFinishSpawn = 240;
         hasChangedDay = false;
         curNumMonsterReleased = 1;
         numMonsterNeedRelease = 1;
@@ -59,6 +63,12 @@ public class LogicalEntities {
         return "Not giving";
     }
     public void updateEntities(Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<HouseEntity> entities, Player player, float delta) {
+        if(secondSinceStart <= 0.1) {
+            while(monsters.size > 0)monsters.removeIndex(0);
+        }
+        if(monsters.size == 0){
+            spawner.formatMonstes(monsters);
+        }
         timerLogic += delta;
         secondSinceStart += delta;
         float timeThisDay = secondSinceStart % timePerDay;
@@ -78,10 +88,18 @@ public class LogicalEntities {
             case "Farming time":
                 // this time will split time for spawn zombie
                 // spawn and add to monsters but not release
-                if (spawner.isArrayNull()) spawner.prepareArrays();
-                if (monsters.size > 0 && hasChangedDay) {
-                    monsters.removeIndex(0);
+//                if(spawner.isArrayNull())spawner.prepareArrays();
+                if(hasChangedDay) {
+//                    monsters.get(0).die();
+//                    monsters.removeIndex(0);
+                    for(Monster monster : monsters) {
+//                        monster.die();
+                        monster.setExist(false);
+                        System.out.println("phong an");
+                    }
+                    dayLogical++;
                     hasChangedDay = false;
+                    numDay += 1;
                     break;
                 }
                 if (curNumMonsterReleased != 0) {
@@ -94,12 +112,17 @@ public class LogicalEntities {
                     for(Monster monster : monsters) {
 //                        System.out.println("monster not release: " + monster.getSpeed());
                     }
+                    if(numDay % 5 == 0){
+                        monsters.set(0, spawner.getBossState());
+                    }
                 }
 
                 break;
             case "Spawn and update":
                 hasChangedDay = true;
+                System.out.println(numDay);
                 // spawn and fall through to update
+//                System.out.println(monsters.size);
                 // spawn but only need release monster prepared
                 if (curNumMonsterReleased < numMonsterNeedRelease) {
                     while (spawner.timeGreaterSummon(timeThisDay, curNumMonsterReleased) && curNumMonsterReleased < numMonsterNeedRelease) {
@@ -117,36 +140,69 @@ public class LogicalEntities {
                     Monster monster = monsters.get(i);
 //                    System.out.println("speed in update : " +monster.getSpeed());
                     if(!monster.isExist())continue;
+
                     if (monster.getHealth() <= 0) {
                         monster.die();
                     }
                     if (monster.isDead() && monster.isMarkedForRemoval()) {
-                        monsters.removeIndex(i);
+                        monsters.get(i).setExist(false);
                         continue;
                     }
-                    if(timerLogic <= 0.5) {
-                        monster.update(delta);
-//                        System.out.println(monster.getPosition().x + " " + monster.getPosition().y);
-                        continue;
-                    }
-                    if (monster.isNullTarget()) {
-                        monster.setTypeTarget(-1);
-                    }
-                    if (monster.getTargetHealth() <= 0 || monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2 && timerLogic >= 0.5) {
-                        boolean bb = isUpdateMonsterTarget(monster, plants, entities, player);
-//                if(timerLogic >= 1) {
-//                    timerLogic = 0;
-                        assignPathToMonster(monster, pathFinder);
+                    if(timerLogic >= 0.5) {
+//                        monster.update(delta);
+////                        System.out.println(monster.getPosition().x + " " + monster.getPosition().y);
+//                        continue;
+//                    }
+                        //                    System.out.println(monster.getTargetHealth());
+                        if (monster.isNullTarget() || monster.getTargetHealth() <= 0) {
+                            monster.setTypeTarget(-1);
+                        }
+                        if ((monster.getTypeTarget() == -1 || monster.getTypeTarget() == 2) && timerLogic >= 0.5) {
+                            boolean up = isUpdateMonsterTarget(monster, plants, entities, player);
+                            //                if(timerLogic >= 1) {
+                            //                    timerLogic = 0;
+                            if (up || monster.getTypeTarget() == 2) assignPathToMonster(monster, pathFinder);
 
+                        }
+                        //                    System.out.println(monster.getTypeTarget());
+                        // Update monster logic
                     }
-//                    System.out.println(monster.getTypeTarget());
-                    // Update monster logic
                     monster.update(delta);
+                    if (monster.isAttacking()) {
+                        monster.setAttacking(false);
+                        switch (monster.getTypeMonster()) {
+                            case 0:
+                                monster.applyDamageToTarget();
+                                break;
+                            case 1:
+                                Projectile projectile = projectilePool.obtain();
+                                projectile.reset();
+                                switch (monster.getTypeTarget()) {
+                                    case -1:
+                                        break;
+                                    case 0:
+                                        projectile.initialize(monster.getPosition().x + 5, monster.getPosition().y + 5, 100, monster.getDamagePoint(), monster.getTargetPlant());
+                                        break;
+                                    case 1:
+                                        projectile.initialize(monster.getPosition().x + 10, monster.getPosition().y + 10, 100, monster.getDamagePoint(), monster.getTargetEntity());
+                                        break;
+                                    case 2:
+                                        projectile.initialize(monster.getPosition().x + 10, monster.getPosition().y + 10, 100, monster.getDamagePoint(), monster.getTargetPlayer());
+                                        break;
+
+                                }
+                                projectiles.add(projectile);
+//                                System.out.println(projectile.getTypeTarget());
+//                                if (plant.getTypePlant() == 1) {
+//                                    projectile.setSlowPoint(plant.getAdditionState());
+//                                }
+                        }
+                    }
                 }
                 break;
             case "Not giving":
                 break;
-                }
+        }
 
 
         if(timerLogic >= 0.5)timerLogic = 0;
@@ -190,6 +246,13 @@ public class LogicalEntities {
                     case 1:
                         projectiles.get(projectiles.size - 1).setSlowPoint(plant.getAdditionState());
                 }
+//                projectiles.add(new Projectile(plant.getPosition().x, plant.getPosition().y, 100, 100, target));
+//                switch (plant.getTypePlant()) {
+//                    case 0:
+//                        break;
+//                    case 1:
+//                        projectiles.get(projectiles.size - 1).setSlowPoint(plant.getAdditionState());
+//                }
 //                Monster target = findNearestMonster(plant, monsters, plant.getRange());
 
                 plant.setTargetPosition(target.getPosition());
@@ -219,7 +282,6 @@ public class LogicalEntities {
 //        System.out.println(entities.size);
     }
 
-
     private Monster findNearestMonster(ProtectPlant plant, Array<Monster> monsters, float range) {
         Monster nearestMonster = null;
         float minDistance = range * range; // Compare squared distances to avoid sqrt calculation
@@ -237,7 +299,7 @@ public class LogicalEntities {
 
 
     public void renderEntities (Array<Monster> monsters, Array<ProtectPlant> plants, Array<Projectile> projectiles, Array<HouseEntity> entities, SpriteBatch batch) {
-        for (Monster monster : monsters) monster.render(batch);
+        for (Monster monster : monsters) if(monster.isExist()) monster.render(batch);
         for (ProtectPlant plant : plants) plant.render(batch);
         for (Projectile projectile : projectiles) projectile.render(batch);
         for (HouseEntity entity : entities) entity.render(batch);

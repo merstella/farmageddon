@@ -38,17 +38,22 @@ public class Monster extends Entity {
     private Player targetPlayer;
     private Entity targetEntity;
     private float range = 10, attackRange;
+    private float rangeForPlayer;
     private float maxTimeForPlayer = 5f;
     private float timeSinceTargetPlayer;
     private float damagePoint;
     private float cooldown, timePassed;
+    private int typeMonster;
+    private boolean isAttacking;
     public static Music zombiesSound;
 
     public Monster(float x, float y, float speed, int maxHealth) {
         super(x, y, speed, true, maxHealth); // Assuming Entity constructor: (x, y, speed, isActive, maxHealth)9
         animation = new Animator();
+        typeMonster = 0;
         typeTarget = -1;
         maxTimeForPlayer = 5f;
+        cooldown = 2;
         damagePoint = 1;
         timeSinceTargetPlayer = 0f;
         currentActivity = Animator.MonsterActivity.IDLE_DOWN;
@@ -56,7 +61,9 @@ public class Monster extends Entity {
         // Adjust based on sprite size
         this.path = null;
         this.range = 1;
-        this.attackRange = 15;
+        rangeForPlayer = 10;
+        isAttacking = false;
+        this.attackRange = 500;
         this.currentPathIndex = 0; // Start at the first node in the path
         this.monsterBounds = new Rectangle(x + 7, y + 9, 14, 16);
         this.isDead = false;
@@ -98,6 +105,9 @@ public class Monster extends Entity {
         this.typeTarget = 2;
         this.targetPlayer = player;
     }
+    public void setAnimationByType (int monsterType) {
+//        animation.setMonsterAnimationsByType(monsterType);
+    }
     public Entity getTargetEntity () {return this.targetEntity;}
     public float getTargetHealth () {
         switch (typeTarget) {
@@ -122,10 +132,16 @@ public class Monster extends Entity {
             case 2:
                 break;
         }
-        if(position.dst(getTargetPosition()) > attackRange) return true;
+//        if(position.dst(getTargetPosition()) > attackRange) return true;
         return false;
     }
 
+    public boolean isTargetInAttackRange () {
+        return position.dst(getTargetPosition()) < attackRange;
+    }
+
+    public void setTypeMonster (int typeMonster) {this.typeMonster = typeMonster;}
+    public int getTypeMonster () {return this.typeMonster;}
 
     public boolean isDifferentTarget (ProtectPlant targetPlant) {
         if(targetPlant != this.targetPlant) return true;
@@ -242,23 +258,33 @@ public class Monster extends Entity {
 
     public boolean isNearEnough () {
         if(getTypeTarget() == -1)return false;
-        if(position.dst(getTargetPosition()) <= attackRange) return true;
+        if(position.dst(getTargetPosition()) <= this.attackRange) return true;
         return false;
     }
 
+    public void setAttackRange (float attackRange) {this.attackRange = attackRange;}
+
     public void applyDamageToTarget () {
-        switch (typeTarget) {
-            case -1:
+        switch (typeMonster) {
+            case 1:
                 break;
             case 0:
-                targetPlant.takeDamage(damagePoint);
+                switch (typeTarget) {
+                    case -1:
+                        break;
+                    case 0:
+                        targetPlant.takeDamage(damagePoint);
+                        break;
+                    case 1:
+                        targetEntity.takeDamage(damagePoint);
+                        break;
+                    case 2:
+                        targetPlayer.takeDamage(damagePoint);
+                }
+                isAttacking = false;
                 break;
-            case 1:
-                targetEntity.takeDamage(damagePoint);
-                break;
-            case 2:
-                targetPlayer.takeDamage(damagePoint);
         }
+
     }
 
 
@@ -287,12 +313,19 @@ public class Monster extends Entity {
             }
             return; // Skip other updates while dying
         }
+        boolean dontMove = isNearEnough();
         if (isNearEnough() && timePassed >= cooldown) {
-            timePassed = 0;
+//            timePassed = 0;
             currentActivity = getAttackAnimation(currentActivity);
+            isAttacking = true;
+            timePassed = 0;
+//            applyDamageToTarget();
+            dontMove = true;
+            System.out.println("STOPPPPPPP");
+
             Player.slashMusic.stop();
             Player.slashMusic.play();
-            applyDamageToTarget();
+            return;
         }
 //        if(typeTarget == -1 || typeTarget == 2)return;
 //        System.out.println(typeTarget);
@@ -333,8 +366,13 @@ public class Monster extends Entity {
 
         direction.nor().scl(getSpeed() * delta); // Normalize and scale by speed and delta time
 
+
         // Simulate next position to check for collisions
         Vector2 newPosition = position.cpy().add(direction);
+        if(dontMove){
+            return;
+        }
+//        direction.set(0, 0);
         updateMovementAnimation(direction);
 //        System.out.println("Move a direction " + (direction.x + " " + direction.y));
         position.add(direction);
@@ -442,4 +480,8 @@ public class Monster extends Entity {
         super.dispose();
         animation.dispose();
     }
+    public void setAttacking (boolean isAttacking) {
+//        if(!isAttacking)timePassed = 0;
+        this.isAttacking = isAttacking;}
+    public boolean isAttacking () {return this.isAttacking;}
 }

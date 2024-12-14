@@ -13,6 +13,7 @@ public class Projectile extends Entity implements Pool.Poolable {
     private Entity targetEntity;
     private Monster targetMonster;
     private ProtectPlant targetPlant;
+    private Player targetPlayer;
     private boolean isHitTarget;
     private Texture projTexture;
     private boolean slowable;
@@ -26,6 +27,15 @@ public class Projectile extends Entity implements Pool.Poolable {
 
     public void setDamagePoint(float damagePoint) {
         this.damagePoint = damagePoint;
+    }
+
+    public void initialize(float x, float y, float speed, float damagePoint, Player targetPlayer) {
+        this.position.set(x, y);
+        this.speed = speed;
+        this.damagePoint = damagePoint;
+        this.targetPlayer = targetPlayer;
+        this.typeTarget = 3;
+        this.isHitTarget = false;
     }
     public void initialize(float x, float y, float speed, float damagePoint, Entity targetEntity) {
         this.position.set(x, y);
@@ -71,10 +81,14 @@ public class Projectile extends Entity implements Pool.Poolable {
                 if (targetMonster != null)return tempVector.set(targetMonster.position).add(16, 16);
             case 2:
                 if (targetPlant != null)return tempVector.set(targetPlant.position).add(16, 16);
+                return tempVector.set(targetPlant.position).add(16, 16);
+            case 3:
+                return tempVector.set(targetPlayer.getPosition()).add(16,16);
             default:
                 return tempVector.set(-1, -1);
         }
     }
+    public int getTypeTarget () {return this.typeTarget;}
 
     private void damageTarget () {
         switch (typeTarget) {
@@ -88,6 +102,9 @@ public class Projectile extends Entity implements Pool.Poolable {
 
             case 2:
                 if (targetPlant != null) targetPlant.takeDamage(damagePoint);
+                break;
+            case 3:
+                targetPlayer.takeDamage(damagePoint);
                 break;
         }
     }
@@ -103,6 +120,9 @@ public class Projectile extends Entity implements Pool.Poolable {
             case 2:
                 if(targetPlant == null)return 0;
                 return targetMonster.getHealth();
+            case 3:
+                if(targetPlayer == null)return 0;
+                return targetPlayer.getHealth();
         }
         return -1;
     }

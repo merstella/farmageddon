@@ -14,6 +14,7 @@ public class PrepareMonsters {
     private float statFactor, curDiffMulti;
     private Vector2 posMin, posMax;
     private Monster baseMonster;
+    private Monster baseBossMonster;
     private Array<Monster> preparedMonsters = null;
     private Array<Float> timeSummon = null;
     public Random rand;
@@ -22,18 +23,32 @@ public class PrepareMonsters {
         maxEnemies = 50;
         curDiffMulti = 1;
         rand = new Random();
-        posMax = new Vector2(400, 400);
+        posMax = new Vector2(1200, 700);
         posMin = new Vector2(0, 0);
+//        baseMonster = new Monster(0, 0, 30, 1000);
         baseMonster = new Monster(0, 0, 30, 100);
+        baseBossMonster = new Monster(0, 0, 30, 500);
+        baseBossMonster.setDamagePoint(baseMonster.getDamagePoint() * 5);
+        prepareArrays();
     }
     public boolean isArrayNull () {return preparedMonsters == null && timeSummon == null;}
-    public void prepareArrays () {
+    private void prepareArrays () {
         preparedMonsters = new Array<>();
         timeSummon = new Array<>();
         for(int i = 0; i < maxEnemies; i++){
             preparedMonsters.add(new Monster(0, 0, 0, 100));
+            preparedMonsters.get(preparedMonsters.size - 1).setExist(false);
             timeSummon.add(0f);
         }
+    }
+
+    public void formatMonstes (Array<Monster> monsters) {
+        for(int i = 0; i < maxEnemies; i++) {
+            monsters.add(preparedMonsters.get(i));
+        }
+    }
+    public Monster getBossState () {
+        return baseBossMonster;
     }
 
     public boolean timeGreaterSummon (float time, int summonIndex) {
@@ -76,9 +91,9 @@ public class PrepareMonsters {
 
     public void addMonstersToMonsters (int numMonsterNeedSpawn, Array<Monster> monsters) {
         for(int i = 0; i < numMonsterNeedSpawn; i++) {
-            monsters.add(preparedMonsters.get(i));
-
             Monster monster = preparedMonsters.get(i);
+            monsters.set(i, monster);
+
 //            System.out.print(monsters.get(monsters.size-1).getHealth() + " " + monsters.get(monsters.size-1).getSpeed() + "\n");
         }
     }
@@ -90,16 +105,44 @@ public class PrepareMonsters {
     public void prepareMonsters (int totalMonsterRequired, float timeStartSpawn, float timeFinishSpawn) {
         for (int i = 0; i < totalMonsterRequired; i++) {
             Monster monster = preparedMonsters.get(i);
+            monster.setTypeMonster(random(0, 1));
+            monster.setAnimationByType(monster.getTypeMonster());
             monster.setDamagePoint(baseMonster.getDamagePoint() * curDiffMulti);
+            if(monster.getTypeMonster() == 1)monster.setDamagePoint(monster.getDamagePoint() * 2f / 3f);
             monster.setHealth(baseMonster.getHealth() * curDiffMulti);
             monster.setMaxHealth(baseMonster.getHealth() * curDiffMulti);
-            monster.setSpeed(baseMonster.getSpeed() * curDiffMulti);
+//            monster.setSpeed(baseMonster.getSpeed() * curDiffMulti);
+            monster.setSpeed((baseMonster.getSpeed() + rand.nextFloat() * 5) * curDiffMulti);
             monster.setPosition(randomPosition());
+            switch (monster.getTypeMonster()) {
+                case 1:
+                    monster.setAttackRange(200);
+                    break;
+                case 0:
+                    monster.setAttackRange(20);
+            }
             monster.setTypeTarget(-1);
             monster.setExist(false);
             timeSummon.set(i, randomTimer(timeStartSpawn, timeFinishSpawn));
 //            System.out.println("prepare monster " + i + " " + timeSummon.get(i));
         }
+        Monster monster = baseBossMonster;
+        monster.setTypeMonster(random(0, 1));
+        monster.setAnimationByType(monster.getTypeMonster());
+        monster.setDamagePoint(baseBossMonster.getDamagePoint() * curDiffMulti);
+        if(monster.getTypeMonster() == 1)monster.setDamagePoint(monster.getDamagePoint() * 2f / 3f);
+        monster.setHealth(baseBossMonster.getHealth() * curDiffMulti);
+        monster.setSpeed((baseBossMonster.getSpeed() + rand.nextFloat() * 5) * curDiffMulti + 5);
+        monster.setPosition(randomPosition());
+        switch (monster.getTypeMonster()) {
+            case 1:
+                monster.setAttackRange(200);
+                break;
+            case 0:
+                monster.setAttackRange(20);
+        }
+        monster.setTypeTarget(-1);
+        monster.setExist(false);
         for(int i = 0; i < totalMonsterRequired; i++) {
             for(int j = i + 1; j < totalMonsterRequired; j++) {
                 if(timeSummon.get(i) > timeSummon.get(j)){

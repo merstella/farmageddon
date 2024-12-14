@@ -152,7 +152,7 @@ public class GameScreen implements Screen, InputProcessor {
         inputMultiplexer = new InputMultiplexer();
         selectedCell = new Vector2();
         timer = new Timer_();
-        timer.setTimeRatio(20000);
+        timer.setTimeRatio(24*60/6);
         timer.StartNew(120, true, true);
         timer.setStartTime(0, 12, 30, 0);
         clock = new GameTimeClock(timer);
