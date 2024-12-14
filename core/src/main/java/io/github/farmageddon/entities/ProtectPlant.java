@@ -13,9 +13,12 @@ import io.github.farmageddon.ultilites.Items;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import static io.github.farmageddon.screens.GameScreen.player;
+
 
 public class ProtectPlant extends Entity{
     private float cooldown, fromLastShoot, range;
+    private Player player;
     private float timeMul;
     private boolean isShooting;
     private int typePlant;
@@ -75,6 +78,7 @@ public class ProtectPlant extends Entity{
     }
     public ProtectPlant (int plantType, float x, float y, float maxHealth) {
         super(x, y, 0f, true, maxHealth);
+//        this.player = player;
         cooldown = 1f;
         facingRight = true;
         swapping = false;
@@ -173,6 +177,7 @@ public class ProtectPlant extends Entity{
 //        if (isBeingAttacked()) {
 //            animation.render(batch, position.x, position.y, Animator.MonsterActivity.HIT_DOWN, GameScreen.stateTime);
 //        } else {
+//        if (player.eqipInventory.get(player.slotCursor).getNum() != 0)
             animation.render(batch, plantType, position.x, position.y, currentActivity, GameScreen.stateTime);
 //        }
         batch.setColor(1f, 1f, 1f, 1f);

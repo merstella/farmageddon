@@ -990,11 +990,10 @@ public class GameScreen implements Screen, InputProcessor {
                 isPlacing = true;
                 GridNode gridNode = pathFinder.getGridNodeForEntity(touchPosition2D);
                 if (gridNode != null && gridNode.getGridType() != GridNode.GridType.UNPASSABLE) {
+                    player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
                     ProtectPlant newPlant = new ProtectPlant(1,cellX * 16, cellY * 16, 1000);
                     plants.add(newPlant);
-                    // nếu add thì giảm num
-                    player.eqipInventory.get(player.slotCursor).remove(player.eqipInventory.get(player.slotCursor));
-                    if (player.eqipInventory.get(player.slotCursor).getNum() == 0){
+                    if (player.eqipInventory.get(player.slotCursor).getNum() < 1){
                         player.setEquipItem(ItemList.Default,player.slotCursor);
                     }
                 } else {

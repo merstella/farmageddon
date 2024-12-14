@@ -288,24 +288,22 @@ public final class MarketScreen implements Screen, InputProcessor {
             }
         }
 
-        // draw cost to sell
+        // draw cost
         float costXInventory = screenWidth/4 + 55 ;
         float costYInventory = screenHeight/4 + 74;
         int itemIndexInventory = getItemIndexOnInventory();
         if (itemIndexInventory < player.inventory.size()){
-            font.draw(batch, "+ $" + String.valueOf(player.inventory.get(itemIndexInventory).getCost()), costXInventory, costYInventory);
+            font.draw(batch, "+ $" + String.valueOf(player.inventory.get(player.inventoryCursor).getCost()), costXInventory, costYInventory);
         }
         float costXmarket = 3*(screenWidth/4) - 150;
         float costYmarket = screenHeight/4 + 74;
         int itemIndexMarket = getItemIndexOnInventory();
         if (itemIndexMarket < market.marketItems.size()){
-            font.draw(batch,"- $" + String.valueOf(market.marketItems.get(itemIndexMarket).getCost()),costXmarket,costYmarket);
+            font.draw(batch,"- $ " + String.valueOf(market.marketItems.get(itemIndexMarket).getCost()),costXmarket,costYmarket);
         }
-
         stage.act(v); // Cập nhật stage
         stage.draw();
         batch.end();
-        System.out.println(player.inventory.get(player.inventoryCursor).getItem());
     }
 
     @Override
@@ -333,7 +331,7 @@ public final class MarketScreen implements Screen, InputProcessor {
         int itemIndexInventory = slotColInventory + (slotRowInventory*5);
         return itemIndexInventory;
     }
-    public int getItemIndexMarket(){
+    private int getItemIndexMarket(){
         int itemIndexMarket = slotColMarket + (slotRowMarket*5);
         return itemIndexMarket;
     }
