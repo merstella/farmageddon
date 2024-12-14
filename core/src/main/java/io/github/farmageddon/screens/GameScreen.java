@@ -1003,6 +1003,12 @@ public class GameScreen implements Screen, InputProcessor {
             }
 
             return true;
+        } else {
+            if (slotCursorHandler.getFood() != null) {
+                // chen am thanh an
+                player.heal(10);
+                // giam so luong do an dang cam
+            }
         }
         return false;
     }
@@ -1027,6 +1033,8 @@ public class GameScreen implements Screen, InputProcessor {
                 invalidPlacementCell.set(-1, -1);
             }
             return true;
+        } else {
+
         }
         return false;
     }
